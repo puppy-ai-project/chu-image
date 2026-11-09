@@ -57,6 +57,7 @@ public partial class MainWindowView : PhControl
 
     private void UpdateZoomSlider()
     {
+        if (_updatingZoomSlider) return;
         var min = Math.Max(0.001, PART_Viewer.MinZoom);
         var max = Math.Max(min * 1.001, PART_Viewer.MaxZoom);
         var zoom = Math.Clamp(PART_Viewer.ZoomFactor, min, max);
@@ -73,8 +74,16 @@ public partial class MainWindowView : PhControl
         var min = Math.Max(0.001, PART_Viewer.MinZoom);
         var max = Math.Max(min * 1.001, PART_Viewer.MaxZoom);
         var factor = min * Math.Pow(max / min, e.NewValue / 1000);
-        PART_Viewer.ZoomAroundImageCenter((float)factor);
-        UpdateZoomSlider();
+        _updatingZoomSlider = true;
+        try
+        {
+            PART_Viewer.ZoomAroundImageCenter((float)factor);
+            PART_ZoomPercentage.Text = $"{PART_Viewer.ZoomFactor * 100:0.#}%";
+        }
+        finally
+        {
+            _updatingZoomSlider = false;
+        }
     }
 
     private async void ZoomOutButton_Click(object? sender, RoutedEventArgs e)

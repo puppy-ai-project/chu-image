@@ -913,9 +913,9 @@ public partial class ViewerControl
 
     public bool ZoomToPoint(float factor, Point? point = null, bool requestRerender = true)
     {
-        if (factor >= _zooming.Max || factor <= _zooming.Min) return false;
+        if (!float.IsFinite(factor) || factor <= 0) return false;
 
-        var newZoomFactor = (double)factor;
+        var newZoomFactor = Math.Clamp((double)factor, MinZoom, MaxZoom);
         if (newZoomFactor == _zooming.Factor) return false;
 
         // Use the provided point, or fall back to the last tracked cursor position.
