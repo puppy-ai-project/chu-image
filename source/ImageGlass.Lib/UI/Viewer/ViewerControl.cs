@@ -293,7 +293,9 @@ public partial class ViewerControl : PhControl
         // set the init point for panning
         if (p.Pointer.Type == PointerType.Mouse && !IsThumbButtonPressed(p))
         {
-            var canPanByMouse = (e.Properties.IsLeftButtonPressed && !EnableSelection)
+            var cropModifierPan = EnableCropModifierPan && SourceSelection.IsEmpty
+                && e.KeyModifiers == Hotkey.Ctrl;
+            var canPanByMouse = (e.Properties.IsLeftButtonPressed && (!EnableSelection || cropModifierPan))
                 || e.Properties.IsMiddleButtonPressed;
 
             if (canPanByMouse)

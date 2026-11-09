@@ -67,6 +67,7 @@ public partial class CropImageToolControl : PhControl, IToolControl
 
         // enable selection on the viewer
         Viewer.EnableSelection = true;
+        Viewer.EnableCropModifierPan = true;
 
         // subscribe to viewer selection changes
         Viewer.SelectionChanged += Viewer_SelectionChanged;
@@ -134,6 +135,7 @@ public partial class CropImageToolControl : PhControl, IToolControl
         // reset selection and disable selection mode
         Viewer.SourceSelection = default;
         Viewer.EnableSelection = false;
+        Viewer.EnableCropModifierPan = false;
 
         base.OnUnloaded(e);
     }

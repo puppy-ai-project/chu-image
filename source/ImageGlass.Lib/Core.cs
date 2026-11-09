@@ -256,6 +256,9 @@ public static class Core
     /// </summary>
     public static bool IsProEnabled => AppLicense is not null;
 
+    /// <summary>Whether this build makes the optional Pro features available.</summary>
+    public static bool AreProFeaturesAvailable => true;
+
 
     /// <summary>
     /// Gets the resolved path of the image file from the arguments.

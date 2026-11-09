@@ -46,7 +46,7 @@ public sealed record DisplayColorPass(bool IsHdr, HdrTransferFunction TransferFn
         if (!isHdr) return new DisplayColorPass(false, HdrTransferFunction.None, 0, null, destProfile);
 
         // tuning the options is Pro-only; copied, so a later edit cannot change what this pass means
-        var options = Core.IsProEnabled ? Core.HdrToneMappingConfig with { } : new HdrToneMappingOptions();
+        var options = Core.AreProFeaturesAvailable ? Core.HdrToneMappingConfig with { } : new HdrToneMappingOptions();
 
         return new DisplayColorPass(true, meta!.HdrTransferFn, meta.ContentPeakNits, options, destProfile);
     }

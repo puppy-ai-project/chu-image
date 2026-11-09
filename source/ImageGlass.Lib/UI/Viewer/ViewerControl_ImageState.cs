@@ -108,7 +108,7 @@ public partial class ViewerControl
 
             // animated and vector photos show no edits
             var showsEdits = _animator is null && !IsVectorSource();
-            var toneMapping = Core.IsProEnabled ? Core.HdrToneMappingConfig : new HdrToneMappingOptions();
+            var toneMapping = Core.AreProFeaturesAvailable ? Core.HdrToneMappingConfig : new HdrToneMappingOptions();
 
             return new ViewerImageState(lease, ownedFrame)
             {

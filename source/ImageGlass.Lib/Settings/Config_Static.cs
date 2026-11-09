@@ -631,7 +631,7 @@ public partial class Config
     /// <summary>
     /// Whether <paramref name="id"/> is a Pro-only setting the active license does not unlock.
     /// </summary>
-    public static bool IsConfigProGated(ConfigId id) => !Core.IsProEnabled && ProGatedConfigs.Contains(id);
+    public static bool IsConfigProGated(ConfigId id) => !Core.AreProFeaturesAvailable && ProGatedConfigs.Contains(id);
 
 
 
@@ -1225,7 +1225,7 @@ public partial class Config
         var primaryPath = BHelper.BaseDir(configFileName);
         var fallbackPath = BHelper.ConfigDir(configFileName);
 
-        if (!Core.IsProEnabled)
+        if (!Core.AreProFeaturesAvailable)
         {
             // name the deployed file it refused: otherwise the layer vanishes with no trace
             var refusedPath = ResolveConfigJsonPath(primaryPath, fallbackPath);

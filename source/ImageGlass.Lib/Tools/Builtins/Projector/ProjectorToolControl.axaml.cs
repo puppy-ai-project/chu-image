@@ -343,7 +343,7 @@ public partial class ProjectorToolControl : PhControl, IToolControl
 
 
             // 3. following the main viewer and its cursor are Pro features; Classic still gets the add button, which explains its limit of one
-            var isPro = Core.IsProEnabled;
+            var isPro = Core.AreProFeaturesAvailable;
             PART_SyncProBadge.IsVisible = !isPro;
             PART_PointerProBadge.IsVisible = !isPro;
             PART_ChkSync.IsEnabled = isPro;

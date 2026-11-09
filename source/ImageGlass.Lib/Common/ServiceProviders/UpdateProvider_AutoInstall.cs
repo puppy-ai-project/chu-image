@@ -241,7 +241,7 @@ public partial class UpdateProvider
     /// <summary>
     /// Whether the user can install an update from inside the app (licence, channel, policy).
     /// </summary>
-    public bool CanInstallUpdateInApp => Core.IsProEnabled && CanInstallUpdate;
+    public bool CanInstallUpdateInApp => Core.AreProFeaturesAvailable && CanInstallUpdate;
 
 
     /// <summary>

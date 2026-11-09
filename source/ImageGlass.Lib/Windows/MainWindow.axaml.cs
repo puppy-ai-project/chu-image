@@ -21,6 +21,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using ImageGlass.Common.Loggers;
+using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
@@ -202,10 +203,40 @@ public partial class MainWindow : PhWindow
         base.OnKeyDown(e);
         if (e.Handled) return;
 
+        // Escape cancels cropping before the application's exit shortcut can run.
+        if (new Hotkey(e).IsSame(Key.Escape)
+            && PART_MainView.PART_ToolHost.Tool?.ToolId == CropImageToolControl.TOOL_ID)
+        {
+            e.Handled = true;
+            await Core.API.RunApiAsync(API.IG_CloseTool, CropImageToolControl.TOOL_ID);
+            return;
+        }
+
         if (e.Source is TextBox
             or NumericUpDown
             or MaskedTextBox
             or AutoCompleteBox) return;
+
+        var viewer = PART_MainView.PART_Viewer;
+        if (PART_MainView.PART_ToolHost.Tool?.ToolId == CropImageToolControl.TOOL_ID
+            && viewer.SourceSelection.IsEmpty && e.KeyModifiers == Hotkey.Ctrl)
+        {
+            const double distance = 20;
+            var (x, y) = e.Key switch
+            {
+                Key.Left => (distance, 0d),
+                Key.Right => (-distance, 0d),
+                Key.Up => (0d, distance),
+                Key.Down => (0d, -distance),
+                _ => (0d, 0d),
+            };
+            if (x != 0 || y != 0)
+            {
+                e.Handled = true;
+                viewer.PanCropImage(x, y);
+                return;
+            }
+        }
 
         // process app hotkeys
         // press ESC: exit slideshow if it is running

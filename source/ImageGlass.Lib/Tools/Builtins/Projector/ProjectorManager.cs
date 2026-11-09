@@ -102,7 +102,7 @@ public sealed class ProjectorManager : PhDisposable
     {
         get
         {
-            if (Core.IsProEnabled) return true;
+            if (Core.AreProFeaturesAvailable) return true;
 
             return _windows.Count < MAX_CLASSIC_PROJECTORS;
         }
@@ -118,13 +118,13 @@ public sealed class ProjectorManager : PhDisposable
     /// <summary>
     /// Gets whether projectors follow the zoom, pan and transforms of the main viewer: an ImageGlass Pro feature, so never in Classic.
     /// </summary>
-    public bool IsViewSynced => Config.EnableViewSync && Core.IsProEnabled;
+    public bool IsViewSynced => Config.EnableViewSync && Core.AreProFeaturesAvailable;
 
 
     /// <summary>
     /// Gets whether projectors highlight where the cursor is on the main viewer: an ImageGlass Pro feature, so never in Classic.
     /// </summary>
-    public bool IsPointerShown => Config.ShowPointer && Core.IsProEnabled;
+    public bool IsPointerShown => Config.ShowPointer && Core.AreProFeaturesAvailable;
 
     #endregion // Public Properties
 
@@ -374,7 +374,7 @@ public sealed class ProjectorManager : PhDisposable
     /// </summary>
     public void SetViewSync(bool enabled)
     {
-        if (!Core.IsProEnabled) return;
+        if (!Core.AreProFeaturesAvailable) return;
 
         Config.EnableViewSync = enabled;
         foreach (var window in _windows)
@@ -392,7 +392,7 @@ public sealed class ProjectorManager : PhDisposable
     /// </summary>
     public void SetShowPointer(bool enabled)
     {
-        if (!Core.IsProEnabled) return;
+        if (!Core.AreProFeaturesAvailable) return;
 
         Config.ShowPointer = enabled;
         if (enabled) AttachPointerTracking();

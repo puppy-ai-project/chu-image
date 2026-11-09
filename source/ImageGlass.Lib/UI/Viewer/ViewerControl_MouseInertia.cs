@@ -8,10 +8,19 @@ namespace ImageGlass.UI.Viewer;
 
 public partial class ViewerControl
 {
+    internal bool EnableCropModifierPan { get; set; }
     private Vector _mousePanVelocity;
     private bool _mousePanPositionEnabled;
     private long _mousePanSampleTime;
     private int _mousePanGeneration;
+
+    internal void PanCropImage(double x, double y)
+    {
+        if (FeatureManager.IsPanLocked()) return;
+        CancelMousePan();
+        _mousePanPositionEnabled = true;
+        PanTo(x, y, null);
+    }
 
     private void BeginMousePan()
     {

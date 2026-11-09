@@ -54,7 +54,7 @@ internal static class FeatureManager
         var newLocked = Config.LockedFeatures;
 
         // consumer Pro features stay gated until a license is active
-        var newProGated = Core.IsProEnabled ? FrozenSet<LangId>.Empty : _proFeatureKeys;
+        var newProGated = Core.AreProFeaturesAvailable ? FrozenSet<LangId>.Empty : _proFeatureKeys;
 
         lock (_lock)
         {

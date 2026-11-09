@@ -22,7 +22,7 @@ namespace ImageGlass.Common;
 
 
 /// <summary>
-/// Binding converters that fold <see cref="Core.IsProEnabled"/> into a config value, so a
+/// Binding converters that fold <see cref="Core.AreProFeaturesAvailable"/> into a config value, so a
 /// control receives an already-gated value without referencing the license itself.
 /// </summary>
 public static class ProGate
@@ -31,11 +31,11 @@ public static class ProGate
     /// A bool that is true only when the source is true AND Pro is active.
     /// </summary>
     public static readonly IValueConverter Bool =
-        new FuncValueConverter<bool, bool>(value => value && Core.IsProEnabled);
+        new FuncValueConverter<bool, bool>(value => value && Core.AreProFeaturesAvailable);
 
     /// <summary>
     /// The source double when Pro is active, otherwise 0.
     /// </summary>
     public static readonly IValueConverter DoubleOrZero =
-        new FuncValueConverter<double, double>(value => Core.IsProEnabled ? value : 0d);
+        new FuncValueConverter<double, double>(value => Core.AreProFeaturesAvailable ? value : 0d);
 }

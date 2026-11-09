@@ -61,7 +61,7 @@ public partial class HdrToneMapperToolControl : PhControl, IToolControl
     public string ToolName => Core.Lang[LangId.Menu_MnuHdrToneMapper];
     public ResxIconId? ToolIcon => ResxIconId.IconToolHdrToneMapper;
     public bool HasSettingsUI => false;
-    public bool IsProPreview => !Core.IsProEnabled;
+    public bool IsProPreview => !Core.AreProFeaturesAvailable;
     public object? Settings => Core.HdrToneMappingConfig;
     public ViewerControl Viewer { get; set; } = null!;
 

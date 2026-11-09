@@ -150,7 +150,7 @@ public partial class ViewerControl
     /// </summary>
     public bool CanReapplyHdrToneMapping()
     {
-        if (!Core.IsProEnabled) return false;
+        if (!Core.AreProFeaturesAvailable) return false;
 
         lock (_lock)
         {
@@ -232,7 +232,7 @@ public partial class ViewerControl
     /// </summary>
     private async Task DoOneHdrToneMapPassAsync()
     {
-        if (!Core.IsProEnabled) return;
+        if (!Core.AreProFeaturesAvailable) return;
 
         for (var attempt = 0; attempt < 2; attempt++)
         {
