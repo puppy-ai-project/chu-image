@@ -473,6 +473,10 @@ public partial class ToolbarControl : PhControl
             PART_BtnMainMenu.SetIconSize(14);
         }
 
+        // A hidden final tool must not leave a trailing separator before the info button.
+        while (primaryList.Count > 0 && primaryList[^1] is ToolbarSeparator)
+            primaryList.RemoveAt(primaryList.Count - 1);
+
         // append to visual tree
         PART_PrimaryGroup.Children.AddRange(primaryList);
         PART_SecondaryGroup.Children.AddRange(secondaryList);

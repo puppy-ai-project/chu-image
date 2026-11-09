@@ -84,15 +84,6 @@
                         Spacing="2" />
                 </Border>
 
-                <!--  Separator Between Primary & Right Groups  -->
-                <Border
-                    Width="1"
-                    Height="16"
-                    Margin="2,0"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource IG_BorderNeutralBrush}"
-                    Opacity="0.5" />
-
                 <!--  Toolbar: Right column Island  -->
                 <Border
                     x:Name="PART_RightIsland"
