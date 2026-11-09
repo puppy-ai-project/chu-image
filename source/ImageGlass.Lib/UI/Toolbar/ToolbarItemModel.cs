@@ -53,7 +53,7 @@ public partial class ToolbarItemModel : PhReactive, IJsonOnDeserialized
     /// <summary>
     /// Gets inner spacing of toolbar item.
     /// </summary>
-    public static double IconSize => Core.Config.ToolbarIconHeight * 0.7;
+    public static double IconSize => Core.Config.ToolbarIconHeight * 0.55;
 
     public static double InnerSpacing => IconSize / 6f; // 4
 

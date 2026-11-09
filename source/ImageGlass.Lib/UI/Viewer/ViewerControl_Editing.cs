@@ -459,6 +459,10 @@ public partial class ViewerControl
     /// </summary>
     public bool RotateImage(double degree, bool requestRerender = true)
     {
+        var scale = _zooming.Factor / Dpi;
+        var oldCenter = new Point(
+            DestRect.X + (BitmapSize.Width / 2 - SrcRect.X) * scale,
+            DestRect.Y + (BitmapSize.Height / 2 - SrcRect.Y) * scale);
         lock (_lock)
         {
             // do nothing for animated images, for a non-right angle, or when there is no source
@@ -482,7 +486,16 @@ public partial class ViewerControl
         // render the transformation
         if (requestRerender)
         {
-            Refresh();
+            // Preserve the displayed image's center and zoom across the dimension swap.
+            CancelMousePan();
+            _mousePanPositionEnabled = true;
+            _zooming.OldFactor = _zooming.Factor;
+            CalculateDrawingRegion();
+            var newCenter = new Point(
+                DestRect.X + (BitmapSize.Width / 2 - SrcRect.X) * scale,
+                DestRect.Y + (BitmapSize.Height / 2 - SrcRect.Y) * scale);
+            PanTo(newCenter.X - oldCenter.X, newCenter.Y - oldCenter.Y, null);
+            InvalidateVisual();
         }
 
         return true;

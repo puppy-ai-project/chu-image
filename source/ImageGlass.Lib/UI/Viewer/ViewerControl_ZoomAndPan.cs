@@ -830,15 +830,8 @@ public partial class ViewerControl
         // AutoZoom
         else
         {
-            // viewbox size >= image size
-            if (widthScale >= 1 && heightScale >= 1)
-            {
-                zoomFactor = 1; // show original size
-            }
-            else
-            {
-                zoomFactor = Math.Min(widthScale, heightScale);
-            }
+            // Leave a little space around newly opened images without enlarging small ones.
+            zoomFactor = Math.Min(1, Math.Min(widthScale, heightScale) * 0.9);
         }
 
         return zoomFactor;

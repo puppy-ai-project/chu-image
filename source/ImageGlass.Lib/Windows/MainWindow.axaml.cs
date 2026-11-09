@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -41,6 +41,12 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindow : PhWindow
 {
+    protected override void OnIgFramelessModeChanged(bool enable)
+    {
+        // The main window provides its own title bar in either layout mode.
+        base.OnIgFramelessModeChanged(true);
+    }
+
     private readonly AppStatusInfo _status;
     private bool _isClosingHandled; // to handle closing for saving configs
 
@@ -203,6 +209,14 @@ public partial class MainWindow : PhWindow
         base.OnKeyDown(e);
         if (e.Handled) return;
 
+        // Escape closes the image info overlay before any other action
+        if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsImageInfoOverlayOpen)
+        {
+            e.Handled = true;
+            PART_MainView.CloseImageInfoOverlay();
+            return;
+        }
+
         // Escape cancels cropping before the application's exit shortcut can run.
         if (new Hotkey(e).IsSame(Key.Escape)
             && PART_MainView.PART_ToolHost.Tool?.ToolId == CropImageToolControl.TOOL_ID)
@@ -304,8 +318,18 @@ public partial class MainWindow : PhWindow
     {
         var items = _status.GetItems();
 
-        VM.Title = AppStatusInfo.ToText(items);
+        var name = Core.ClipboardImage is not null
+            ? Core.Lang[LangId._ClipboardImage]
+            : Path.GetFileName(Core.Photos.CurrentFilePath);
+        VM.Title = name ?? string.Empty;
+        PART_MainView.PART_CustomTitle.Text = VM.Title;
         PART_MainView.PART_ImageInfoOverlay.SetItems(items);
+        PART_MainView.UpdateImageInfoOverlayIfOpen();
+    }
+
+    internal void ToggleImageInfoWindow()
+    {
+        PART_MainView.ToggleImageInfoOverlay();
     }
 
 

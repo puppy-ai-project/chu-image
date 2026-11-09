@@ -10,8 +10,8 @@
     xmlns:viewer="using:ImageGlass.UI.Viewer"
     xmlns:vm="using:ImageGlass.ViewModels"
     mc:Ignorable="d"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
     x:DataType="vm:MainWindowViewModel"
     x:Name="Root">
 
@@ -22,82 +22,605 @@
         <Style Selector="ui|GalleryControl.overlay">
             <Setter Property="Background" Value="Transparent" />
         </Style>
+
+        <!--  macOS Traffic Light Window Buttons  -->
+        <Style Selector="Button.mac-win-btn">
+            <Setter Property="Width" Value="13" />
+            <Setter Property="Height" Value="13" />
+            <Setter Property="CornerRadius" Value="6.5" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderThickness" Value="0.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.08" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.mac-win-btn:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.88)" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.close">
+            <Setter Property="Background" Value="#FF5F56" />
+            <Setter Property="BorderBrush" Value="#E0443E" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.close:pointerover">
+            <Setter Property="Background" Value="#FF7B73" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.minimize">
+            <Setter Property="Background" Value="#FFBD2E" />
+            <Setter Property="BorderBrush" Value="#DEA123" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.minimize:pointerover">
+            <Setter Property="Background" Value="#FFCE54" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.maximize">
+            <Setter Property="Background" Value="#27C93F" />
+            <Setter Property="BorderBrush" Value="#1AAB29" />
+        </Style>
+        <Style Selector="Button.mac-win-btn.maximize:pointerover">
+            <Setter Property="Background" Value="#3DDA53" />
+        </Style>
+
+        <!-- macOS Traffic Light Icons -->
+        <Style Selector="Button.mac-win-btn Path">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="StackPanel:pointerover Button.mac-win-btn Path">
+            <Setter Property="Opacity" Value="0.9" />
+        </Style>
+        <Style Selector="Button.mac-win-btn:pointerover Path">
+            <Setter Property="Opacity" Value="1.0" />
+        </Style>
+
+        <!--  Windows Caption Buttons  -->
+        <Style Selector="Button.win-caption-btn">
+            <Setter Property="Width" Value="46" />
+            <Setter Property="Height" Value="NaN" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="Button.win-caption-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralHoverBrush}" />
+        </Style>
+        <Style Selector="Button.win-caption-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralPressedBrush}" />
+        </Style>
+        <Style Selector="Button.win-caption-btn-close">
+            <Setter Property="Width" Value="46" />
+            <Setter Property="Height" Value="NaN" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="Button.win-caption-btn-close:pointerover">
+            <Setter Property="Background" Value="#E81123" />
+        </Style>
+        <Style Selector="Button.win-caption-btn-close:pointerover Line">
+            <Setter Property="Stroke" Value="White" />
+        </Style>
+        <Style Selector="Button.win-caption-btn-close:pressed">
+            <Setter Property="Background" Value="#C42B1C" />
+        </Style>
+        <Style Selector="Button.win-caption-btn-close:pressed Line">
+            <Setter Property="Stroke" Value="White" />
+        </Style>
     </ui:PhControl.Styles>
 
-    <Grid x:Name="PART_Layout" RowDefinitions="Auto, *, Auto, Auto">
-
-        <!--  Toolbar  -->
-        <ui:ToolbarControl
-            x:Name="PART_Toolbar"
+    <Grid RowDefinitions="Auto,*">
+        <!--  Custom Title Bar  -->
+        <Border
+            x:Name="PART_CustomTitleBarBorder"
             Grid.Row="0"
-            Background="{x:Null}"
-            DataContext="{CompiledBinding ToolbarVM}"
-            IsContentVisible="{CompiledBinding ShowToolbar, Source={x:Static cm:Core.Config}}"
-            ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"
-            ZIndex="90" />
+            Height="42"
+            Background="{DynamicResource IG_ThemeBackgroundBrush}"
+            BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource IG_BorderNeutralBrush}">
+            <Grid
+                x:Name="PART_CustomTitleBar"
+                ColumnDefinitions="Auto,*,Auto"
+                PointerPressed="TitleBar_PointerPressed">
 
+                <!--  Left Group: macOS Traffic Lights OR Windows App Icon + Title  -->
+                <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
 
-        <!--  Viewer  -->
-        <Grid
-            x:Name="PART_ViewerWrapper"
-            Grid.Row="1"
-            RowDefinitions="*, Auto">
-            <Border Background="{DynamicResource IG_ViewerBackgroundBrush}">
-                <viewer:ViewerControl
-                    x:Name="PART_Viewer"
-                    Grid.Row="0"
-                    CheckerboardMode="{CompiledBinding CheckerboardMode, Source={x:Static cm:Core.Config}}"
-                    EnableDebug="{CompiledBinding EnableDebug, Source={x:Static cm:Core.Config}}"
-                    EnableFreePan="{CompiledBinding EnableFreePan, Source={x:Static cm:Core.Config}, Converter={x:Static cm:ProGate.Bool}}"
-                    EnableHdrRendering="{CompiledBinding EnableHdrToneMapping, Source={x:Static cm:Core.Config}}"
-                    EnableNavButtons="{CompiledBinding EnableNavigationButtons, Source={x:Static cm:Core.Config}}"
-                    InterpolationScaleDown="{CompiledBinding ImageInterpolationScaleDown, Source={x:Static cm:Core.Config}}"
-                    InterpolationScaleUp="{CompiledBinding ImageInterpolationScaleUp, Source={x:Static cm:Core.Config}}"
-                    IsWindowFitMode="{CompiledBinding EnableWindowFit, Source={x:Static cm:Core.Config}}"
-                    PanMargin="{CompiledBinding PanMargin, Source={x:Static cm:Core.Config}, Converter={x:Static cm:ProGate.DoubleOrZero}}"
-                    PanSpeed="{CompiledBinding PanSpeed, Source={x:Static cm:Core.Config}}"
-                    ScrollbarMode="{CompiledBinding ViewerScrollbarMode, Source={x:Static cm:Core.Config}}"
-                    ZoomLevels="{CompiledBinding ZoomLevels, Source={x:Static cm:Core.Config}}"
-                    ZoomMode="{CompiledBinding ZoomMode, Source={x:Static cm:Core.Config}}"
-                    ZoomSpeed="{CompiledBinding ZoomSpeed, Source={x:Static cm:Core.Config}}">
-                    <Panel>
-                        <ui:ImageInfoOverlayControl x:Name="PART_ImageInfoOverlay" />
-                        <viewer:SlideshowCountdownOverlay x:Name="PART_SlideshowCountdown" IsHitTestVisible="False" />
-                        <viewer:NavButtonsOverlay IsVisible="{CompiledBinding EnableNavigationButtons, Source={x:Static cm:Core.Config}}" />
+                    <!-- macOS Traffic Lights (Close ✕, Minimize —, Maximize +) -->
+                    <StackPanel
+                        x:Name="PART_MacButtons"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="8"
+                        Margin="14,0,12,0">
+                        <Button Classes="mac-win-btn close" Background="#FF5F56" Click="CloseWindow_Click" ToolTip.Tip="关闭">
+                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#FF5F56">
+                            <Path
+                                Width="7"
+                                Height="7"
+                                Data="M 1,1 L 6,6 M 6,1 L 1,6"
+                                Stroke="#400000"
+                                StrokeThickness="1.2"
+                                StrokeLineCap="Round"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                                                    </Border>
+                        </Button>
+                        <Button Classes="mac-win-btn minimize" Background="#FFBD2E" Click="MinimizeWindow_Click" ToolTip.Tip="最小化">
+                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#FFBD2E">
+                            <Path
+                                Width="7"
+                                Height="7"
+                                Data="M 0.5,3.5 L 6.5,3.5"
+                                Stroke="#563D00"
+                                StrokeThickness="1.2"
+                                StrokeLineCap="Round"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                                                    </Border>
+                        </Button>
+                        <Button Classes="mac-win-btn maximize" Background="#27C93F" Click="MaximizeWindow_Click" ToolTip.Tip="最大化">
+                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#27C93F">
+                            <Path
+                                Width="6"
+                                Height="6"
+                                Data="M 0,2.5 L 3.5,0 L 3.5,2.5 Z M 6,3.5 L 2.5,6 L 2.5,3.5 Z"
+                                Fill="#004D1A"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                                                    </Border>
+                        </Button>
+                    </StackPanel>
 
-                        <!--  Above NavButtonsOverlay, whose full-size hit area blocks text selection  -->
-                        <ui:MessageOverlayControl x:Name="PART_Message" />
-                        <ui:MotionPhotoOverlayControl x:Name="PART_MotionOverlay" />
-                    </Panel>
-                </viewer:ViewerControl>
-            </Border>
+                    <!-- Windows App Icon -->
+                    <Image
+                        x:Name="PART_WinAppIcon"
+                        Width="16"
+                        Height="16"
+                        Margin="12,0,8,0"
+                        VerticalAlignment="Center"
+                        Source="avares://ImageGlass.Lib/Assets/icon256.ico" />
 
-            <tool:ToolHostControl
-                x:Name="PART_ToolHost"
+                    <!-- Window Title / Current File Name -->
+                    <Border Background="Transparent" VerticalAlignment="Stretch">
+                    <TextBlock
+                        x:Name="PART_CustomTitle"
+                        VerticalAlignment="Center"
+                        Margin="4,0,12,0"
+                        FontSize="12"
+                        FontWeight="Medium"
+                        Foreground="{DynamicResource IG_ThemeForegroundBrush}"
+                        Opacity="0.88"
+                        TextTrimming="CharacterEllipsis"
+                        MaxWidth="280"
+                        IsHitTestVisible="False" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Column 1: Embedded Modern Toolbar (Expanded, full buttons visible) -->
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto"
+                              HorizontalContentAlignment="Right"
+                              VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
+                <ui:ToolbarControl
+                    x:Name="PART_Toolbar"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="{x:Null}"
+                    DataContext="{CompiledBinding ToolbarVM}"
+                    IsContentVisible="{CompiledBinding ShowToolbar, Source={x:Static cm:Core.Config}}"
+                    ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"
+                    Margin="0,0,10,0" />
+                </ScrollViewer>
+
+                <!-- Column 2: Windows Caption Buttons (Minimize, Maximize/Restore, Close) -->
+                <StackPanel
+                    x:Name="PART_WinButtons"
+                    Grid.Column="2"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Stretch">
+                    <Button
+                        x:Name="PART_WinBtnMinimize"
+                        Classes="win-caption-btn"
+                        Click="MinimizeWindow_Click"
+                        ToolTip.Tip="最小化">
+                        <Panel Width="10" Height="10">
+                            <Line
+                                StartPoint="0,5"
+                                EndPoint="10,5"
+                                Stroke="{DynamicResource TextControlForeground}"
+                                StrokeThickness="1" />
+                        </Panel>
+                    </Button>
+                    <Button
+                        x:Name="PART_WinBtnMaximize"
+                        Classes="win-caption-btn"
+                        Click="MaximizeWindow_Click"
+                        ToolTip.Tip="最大化">
+                        <Panel Width="10" Height="10">
+                            <Rectangle
+                                x:Name="PART_PathMaximize"
+                                Width="10"
+                                Height="10"
+                                Stroke="{DynamicResource TextControlForeground}"
+                                StrokeThickness="1" />
+                            <Path
+                                x:Name="PART_PathRestore"
+                                Width="10"
+                                Height="10"
+                                Data="M 2,0 H 10 V 8 H 8 M 0,2 H 8 V 10 H 0 Z"
+                                IsVisible="False"
+                                Stroke="{DynamicResource TextControlForeground}"
+                                StrokeThickness="1" />
+                        </Panel>
+                    </Button>
+                    <Button
+                        x:Name="PART_WinBtnClose"
+                        Classes="win-caption-btn-close"
+                        Click="CloseWindow_Click"
+                        ToolTip.Tip="关闭">
+                        <Panel Width="10" Height="10">
+                            <Line
+                                StartPoint="0,0"
+                                EndPoint="10,10"
+                                Stroke="{DynamicResource TextControlForeground}"
+                                StrokeThickness="1.1" />
+                            <Line
+                                StartPoint="10,0"
+                                EndPoint="0,10"
+                                Stroke="{DynamicResource TextControlForeground}"
+                                StrokeThickness="1.1" />
+                        </Panel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!--  Main Content Area (Viewer & Gallery)  -->
+        <Grid x:Name="PART_Layout" Grid.Row="1" RowDefinitions="Auto, *, Auto, Auto">
+            <!--  Viewer  -->
+            <Grid
+                x:Name="PART_ViewerWrapper"
                 Grid.Row="1"
-                Background="{DynamicResource IG_ToolHostBackgroundBrush}" />
+                RowDefinitions="*, Auto">
+                <Border Background="{DynamicResource IG_ViewerBackgroundBrush}">
+                    <viewer:ViewerControl
+                        x:Name="PART_Viewer"
+                        Grid.Row="0"
+                        CheckerboardMode="{CompiledBinding CheckerboardMode, Source={x:Static cm:Core.Config}}"
+                        EnableDebug="{CompiledBinding EnableDebug, Source={x:Static cm:Core.Config}}"
+                        EnableFreePan="{CompiledBinding EnableFreePan, Source={x:Static cm:Core.Config}, Converter={x:Static cm:ProGate.Bool}}"
+                        EnableHdrRendering="{CompiledBinding EnableHdrToneMapping, Source={x:Static cm:Core.Config}}"
+                        EnableNavButtons="False"
+                        InterpolationScaleDown="{CompiledBinding ImageInterpolationScaleDown, Source={x:Static cm:Core.Config}}"
+                        InterpolationScaleUp="{CompiledBinding ImageInterpolationScaleUp, Source={x:Static cm:Core.Config}}"
+                        IsWindowFitMode="{CompiledBinding EnableWindowFit, Source={x:Static cm:Core.Config}}"
+                        PanMargin="{CompiledBinding PanMargin, Source={x:Static cm:Core.Config}, Converter={x:Static cm:ProGate.DoubleOrZero}}"
+                        PanSpeed="{CompiledBinding PanSpeed, Source={x:Static cm:Core.Config}}"
+                        ScrollbarMode="{CompiledBinding ViewerScrollbarMode, Source={x:Static cm:Core.Config}}"
+                        ZoomLevels="{CompiledBinding ZoomLevels, Source={x:Static cm:Core.Config}}"
+                        ZoomMode="{CompiledBinding ZoomMode, Source={x:Static cm:Core.Config}}"
+                        ZoomSpeed="{CompiledBinding ZoomSpeed, Source={x:Static cm:Core.Config}}">
+                        <Panel>
+                            <ui:ImageInfoOverlayControl x:Name="PART_ImageInfoOverlay" />
+                            <viewer:SlideshowCountdownOverlay x:Name="PART_SlideshowCountdown" IsHitTestVisible="False" />
+
+                            <!--  Above NavButtonsOverlay, whose full-size hit area blocks text selection  -->
+                            <ui:MessageOverlayControl x:Name="PART_Message" />
+                            <ui:MotionPhotoOverlayControl x:Name="PART_MotionOverlay" />
+                        </Panel>
+                    </viewer:ViewerControl>
+                </Border>
+
+                <!--  Tool host  -->
+                <tool:ToolHostControl
+                    x:Name="PART_ToolHost"
+                    Grid.Row="1"
+                    Background="{DynamicResource IG_ToolHostBackgroundBrush}" />
+            </Grid>
+
+            <!--  Gallery  -->
+            <ui:GalleryControl
+                x:Name="PART_Gallery"
+                Grid.Row="2"
+                IsContentVisible="{CompiledBinding ShowGallery, Source={x:Static cm:Core.Config}}"
+                ItemsSource="{CompiledBinding Items, Source={x:Static cm:Core.Photos}}"
+                ViewMode="FilmStrip"
+                ZIndex="80" />
+
+            <!--  Gallery resizer  -->
+            <ui:PhGridSplitter
+                x:Name="PART_GalleryResizer"
+                Grid.Row="3"
+                CornerRadius="1"
+                DragCompleted="PART_GalleryResizer_DragCompleted"
+                Focusable="False"
+                IsVisible="False"
+                ResizeDirection="Columns" />
         </Grid>
 
-
-        <!--  Gallery  -->
-        <ui:GalleryControl
-            x:Name="PART_Gallery"
-            Grid.Row="2"
-            IsContentVisible="{CompiledBinding ShowGallery, Source={x:Static cm:Core.Config}}"
-            ItemsSource="{CompiledBinding Items, Source={x:Static cm:Core.Photos}}"
-            ViewMode="FilmStrip"
-            ZIndex="80" />
-
-
-        <ui:PhGridSplitter
-            x:Name="PART_GalleryResizer"
-            Grid.Row="3"
-            CornerRadius="1"
-            DragCompleted="PART_GalleryResizer_DragCompleted"
-            Focusable="False"
+        <!--  ======================================================  -->
+        <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层)               -->
+        <!--  ======================================================  -->
+        <Grid
+            x:Name="PART_ImageInfoModal"
+            Grid.Row="0"
+            Grid.RowSpan="2"
             IsVisible="False"
-            ResizeDirection="Columns" />
+            ZIndex="1000">
 
+            <!--  Frosted Mask / Backdrop (点击背景关闭)  -->
+            <Border
+                x:Name="PART_ImageInfoBackdrop"
+                Background="#66000000"
+                PointerPressed="ImageInfoBackdrop_PointerPressed" />
+
+            <!--  Centered Floating Metadata Card  -->
+            <Border
+                MaxWidth="500"
+                Margin="12"
+                MaxHeight="600"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Background="{DynamicResource IG_ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                BorderThickness="1"
+                BoxShadow="0 14 40 0 #50000000"
+                CornerRadius="16"
+                ClipToBounds="True">
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!--  Card Header  -->
+                    <Border
+                        Grid.Row="0"
+                        Padding="18,14"
+                        BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                        BorderThickness="0,0,0,1">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Path
+                                    Width="18"
+                                    Height="18"
+                                    Data="{StaticResource IconInfo}"
+                                    Fill="{DynamicResource PhAccentFill}"
+                                    Stretch="Uniform" />
+                                <TextBlock
+                                    FontSize="15"
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    Text="图片信息" />
+                            </StackPanel>
+
+                            <!-- Copy Button & Close Button -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                                <Button
+                                    x:Name="PART_BtnCopyImageInfo"
+                                    Padding="10,5"
+                                    Click="BtnCopyImageInfo_Click"
+                                    Background="Transparent"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                                    CornerRadius="6"
+                                    ToolTip.Tip="复制全部图片信息">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <Path
+                                            Width="12"
+                                            Height="12"
+                                            VerticalAlignment="Center"
+                                            Data="{StaticResource IconCopy}"
+                                            Fill="{DynamicResource TextControlForeground}"
+                                            Stretch="Uniform" />
+                                        <TextBlock
+                                            x:Name="PART_TxtCopyImageInfo"
+                                            FontSize="11"
+                                            VerticalAlignment="Center"
+                                            Text="复制" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button
+                                    Padding="6"
+                                    Click="BtnCloseImageInfo_Click"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    CornerRadius="6">
+                                    <Path
+                                        Width="12"
+                                        Height="12"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Data="{StaticResource IconClose}"
+                                        Fill="{DynamicResource TextControlForeground}"
+                                        Stretch="Uniform" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!--  Card Body (Scrollable)  -->
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="18,14" Spacing="14">
+
+                            <!-- Overview Card (文件名与徽标) -->
+                            <Border
+                                Padding="14,12"
+                                Background="{DynamicResource IG_BackgroundNeutralBrush}"
+                                CornerRadius="10">
+                                <StackPanel Spacing="10">
+                                    <SelectableTextBlock
+                                        x:Name="PART_InfoFileName"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        TextWrapping="Wrap" />
+
+                                    <!-- Chips / Badges Row -->
+                                    <WrapPanel Orientation="Horizontal">
+                                        <!-- Format Chip -->
+                                        <Border x:Name="PART_ChipFormat" Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource PhAccentFill}" CornerRadius="6">
+                                            <TextBlock x:Name="PART_InfoFormatText" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentButtonForeground}" />
+                                        </Border>
+                                        <!-- Dimensions Chip -->
+                                        <Border Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
+                                            <TextBlock x:Name="PART_InfoDimensionsText" FontSize="11" FontWeight="Medium" />
+                                        </Border>
+                                        <!-- Megapixels Chip -->
+                                        <Border x:Name="PART_ChipMegapixels" Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
+                                            <TextBlock x:Name="PART_InfoMegapixelsText" FontSize="11" FontWeight="Medium" />
+                                        </Border>
+                                        <!-- File Size Chip -->
+                                        <Border Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
+                                            <TextBlock x:Name="PART_InfoFileSizeText" FontSize="11" FontWeight="Medium" />
+                                        </Border>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- EXIF / Shooting Parameters (拍照参数, if available) -->
+                            <StackPanel x:Name="PART_SectionExif" Spacing="8">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="拍摄参数 (EXIF)" />
+                                <Border Padding="12" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Camera Model -->
+                                        <TextBlock x:Name="PART_InfoCameraModel" FontSize="13" FontWeight="Medium" TextWrapping="Wrap" />
+                                        <!-- Exposure 4-col Grid -->
+                                        <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="光圈" />
+                                                <TextBlock x:Name="PART_InfoAperture" FontSize="13" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="快门" />
+                                                <TextBlock x:Name="PART_InfoShutter" FontSize="13" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Spacing="2">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="感光度" />
+                                                <TextBlock x:Name="PART_InfoIso" FontSize="13" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="3" Spacing="2">
+                                                <TextBlock FontSize="10" Opacity="0.6" Text="焦距" />
+                                                <TextBlock x:Name="PART_InfoFocalLength" FontSize="13" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Image Details (色彩、分辨率、帧数) -->
+                            <StackPanel Spacing="8">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="图像规格" />
+                                <Border Padding="12,8" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Color Space -->
+                                        <Grid ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="色彩空间" />
+                                            <SelectableTextBlock x:Name="PART_InfoColorSpace" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                        <!-- DPI -->
+                                        <Grid ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="分辨率" />
+                                            <SelectableTextBlock x:Name="PART_InfoDpi" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                        <!-- Frames -->
+                                        <Grid x:Name="PART_RowFrames" ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="帧数" />
+                                            <SelectableTextBlock x:Name="PART_InfoFrames" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                        <!-- HDR / Live -->
+                                        <Grid x:Name="PART_RowHdr" ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="特性" />
+                                            <SelectableTextBlock x:Name="PART_InfoFeatures" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Storage & Dates (时间与路径) -->
+                            <StackPanel Spacing="8">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="时间与存储" />
+                                <Border Padding="12,8" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
+                                    <StackPanel Spacing="8">
+                                        <!-- Date Taken / Created -->
+                                        <Grid ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="拍摄/创建" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateCreated" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                        <!-- Date Modified -->
+                                        <Grid ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="修改时间" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateModified" Grid.Column="1" FontSize="12" />
+                                        </Grid>
+                                        <!-- File Path -->
+                                        <Grid ColumnDefinitions="100, *">
+                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="文件路径" />
+                                            <SelectableTextBlock x:Name="PART_InfoFilePath" Grid.Column="1" FontSize="11" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!--  Card Footer  -->
+                    <Border
+                        Grid.Row="2"
+                        Padding="18,10"
+                        BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                        BorderThickness="0,1,0,0">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Button
+                                x:Name="PART_BtnOpenFolder"
+                                Grid.Column="0"
+                                Padding="8,5"
+                                Click="BtnOpenFolder_Click"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Path
+                                        Width="14"
+                                        Height="14"
+                                        VerticalAlignment="Center"
+                                        Data="{StaticResource IconFolderOpen}"
+                                        Fill="{DynamicResource TextControlForeground}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        FontSize="12"
+                                        VerticalAlignment="Center"
+                                        Text="打开所在文件夹" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button
+                                Grid.Column="1"
+                                Padding="16,6"
+                                Click="BtnCloseImageInfo_Click"
+                                Classes="accent"
+                                CornerRadius="6">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Text="完成" />
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 
 </ui:PhControl>

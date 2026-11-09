@@ -37,6 +37,8 @@ namespace ImageGlass.UI;
 
 public partial class ToolbarControl : PhControl
 {
+    private void ImageInfo_Click(object? sender, RoutedEventArgs e) => App.MainWindow.ToggleImageInfoWindow();
+
     public ToolbarControlModel VM => (ToolbarControlModel)DataContext!;
 
 
@@ -50,7 +52,6 @@ public partial class ToolbarControl : PhControl
     public readonly List<ToolbarItemModel> _groupOverflowItemModels = [];
     private readonly List<Control> _itemElements = [];
     private double _lastOverflowWidth;
-    private double _overflowSlotWidth; // sticky width of the overflow button + spacing
     private bool _overflowUpdateQueued;
 
 
@@ -454,6 +455,24 @@ public partial class ToolbarControl : PhControl
         }
 
 
+        // Put the standard actual-size icon third, without duplicating a configured button.
+        var actualSize = primaryList.Concat(secondaryList).OfType<ToolbarButton>()
+            .FirstOrDefault(b => b.VM.Id == "Btn_ActualSize");
+        if (actualSize is null)
+        {
+            var model = Config.BuiltInToolbarItems.First(i => i.Id == "Btn_ActualSize");
+            actualSize = new ToolbarButton { DataContext = model, Focusable = false };
+            actualSize.Click += ToolbarButton_Click;
+            actualSize.PropertyChanged += ToolbarItem_PropertyChanged;
+            _itemElements.Add(actualSize);
+        }
+        else
+        {
+            primaryList.Remove(actualSize);
+            secondaryList.Remove(actualSize);
+        }
+        primaryList.Insert(Math.Min(2, primaryList.Count), actualSize);
+
         // append to visual tree
         PART_PrimaryGroup.Children.AddRange(primaryList);
         PART_SecondaryGroup.Children.AddRange(secondaryList);
@@ -464,84 +483,24 @@ public partial class ToolbarControl : PhControl
 
 
     /// <summary>
-    /// Recomputes which primary items overflow and whether the primary group is centered. All width
-    /// math uses stable inputs (the container width + sticky per-item rendered widths), and the
-    /// self-toggled overflow-button slot is excluded, so the result never flip-flops between passes.
+    /// Ensures all toolbar items remain visible on the title bar without collapsing into the overflow menu.
     /// </summary>
     private void HandleOverflow()
     {
-        // use the control's own width (reliably current in the layout/size events) rather than the
-        // child PART_Root.Bounds, which can lag a frame behind on full-screen exit and report the
-        // stale (full-screen) width -> primary buttons stay centered over a small window (overlap)
-        var rootWidth = Bounds.Width;
-        if (rootWidth <= 0.5) return; // not laid out yet
-
-        var spacing = ToolbarControlModel.ItemSpacing;
-        var iconSize = ToolbarItemModel.IconSize;
-        var padding = PART_PrimaryIsland.Padding.Left + PART_PrimaryIsland.Padding.Right
-            + PART_RightIsland.Padding.Left + PART_RightIsland.Padding.Right
-            + PART_Root.Margin.Left + PART_Root.Margin.Right;
-
-        // sticky overflow-button slot (width + spacing). Captured while visible so toggling its
-        // visibility below never feeds back into the width math.
-        if (PART_BtnOverflowMenu.IsVisible && PART_BtnOverflowMenu.Bounds.Width > 0)
-        {
-            _overflowSlotWidth = PART_BtnOverflowMenu.Bounds.Width + spacing;
-        }
-        var overflowSlot = _overflowSlotWidth > 0 ? _overflowSlotWidth : iconSize + spacing;
-
-        // right-group width EXCLUDING the overflow button -> stable regardless of overflow state
-        var rightWidth = PART_RightGroup.Bounds.Width
-            - (PART_BtnOverflowMenu.IsVisible ? overflowSlot : 0);
-        if (rightWidth < 0) rightWidth = 0;
-
-        // natural width of all primary items (sticky widths; spacing only between items)
         var primaryCount = _groupPrimaryItemModels.Count;
-        var primaryNaturalWidth = 0d;
+        if (primaryCount == 0) return;
+
+        // Keep all items fully visible
         foreach (var item in _groupPrimaryItemModels)
         {
-            if (_metadataMap.TryGetValue(item.SourceIndex, out var m)) primaryNaturalWidth += m.RenderedWidth;
+            item.IsNotOverflow = true;
         }
-        primaryNaturalWidth += spacing * Math.Max(0, primaryCount - 1);
-
-        // wait until the items have a measured width (avoids an early 0-width pass)
-        if (primaryCount > 0 && primaryNaturalWidth <= 0) return;
-
-
-        // 1. does everything fit without needing the overflow button?
-        var availableNoBtn = rootWidth - padding - rightWidth;
-        var fitsAll = primaryNaturalWidth <= availableNoBtn;
-
-        // reserve the overflow-button slot ONLY when overflowing, so a non-overflowing toolbar
-        // isn't pushed into overflow by reserving space it doesn't need
-        var availableWidth = availableNoBtn - (fitsAll ? 0 : overflowSlot);
-
-
-        // 2. mark overflow items (from the end)
         _groupOverflowItemModels.Clear();
-        var usedWidth = 0d;
-        for (var i = 0; i < primaryCount; i++)
-        {
-            var item = _groupPrimaryItemModels[i];
-            if (!_metadataMap.TryGetValue(item.SourceIndex, out var meta)) continue;
+        PART_BtnOverflowMenu.IsVisible = false;
 
-            usedWidth += meta.RenderedWidth + (i > 0 ? spacing : 0);
-            item.IsNotOverflow = usedWidth <= availableWidth;
-            if (!item.IsNotOverflow) _groupOverflowItemModels.Add(item);
-        }
-        var hasOverflow = _groupOverflowItemModels.Count > 0;
-        PART_BtnOverflowMenu.IsVisible = hasOverflow;
-
-
-        // 3. center only when nothing overflows AND the centered group clears the right group;
-        // otherwise left-align for maximum space
-        var centeredGap = rootWidth / 2 - primaryNaturalWidth / 2 - rightWidth - iconSize;
-        var align = (!hasOverflow && centeredGap > 0)
-            ? Avalonia.Layout.HorizontalAlignment.Center
-            : Avalonia.Layout.HorizontalAlignment.Left;
-        PART_PrimaryIsland.HorizontalAlignment = align;
-        PART_PrimaryGroup.HorizontalAlignment = align;
-        PART_PrimaryIsland.IsVisible = primaryCount > 0;
+        PART_PrimaryIsland.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+        PART_PrimaryGroup.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+        PART_PrimaryIsland.IsVisible = true;
     }
 
 

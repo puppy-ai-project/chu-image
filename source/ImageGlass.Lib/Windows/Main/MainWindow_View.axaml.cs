@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
@@ -42,6 +43,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,6 +51,260 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindowView : PhControl
 {
+    private void CloseWindow_Click(object? sender, RoutedEventArgs e) => App.MainWindow.Close();
+
+    private void MinimizeWindow_Click(object? sender, RoutedEventArgs e) =>
+        App.MainWindow.WindowState = WindowState.Minimized;
+
+    private void MaximizeWindow_Click(object? sender, RoutedEventArgs e) =>
+        App.MainWindow.WindowState = App.MainWindow.WindowState == WindowState.Maximized
+            ? WindowState.Normal : WindowState.Maximized;
+
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.Source is not Control source || source is Button) return;
+        if (!e.GetCurrentPoint(PART_CustomTitleBar).Properties.IsLeftButtonPressed) return;
+        if (e.ClickCount == 2)
+            MaximizeWindow_Click(sender, e);
+        else
+            App.MainWindow.BeginMoveDrag(e);
+        e.Handled = true;
+    }
+
+    private void InitTitleBarPlatform()
+    {
+        var isMac = BHelper.OS == OSType.Mac;
+        PART_MacButtons.IsVisible = isMac;
+        PART_WinButtons.IsVisible = !isMac;
+        PART_WinAppIcon.IsVisible = BHelper.OS == OSType.Windows;
+
+        UpdateWindowStateButtons();
+
+        if (App.MainWindow is not null)
+        {
+            App.MainWindow.PropertyChanged += MainWindow_PropertyChanged;
+        }
+    }
+
+    private void MainWindow_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == Window.WindowStateProperty)
+        {
+            UpdateWindowStateButtons();
+        }
+    }
+
+    private void UpdateWindowStateButtons()
+    {
+        if (App.MainWindow is null) return;
+        var isMaximized = App.MainWindow.WindowState == WindowState.Maximized;
+        PART_PathMaximize.IsVisible = !isMaximized;
+        PART_PathRestore.IsVisible = isMaximized;
+        ToolTip.SetTip(PART_WinBtnMaximize, isMaximized ? "向下还原" : "最大化");
+    }
+
+
+    #region Image Info Overlay
+
+    private string _cachedImageInfoSummary = string.Empty;
+
+    public bool IsImageInfoOverlayOpen => PART_ImageInfoModal.IsVisible;
+
+    public void ToggleImageInfoOverlay()
+    {
+        if (IsImageInfoOverlayOpen)
+        {
+            CloseImageInfoOverlay();
+        }
+        else
+        {
+            OpenImageInfoOverlay();
+        }
+    }
+
+    public void OpenImageInfoOverlay()
+    {
+        RefreshImageInfoContent();
+        PART_ImageInfoModal.IsVisible = true;
+    }
+
+    public void CloseImageInfoOverlay()
+    {
+        PART_ImageInfoModal.IsVisible = false;
+    }
+
+    public void UpdateImageInfoOverlayIfOpen()
+    {
+        if (IsImageInfoOverlayOpen)
+        {
+            RefreshImageInfoContent();
+        }
+    }
+
+    private void ImageInfoBackdrop_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        CloseImageInfoOverlay();
+        e.Handled = true;
+    }
+
+    private void BtnCloseImageInfo_Click(object? sender, RoutedEventArgs e)
+    {
+        CloseImageInfoOverlay();
+    }
+
+    private async void BtnCopyImageInfo_Click(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_cachedImageInfoSummary)) return;
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is not null)
+        {
+            await clipboard.SetTextAsync(_cachedImageInfoSummary);
+            PART_TxtCopyImageInfo.Text = "已复制 ✓";
+            _ = Task.Delay(1500).ContinueWith(_ =>
+            {
+                Dispatcher.UIThread.Post(() => PART_TxtCopyImageInfo.Text = "复制");
+            });
+        }
+    }
+
+    private void BtnOpenFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        var folder = Core.Photos.Current?.Metadata?.FolderPath;
+        if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
+        {
+            BHelper.OpenFolderPath(folder);
+        }
+    }
+
+    private void RefreshImageInfoContent()
+    {
+        var photo = Core.Photos.Current;
+        var meta = photo?.Metadata;
+        var summary = new StringBuilder();
+
+        if (meta is null || Core.ClipboardImage is not null)
+        {
+            var isClip = Core.ClipboardImage is not null;
+            var name = isClip ? Core.Lang[LangId._ClipboardImage] : "未打开图片";
+            PART_InfoFileName.Text = name;
+            PART_ChipFormat.IsVisible = isClip;
+            PART_InfoFormatText.Text = "剪贴板";
+            var sizeStr = isClip && Core.ClipboardImage is { } clipboardImage
+                ? $"{clipboardImage.Width} × {clipboardImage.Height} 像素" : "-";
+            PART_InfoDimensionsText.Text = sizeStr;
+            PART_ChipMegapixels.IsVisible = false;
+            PART_InfoFileSizeText.Text = "-";
+            PART_SectionExif.IsVisible = false;
+            PART_InfoColorSpace.Text = "-";
+            PART_InfoDpi.Text = "-";
+            PART_RowFrames.IsVisible = false;
+            PART_RowHdr.IsVisible = false;
+            PART_InfoDateCreated.Text = "-";
+            PART_InfoDateModified.Text = "-";
+            PART_InfoFilePath.Text = isClip ? Core.Lang[LangId._ClipboardImage] : "-";
+            PART_BtnOpenFolder.IsEnabled = false;
+            _cachedImageInfoSummary = name;
+            return;
+        }
+
+        // 1. File name & format
+        var ext = meta.FileExtension.TrimStart('.').ToUpperInvariant();
+        PART_InfoFileName.Text = meta.FileName;
+        PART_ChipFormat.IsVisible = !string.IsNullOrWhiteSpace(ext);
+        PART_InfoFormatText.Text = string.IsNullOrWhiteSpace(ext) ? "IMG" : ext;
+
+        // 2. Dimensions & Megapixels
+        var w = meta.Width > 0 ? meta.Width : meta.OriginalWidth;
+        var h = meta.Height > 0 ? meta.Height : meta.OriginalHeight;
+        PART_InfoDimensionsText.Text = (w > 0 && h > 0) ? $"{w} × {h} 像素" : "-";
+        if (w > 0 && h > 0)
+        {
+            var mp = (w * (double)h) / 1000000.0;
+            PART_ChipMegapixels.IsVisible = true;
+            PART_InfoMegapixelsText.Text = mp >= 1.0 ? $"{mp:F1} MP" : $"{mp:F2} MP";
+        }
+        else
+        {
+            PART_ChipMegapixels.IsVisible = false;
+        }
+
+        // 3. File size
+        PART_InfoFileSizeText.Text = meta.FileSizeFormatted;
+
+        // 4. EXIF Section
+        var hasExif = !string.IsNullOrWhiteSpace(meta.ExifModel)
+            || meta.ExifFNumber.HasValue
+            || meta.ExifExposureTime is > 0
+            || meta.ExifISOSpeed.HasValue
+            || meta.ExifFocalLength.HasValue;
+
+        PART_SectionExif.IsVisible = hasExif;
+        if (hasExif)
+        {
+            PART_InfoCameraModel.Text = !string.IsNullOrWhiteSpace(meta.ExifModel)
+                ? $"📷  {meta.ExifModel}"
+                : "📷  相机参数";
+
+            PART_InfoAperture.Text = meta.ExifFNumber.HasValue ? $"f/{meta.ExifFNumber.Value:0.#}" : "-";
+            PART_InfoShutter.Text = meta.ExifExposureTime is > 0
+                ? (meta.ExifExposureTime.Value < 1 ? $"1/{Math.Round(1.0 / meta.ExifExposureTime.Value)}s" : $"{meta.ExifExposureTime.Value:0.#}s")
+                : "-";
+            PART_InfoIso.Text = meta.ExifISOSpeed.HasValue ? $"ISO {meta.ExifISOSpeed.Value}" : "-";
+            PART_InfoFocalLength.Text = meta.ExifFocalLength.HasValue ? $"{meta.ExifFocalLength.Value:0.#}mm" : "-";
+        }
+
+        // 5. Image Specs
+        PART_InfoColorSpace.Text = !string.IsNullOrWhiteSpace(meta.ColorProfileName)
+            ? meta.ColorProfileName
+            : meta.ColorSpace != ImageMagick.ColorSpace.Undefined ? meta.ColorSpace.ToString() : "-";
+
+        var dpi = meta.DpiX > 0 ? $"{Math.Round(meta.DpiX)} DPI" : "-";
+        PART_InfoDpi.Text = dpi;
+
+        var hasFrames = meta.FrameCount > 1;
+        PART_RowFrames.IsVisible = hasFrames;
+        PART_InfoFrames.Text = hasFrames ? $"{meta.FrameCount} 帧" : "单帧";
+
+        var isHdr = meta.IsHdr;
+        var isLive = meta.IsLivePhoto;
+        PART_RowHdr.IsVisible = isHdr || isLive;
+        PART_InfoFeatures.Text = isHdr && isLive ? "HDR • 实况照片 (Live Photo)" : (isHdr ? "HDR 高动态范围" : (isLive ? "实况照片 (Live Photo)" : "-"));
+
+        // 6. Dates & Storage
+        PART_InfoDateCreated.Text = !string.IsNullOrWhiteSpace(meta.ExifDateTimeOriginalFormatted)
+            ? meta.ExifDateTimeOriginalFormatted
+            : meta.FileCreationTimeFormatted;
+        PART_InfoDateModified.Text = meta.FileLastWriteTimeFormatted;
+        PART_InfoFilePath.Text = meta.FilePath;
+        PART_BtnOpenFolder.IsEnabled = Directory.Exists(meta.FolderPath);
+
+        // 7. Summary for Copy
+        summary.AppendLine($"文件名: {meta.FileName}");
+        summary.AppendLine($"尺寸: {w} × {h} 像素 ({(w * (double)h) / 1000000.0:F1} MP)");
+        summary.AppendLine($"大小: {meta.FileSizeFormatted}");
+        if (hasExif)
+        {
+            if (!string.IsNullOrWhiteSpace(meta.ExifModel)) summary.AppendLine($"相机: {meta.ExifModel}");
+            if (meta.ExifFNumber.HasValue) summary.AppendLine($"光圈: f/{meta.ExifFNumber.Value:0.#}");
+            if (meta.ExifExposureTime is > 0)
+            {
+                var shutter = meta.ExifExposureTime.Value < 1 ? $"1/{Math.Round(1.0 / meta.ExifExposureTime.Value)}s" : $"{meta.ExifExposureTime.Value:0.#}s";
+                summary.AppendLine($"快门: {shutter}");
+            }
+            if (meta.ExifISOSpeed.HasValue) summary.AppendLine($"ISO: {meta.ExifISOSpeed.Value}");
+            if (meta.ExifFocalLength.HasValue) summary.AppendLine($"焦距: {meta.ExifFocalLength.Value:0.#}mm");
+        }
+        if (!string.IsNullOrWhiteSpace(meta.ColorProfileName)) summary.AppendLine($"色彩配置文件: {meta.ColorProfileName}");
+        if (meta.DpiX > 0) summary.AppendLine($"分辨率: {Math.Round(meta.DpiX)} DPI");
+        summary.AppendLine($"拍摄/创建时间: {PART_InfoDateCreated.Text}");
+        summary.AppendLine($"修改时间: {meta.FileLastWriteTimeFormatted}");
+        summary.AppendLine($"完整路径: {meta.FilePath}");
+        _cachedImageInfoSummary = summary.ToString();
+    }
+
+    #endregion // Image Info Overlay
+
     // how long to wait for the first paint before giving up (hidden window may never draw)
     private static readonly TimeSpan _sequentialRenderTimeout = TimeSpan.FromSeconds(2);
 
@@ -90,12 +346,17 @@ public partial class MainWindowView : PhControl
 
         base.OnLoaded(e);
 
+        InitTitleBarPlatform();
+
         // drag-drop events
         DragDrop.SetAllowDrop(PART_Viewer, true);
         DragDrop.AddDragOverHandler(PART_Viewer, PART_Viewer_DragOver);
         DragDrop.AddDropHandler(PART_Viewer, PART_Viewer_Drop);
 
         Core.Config.PropertyChanged += Config_PropertyChanged;
+        Core.Photos.Items.CollectionChanged += GalleryItems_CollectionChanged;
+        PART_ViewerWrapper.SizeChanged += ViewerWrapper_SizeChanged;
+        UpdateGalleryOverlayWidth();
         Core.Photos.FileWatcherChanged += Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading += PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged += PART_Viewer_ZoomChanged;
@@ -133,11 +394,18 @@ public partial class MainWindowView : PhControl
     {
         base.OnUnloaded(e);
 
+        if (App.MainWindow is not null)
+        {
+            App.MainWindow.PropertyChanged -= MainWindow_PropertyChanged;
+        }
+
         // drag-drop events
         DragDrop.RemoveDragOverHandler(PART_Viewer, PART_Viewer_DragOver);
         DragDrop.RemoveDropHandler(PART_Viewer, PART_Viewer_Drop);
 
         Core.Config.PropertyChanged -= Config_PropertyChanged;
+        Core.Photos.Items.CollectionChanged -= GalleryItems_CollectionChanged;
+        PART_ViewerWrapper.SizeChanged -= ViewerWrapper_SizeChanged;
         Core.Photos.FileWatcherChanged -= Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading -= PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged -= PART_Viewer_ZoomChanged;
@@ -170,6 +438,7 @@ public partial class MainWindowView : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(Config.ThumbnailSize)) UpdateGalleryOverlayWidth();
         if (e.PropertyName == nameof(Config.Layout) || e.PropertyName == nameof(Config.ShowToolbar))
         {
             ApplyAppLayout();
@@ -1089,12 +1358,11 @@ public partial class MainWindowView : PhControl
                 PART_Gallery.MaxWidth = double.PositiveInfinity;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.FilmStrip;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Bottom;
-                Grid.SetColumnSpan(PART_Toolbar, 1);
 
-                Grid.SetRow(PART_Toolbar, 0);
+
                 Grid.SetRow(PART_Gallery, 1);
                 Grid.SetRow(PART_ViewerWrapper, 2);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
             }
@@ -1107,13 +1375,12 @@ public partial class MainWindowView : PhControl
                 PART_Gallery.MaxWidth = double.PositiveInfinity;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.FilmStrip;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Top;
-                Grid.SetColumnSpan(PART_Toolbar, 1);
 
-                Grid.SetRow(PART_Toolbar, 0);
+
                 Grid.SetRow(PART_Gallery, 2);
                 Grid.SetRow(PART_GalleryResizer, 0);
                 Grid.SetRow(PART_ViewerWrapper, 1);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_GalleryResizer, 0);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
@@ -1126,13 +1393,12 @@ public partial class MainWindowView : PhControl
                 PART_GalleryResizer.IsVisible = true;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.Gallery;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Pointer;
-                Grid.SetColumnSpan(PART_Toolbar, 3);
 
-                Grid.SetRow(PART_Toolbar, 0);
+
                 Grid.SetRow(PART_Gallery, 1);
                 Grid.SetRow(PART_GalleryResizer, 1);
                 Grid.SetRow(PART_ViewerWrapper, 1);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_GalleryResizer, 1);
                 Grid.SetColumn(PART_ViewerWrapper, 2);
@@ -1145,13 +1411,12 @@ public partial class MainWindowView : PhControl
                 PART_GalleryResizer.IsVisible = true;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.Gallery;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Pointer;
-                Grid.SetColumnSpan(PART_Toolbar, 3);
 
-                Grid.SetRow(PART_Toolbar, 0);
+
                 Grid.SetRow(PART_Gallery, 1);
                 Grid.SetRow(PART_GalleryResizer, 1);
                 Grid.SetRow(PART_ViewerWrapper, 1);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 2);
                 Grid.SetColumn(PART_GalleryResizer, 1);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
@@ -1170,13 +1435,12 @@ public partial class MainWindowView : PhControl
                 PART_Gallery.MaxWidth = double.PositiveInfinity;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.FilmStrip;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Bottom;
-                Grid.SetColumnSpan(PART_Toolbar, 1);
 
-                Grid.SetRow(PART_Toolbar, 2);
+
                 Grid.SetRow(PART_Gallery, 0);
                 Grid.SetRow(PART_GalleryResizer, 0);
                 Grid.SetRow(PART_ViewerWrapper, 1);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_GalleryResizer, 0);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
@@ -1190,13 +1454,12 @@ public partial class MainWindowView : PhControl
                 PART_Gallery.MaxWidth = double.PositiveInfinity;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.FilmStrip;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Top;
-                Grid.SetColumnSpan(PART_Toolbar, 1);
 
-                Grid.SetRow(PART_Toolbar, 2);
+
                 Grid.SetRow(PART_Gallery, 1);
                 Grid.SetRow(PART_GalleryResizer, 0);
                 Grid.SetRow(PART_ViewerWrapper, 0);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_GalleryResizer, 0);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
@@ -1209,13 +1472,12 @@ public partial class MainWindowView : PhControl
                 PART_GalleryResizer.IsVisible = true;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.Gallery;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Pointer;
-                Grid.SetColumnSpan(PART_Toolbar, 3);
 
-                Grid.SetRow(PART_Toolbar, 1);
+
                 Grid.SetRow(PART_Gallery, 0);
                 Grid.SetRow(PART_GalleryResizer, 0);
                 Grid.SetRow(PART_ViewerWrapper, 0);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 0);
                 Grid.SetColumn(PART_GalleryResizer, 1);
                 Grid.SetColumn(PART_ViewerWrapper, 2);
@@ -1228,29 +1490,18 @@ public partial class MainWindowView : PhControl
                 PART_GalleryResizer.IsVisible = true;
                 PART_Gallery.ViewMode = PhVirtualizingUniformPanelViewMode.Gallery;
                 PART_Gallery.ItemTooltipPlacement = PlacementMode.Pointer;
-                Grid.SetColumnSpan(PART_Toolbar, 3);
 
-                Grid.SetRow(PART_Toolbar, 1);
+
                 Grid.SetRow(PART_Gallery, 0);
                 Grid.SetRow(PART_GalleryResizer, 0);
                 Grid.SetRow(PART_ViewerWrapper, 0);
-                Grid.SetColumn(PART_Toolbar, 0);
+
                 Grid.SetColumn(PART_Gallery, 2);
                 Grid.SetColumn(PART_GalleryResizer, 1);
                 Grid.SetColumn(PART_ViewerWrapper, 0);
             }
         }
 
-
-        // The top toolbar floats over the viewer instead of consuming a layout row.
-        PART_Toolbar.VerticalAlignment = toolbarPos == LayoutPosition.Top
-            ? VerticalAlignment.Top : VerticalAlignment.Stretch;
-        if (toolbarPos == LayoutPosition.Top)
-        {
-            Grid.SetRow(PART_Toolbar, Grid.GetRow(PART_ViewerWrapper));
-            Grid.SetColumn(PART_Toolbar, Grid.GetColumn(PART_ViewerWrapper));
-            Grid.SetColumnSpan(PART_Toolbar, 1);
-        }
 
         // The bottom filmstrip floats over the viewer while side galleries retain their layout.
         var galleryOverlay = galleryPos == LayoutPosition.Bottom;
@@ -1263,9 +1514,10 @@ public partial class MainWindowView : PhControl
             Grid.SetColumn(PART_Gallery, Grid.GetColumn(PART_ViewerWrapper));
         }
         UpdateGalleryOverlayMargin();
+        UpdateGalleryOverlayWidth();
 
         // update overlay margin to avoid overlap with floating top toolbar
-        var isToolbarTop = toolbarPos == LayoutPosition.Top && Core.Config.ShowToolbar;
+        var isToolbarTop = false;
         PART_ImageInfoOverlay.Margin = new Thickness(20, isToolbarTop ? 62 : 10, 20, 0);
 
         // 3. update gallery initial width
@@ -1276,6 +1528,27 @@ public partial class MainWindowView : PhControl
     {
         var overlay = Config.GetControlLayout(LayoutControl.Gallery) == LayoutPosition.Bottom;
         PART_Gallery.Margin = overlay ? new Thickness(0, 0, 0, PART_ToolHost.Bounds.Height) : default;
+    }
+
+    private void GalleryItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        => UpdateGalleryOverlayWidth();
+
+    private void ViewerWrapper_SizeChanged(object? sender, SizeChangedEventArgs e)
+        => UpdateGalleryOverlayWidth();
+
+    private void UpdateGalleryOverlayWidth()
+    {
+        var overlay = Config.GetControlLayout(LayoutControl.Gallery) == LayoutPosition.Bottom;
+        PART_Gallery.HorizontalAlignment = overlay ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+        if (!overlay)
+        {
+            PART_Gallery.Width = double.NaN;
+            return;
+        }
+        var count = Core.Photos.Items.Count;
+        var cellWidth = Core.Config.ThumbnailSize + GalleryControl.GalleryItemMargin.Left + GalleryControl.GalleryItemMargin.Right;
+        var desiredWidth = count == 0 ? 0 : count * cellWidth + GalleryControl.GalleryPadding.Left + GalleryControl.GalleryPadding.Right;
+        PART_Gallery.Width = Math.Min(desiredWidth, Math.Max(0, PART_ViewerWrapper.Bounds.Width));
     }
 
 

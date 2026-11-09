@@ -622,14 +622,12 @@ public class PhVirtualizingUniformPanel : VirtualizingPanel, IScrollSnapPointsIn
 
 
     /// <summary>
-    /// Detects ScrollViewer viewport size changes (window resize) to rearrange Gallery layout.
+    /// Re-measures when the viewport changes, including the filmstrip's initial zero-size viewport.
     /// </summary>
     private void OnScrollViewerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (!_isAttached) return;
         if (e.Property != ScrollViewer.ViewportProperty) return;
-        if (ViewMode != PhVirtualizingUniformPanelViewMode.Gallery) return;
-
         var newViewport = (Size)e.NewValue!;
         if (Math.Abs(newViewport.Width - _lastAvailableWidth) > 0.5)
         {
