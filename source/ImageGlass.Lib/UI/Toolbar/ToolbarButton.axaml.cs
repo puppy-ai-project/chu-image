@@ -91,6 +91,7 @@ public partial class ToolbarButton : PhToolButton, IToolbarItem
     {
         if (nameof(Core.Config.ToolbarIconHeight).Equals(e.PropertyName))
         {
+            _ = VM.OnPropertyChanged(nameof(VM.IconSize));
             _ = VM.OnPropertyChanged(nameof(VM.InnerSpacing));
             _ = VM.OnPropertyChanged(nameof(VM.ItemPadding));
             _ = VM.OnPropertyChanged(nameof(VM.SeparatorEndPoint));

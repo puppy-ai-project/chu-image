@@ -171,6 +171,7 @@ public partial class ToolbarControl : PhControl
         // update toolbar spacing
         if (nameof(Core.Config.ToolbarIconHeight).Equals(e.PropertyName))
         {
+            _ = VM.OnPropertyChanged(nameof(VM.IconSize));
             _ = VM.OnPropertyChanged(nameof(VM.ItemSpacing));
             _ = VM.OnPropertyChanged(nameof(VM.ItemPadding));
         }
@@ -476,7 +477,7 @@ public partial class ToolbarControl : PhControl
         if (rootWidth <= 0.5) return; // not laid out yet
 
         var spacing = ToolbarControlModel.ItemSpacing;
-        var iconSize = Core.Config.ToolbarIconHeight;
+        var iconSize = ToolbarItemModel.IconSize;
         var padding = PART_Root.Padding.Left + PART_Root.Padding.Right;
 
         // sticky overflow-button slot (width + spacing). Captured while visible so toggling its

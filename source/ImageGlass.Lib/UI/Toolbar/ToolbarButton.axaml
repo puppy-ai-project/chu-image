@@ -20,8 +20,8 @@
         Spacing="{CompiledBinding InnerSpacing}">
 
         <Panel
-            Width="{CompiledBinding Config.ToolbarIconHeight}"
-            Height="{CompiledBinding Config.ToolbarIconHeight}">
+            Width="{CompiledBinding IconSize}"
+            Height="{CompiledBinding IconSize}">
             <Svg Path="{CompiledBinding ImagePath}" />
 
             <!--  placeholder for a button that runs something but has no icon  -->

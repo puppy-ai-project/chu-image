@@ -22,6 +22,14 @@ public partial class ViewerControl
         PanTo(x, y, null);
     }
 
+    internal void ResetCropView()
+    {
+        CancelMousePan();
+        _mousePanPositionEnabled = false;
+        SetZoomMode(ZoomMode.ScaleToFit);
+        InvalidateVisual();
+    }
+
     private void BeginMousePan()
     {
         CancelMousePan();

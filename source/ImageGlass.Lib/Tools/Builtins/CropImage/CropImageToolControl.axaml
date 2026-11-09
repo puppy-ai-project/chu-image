@@ -144,6 +144,11 @@
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
                 IconData="{StaticResource IconReset}" />
+            <ui:PhButton
+                x:Name="PART_BtnResetView"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconReset}" />
         </WrapPanel>
 
     </WrapPanel>

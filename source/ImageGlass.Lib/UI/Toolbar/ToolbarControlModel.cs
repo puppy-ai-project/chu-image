@@ -27,7 +27,8 @@ namespace ImageGlass.UI;
 public class ToolbarControlModel : PhReactive
 {
     public static Config Config => Core.Config;
-    public static double ItemSpacing => Core.Config.ToolbarIconHeight / 6f; // 4
+    public static double ItemSpacing => ToolbarItemModel.IconSize / 6f; // 4
+    public static double IconSize => ToolbarItemModel.IconSize;
     public static Thickness ItemPadding => ToolbarItemModel.ItemPadding;
 
 

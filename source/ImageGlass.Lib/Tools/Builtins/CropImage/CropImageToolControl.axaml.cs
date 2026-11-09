@@ -74,6 +74,7 @@ public partial class CropImageToolControl : PhControl, IToolControl
 
         // subscribe to button clicks
         PART_BtnReset.Click += PART_BtnReset_Click;
+        PART_BtnResetView.Click += PART_BtnResetView_Click;
         PART_BtnSave.Click += PART_BtnSave_Click;
         PART_BtnSaveAs.Click += PART_BtnSaveAs_Click;
         PART_BtnCrop.Click += PART_BtnCrop_Click;
@@ -115,6 +116,7 @@ public partial class CropImageToolControl : PhControl, IToolControl
         Viewer.SelectionChanged -= Viewer_SelectionChanged;
 
         PART_BtnReset.Click -= PART_BtnReset_Click;
+        PART_BtnResetView.Click -= PART_BtnResetView_Click;
         PART_BtnSave.Click -= PART_BtnSave_Click;
         PART_BtnSaveAs.Click -= PART_BtnSaveAs_Click;
         PART_BtnCrop.Click -= PART_BtnCrop_Click;
@@ -146,6 +148,7 @@ public partial class CropImageToolControl : PhControl, IToolControl
         base.OnIgLanguageChanged();
 
         PART_BtnReset.Text = Core.Lang[LangId.Tool_Crop_BtnReset];
+        PART_BtnResetView.Text = Core.Lang[LangId.Tool_Crop_BtnResetView];
         PART_BtnSave.Text = Core.Lang[LangId.Tool_Crop_BtnSave];
         PART_BtnSaveAs.Text = Core.Lang[LangId.Tool_Crop_BtnSaveAs];
         PART_BtnCrop.Text = Core.Lang[LangId.Tool_Crop_BtnCrop];
@@ -220,6 +223,11 @@ public partial class CropImageToolControl : PhControl, IToolControl
         }
     }
 
+
+    private void PART_BtnResetView_Click(object? sender, RoutedEventArgs e)
+    {
+        Viewer.ResetCropView();
+    }
 
     private void PART_BtnReset_Click(object? sender, RoutedEventArgs e)
     {

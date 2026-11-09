@@ -1241,6 +1241,16 @@ public partial class MainWindowView : PhControl
         }
 
 
+        // The top toolbar floats over the viewer instead of consuming a layout row.
+        PART_Toolbar.VerticalAlignment = toolbarPos == LayoutPosition.Top
+            ? VerticalAlignment.Top : VerticalAlignment.Stretch;
+        if (toolbarPos == LayoutPosition.Top)
+        {
+            Grid.SetRow(PART_Toolbar, Grid.GetRow(PART_ViewerWrapper));
+            Grid.SetColumn(PART_Toolbar, Grid.GetColumn(PART_ViewerWrapper));
+            Grid.SetColumnSpan(PART_Toolbar, 1);
+        }
+
         // 3. update gallery initial width
         UpdateGalleryWidth();
     }

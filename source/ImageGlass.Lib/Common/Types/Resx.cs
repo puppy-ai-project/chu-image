@@ -285,6 +285,7 @@ public enum ResxId
     IG_ProjectorBackgroundBrush,
     IG_ThemeForegroundBrush,
     IG_ThemeToolbarBackgroundBrush,
+    IG_OverlayToolbarBackgroundBrush,
     IG_ThemeGalleryBackgroundBrush,
     IG_ThemeMenuBackgroundBrush,
 

@@ -862,6 +862,7 @@ public enum LangId
     Tool_Crop_SelectionAspectRatio_Original,
 
     Tool_Crop_BtnReset,
+    Tool_Crop_BtnResetView,
     Tool_Crop_BtnSave,
     Tool_Crop_BtnSaveAs,
     Tool_Crop_BtnCrop,

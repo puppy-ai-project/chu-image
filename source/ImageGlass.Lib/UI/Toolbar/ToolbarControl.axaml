@@ -44,8 +44,8 @@
                     Focusable="False"
                     IsOpenDropdownMenuOnClick="True">
                     <Border
-                        Width="{CompiledBinding Config.ToolbarIconHeight}"
-                        Height="{CompiledBinding Config.ToolbarIconHeight}"
+                        Width="{CompiledBinding IconSize}"
+                        Height="{CompiledBinding IconSize}"
                         VerticalAlignment="Center">
                         <Grid RowDefinitions="1*,0.25*,0.5*" ColumnDefinitions="0.25*,1*,0.25*">
                             <Viewbox
