@@ -25,6 +25,12 @@ public partial class ToolbarButton : PhToolButton, IToolbarItem
 {
     public ToolbarItemModel VM => (ToolbarItemModel)DataContext!;
 
+    internal void SetIconSize(double size)
+    {
+        PART_Icon.Width = size;
+        PART_Icon.Height = size;
+    }
+
 
     public ToolbarButton()
     {

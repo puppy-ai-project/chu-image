@@ -252,30 +252,7 @@ public partial class MainWindow : PhWindow
             }
         }
 
-        // process app hotkeys
-        // press ESC: exit slideshow if it is running
-        var hk = new Hotkey(e);
-        if (hk.IsSame(Key.Escape) && Core.Slideshow?.IsRunning == true)
-        {
-            _ = await Core.API.RunApiAsync(API.IG_ToggleSlideshow, "false");
-            e.Handled = true;
-            return;
-        }
-
-
-        await Core.API.HandleKeyDownAsync(e);
-        if (e.Handled) return;
-    }
-
-
-    protected override async void OnKeyUp(KeyEventArgs e)
-    {
-        base.OnKeyUp(e);
-        if (e.Handled) return;
-
-        // process app hotkeys
-        await Core.API.HandleKeyUpAsync(e);
-        if (e.Handled) return;
+        // Other app shortcuts are disabled; ordinary control and text input still work.
     }
 
 

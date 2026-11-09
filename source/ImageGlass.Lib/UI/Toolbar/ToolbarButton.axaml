@@ -6,19 +6,30 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:ImageGlass.UI"
     mc:Ignorable="d"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     x:DataType="ui:ToolbarItemModel"
-    Padding="{CompiledBinding ItemPadding}"
+    Height="30"
+    MinWidth="30"
+    Padding="0"
     BorderThickness="0"
-    CornerRadius="8"
+    CornerRadius="6"
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center"
+    HorizontalContentAlignment="Center"
+    VerticalContentAlignment="Center"
     IsChecked="{CompiledBinding IsChecked}"
     IsVisible="{CompiledBinding IsNotOverflow}"
     ToolTip.Tip="{CompiledBinding Tooltip}">
 
     <ui:PhToolButton.Styles>
         <Style Selector="ui|ToolbarButton">
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.08" />
@@ -27,9 +38,10 @@
             </Setter>
         </Style>
         <Style Selector="ui|ToolbarButton:pointerover">
-            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundHover}" />
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralHoverBrush}" />
         </Style>
         <Style Selector="ui|ToolbarButton:pressed">
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralPressedBrush}" />
             <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
         <Style Selector="ui|ToolbarButton:checked">
@@ -39,17 +51,31 @@
     <StackPanel
         IsHitTestVisible="False"
         Orientation="Horizontal"
-        Spacing="{CompiledBinding InnerSpacing}">
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center">
 
         <Panel
-            Width="{CompiledBinding IconSize}"
-            Height="{CompiledBinding IconSize}">
-            <Svg Opacity="0.72" Path="{CompiledBinding ImagePath}" />
+            x:Name="PART_Icon"
+            Width="18"
+            Height="18"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+            <Svg
+                Width="{Binding #PART_Icon.Width}"
+                Height="{Binding #PART_Icon.Height}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Opacity="0.85"
+                Path="{CompiledBinding ImagePath}" />
 
             <!--  placeholder for a button that runs something but has no icon  -->
             <Path
+                Width="{Binding #PART_Icon.Width}"
+                Height="{Binding #PART_Icon.Height}"
                 Data="{StaticResource IconPlaceholder}"
                 Fill="{DynamicResource TextControlForeground}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 IsVisible="{CompiledBinding IsPlaceholderIconVisible}"
                 Opacity="0.6"
                 Stretch="Uniform" />
@@ -58,6 +84,8 @@
         <TextBlock
             x:Name="PART_ButtonText"
             VerticalAlignment="Center"
+            Margin="4,0,4,0"
+            FontSize="12"
             IsVisible="{CompiledBinding IsTextVisible}"
             Text="{CompiledBinding DisplayText}" />
     </StackPanel>

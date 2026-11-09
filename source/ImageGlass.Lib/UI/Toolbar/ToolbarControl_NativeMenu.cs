@@ -159,7 +159,6 @@ public partial class ToolbarControl
             IsEnabled = source.IsEnabled,
             ToggleType = source.ToggleType,
             IsChecked = source.IsChecked,
-            Gesture = gesture ?? GetNativeGesture(source),
         };
 
         var clickTarget = source;

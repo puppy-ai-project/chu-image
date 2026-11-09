@@ -6,9 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:ImageGlass.UI"
     mc:Ignorable="d"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     x:DataType="ui:ToolbarItemModel"
+    Height="30"
     HorizontalAlignment="Center"
     VerticalAlignment="Center"
     IsHitTestVisible="False"
@@ -16,10 +15,11 @@
     Orientation="Horizontal">
     <Border
         Width="1"
-        Height="{CompiledBinding IconSize}"
-        Margin="3,2"
+        Height="16"
+        Margin="3,0"
+        HorizontalAlignment="Center"
         VerticalAlignment="Center"
         Background="{DynamicResource IG_BorderNeutralBrush}"
         CornerRadius="0.5"
-        Opacity="0.45" />
+        Opacity="0.5" />
 </StackPanel>

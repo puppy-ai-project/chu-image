@@ -243,7 +243,7 @@ public partial class AppAPIProvider
         var mainMenuHotkeys = Core.Config.MenuHotkeys.GetValueOrDefault(LangId.Menu_MnuMain)
             ?? _menuMap.GetValueOrDefault(LangId.Menu_MnuMain)?.Hotkeys
             ?? [];
-        var mainMenuHotkeyText = string.Join(", ", mainMenuHotkeys.Select(hk => hk.KeyString));
+        var mainMenuHotkeyText = string.Empty;
 
         // Use the shared static toolbar VM directly
         MainWindowViewModel.ToolbarVM.ButtonMenuVM = new ToolbarItemModel()
@@ -285,7 +285,7 @@ public partial class AppAPIProvider
                     hotkeyTextList = menuHotkeys.Select(hk => hk.KeyString) ?? [];
                 }
             }
-            item.HotkeyText = string.Join(", ", hotkeyTextList);
+            item.HotkeyText = string.Empty;
 
 
             // 1.3 register custom hotkey
@@ -509,11 +509,7 @@ public partial class AppAPIProvider
     /// </summary>
     public static string GetMenuHotkeyText(LangId? langKey)
     {
-        var action = GetMenuAction(langKey);
-        if (action is null) return string.Empty;
-
-        var hotkeyText = String.Join(", ", action.Hotkeys);
-        return hotkeyText;
+        return string.Empty;
     }
 
 

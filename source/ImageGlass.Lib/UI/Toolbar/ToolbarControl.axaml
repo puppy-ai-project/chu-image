@@ -12,159 +12,201 @@
     x:Name="Root">
 
     <ui:PhControl.Styles>
-        <Style Selector="Border.toolbar-island">
-            <Setter Property="Opacity" Value="0.94" />
+        <Style Selector="Border.toolbar-container">
+            <Setter Property="Opacity" Value="0.95" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Border.toolbar-island:pointerover">
+        <Style Selector="Border.toolbar-container:pointerover">
             <Setter Property="Opacity" Value="1.0" />
+        </Style>
+
+        <Style Selector="ui|PhToolButton#PART_BtnImageInfo">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.08" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.06" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ui|PhToolButton#PART_BtnImageInfo:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralHoverBrush}" />
+        </Style>
+        <Style Selector="ui|PhToolButton#PART_BtnImageInfo:pressed">
+            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralPressedBrush}" />
+            <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
     </ui:PhControl.Styles>
 
     <Border
         x:Name="PART_Root"
-        Margin="0,0,10,0"
+        Margin="0,0,8,0"
         Background="{x:Null}">
-        <StackPanel
-            x:Name="PART_RootGrid"
-            Orientation="Horizontal"
-            Spacing="6"
-            HorizontalAlignment="Right"
+        <!--  Single Unified Toolbar Container  -->
+        <Border
+            Classes="toolbar-container"
+            Background="{DynamicResource IG_BackgroundNeutralBrush}"
+            BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="2"
             VerticalAlignment="Center">
+            <StackPanel
+                x:Name="PART_RootGrid"
+                Orientation="Horizontal"
+                Spacing="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center">
 
-            <!--  Toolbar: Primary Items Island  -->
-            <Border
-                x:Name="PART_PrimaryIsland"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="{DynamicResource IG_OverlayToolbarBackgroundBrush}"
-                BorderThickness="0"
-                BoxShadow="0 2 10 0 #20000000"
-                Classes="toolbar-island"
-                CornerRadius="10"
-                Padding="3,2">
-                <StackPanel
-                    x:Name="PART_PrimaryGroup"
+                <!--  Toolbar: Primary Items Island  -->
+                <Border
+                    x:Name="PART_PrimaryIsland"
                     HorizontalAlignment="Left"
-                    Orientation="Horizontal"
-                    Spacing="{CompiledBinding ItemSpacing}" />
-            </Border>
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0">
+                    <StackPanel
+                        x:Name="PART_PrimaryGroup"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="2" />
+                </Border>
 
+                <!--  Separator Between Primary & Right Groups  -->
+                <Border
+                    Width="1"
+                    Height="16"
+                    Margin="2,0"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource IG_BorderNeutralBrush}"
+                    Opacity="0.5" />
 
-            <!--  Toolbar: Right column Island  -->
-            <Border
-                x:Name="PART_RightIsland"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="{DynamicResource IG_OverlayToolbarBackgroundBrush}"
-                BorderThickness="0"
-                BoxShadow="0 2 10 0 #20000000"
-                Classes="toolbar-island"
-                CornerRadius="10"
-                Padding="3,2"
-                ZIndex="90">
-                <StackPanel
-                    x:Name="PART_RightGroup"
+                <!--  Toolbar: Right column Island  -->
+                <Border
+                    x:Name="PART_RightIsland"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Stretch"
-                    Orientation="Horizontal"
-                    Spacing="{CompiledBinding ItemSpacing}">
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="0"
+                    ZIndex="90">
+                    <StackPanel
+                        x:Name="PART_RightGroup"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="2">
 
-                    <!--  Image Information Button  -->
-                    <ui:PhToolButton
-                        x:Name="PART_BtnImageInfo"
-                        Click="ImageInfo_Click"
-                        ToolTip.Tip="图片信息"
-                        Padding="{CompiledBinding ItemPadding}"
-                        BorderThickness="0"
-                        CornerRadius="8"
-                        Focusable="False">
-                        <Panel Width="{CompiledBinding IconSize}" Height="{CompiledBinding IconSize}">
-                            <Path
-                                Width="{CompiledBinding IconSize}"
-                                Height="{CompiledBinding IconSize}"
-                                Data="{StaticResource IconInfo}"
-                                Fill="{DynamicResource TextControlForeground}"
-                                Stretch="Uniform" />
-                        </Panel>
-                    </ui:PhToolButton>
-
-                <!--  Toolbar: Overflow button  -->
-                <ui:ToolbarButton
-                    x:Name="PART_BtnOverflowMenu"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Bottom"
-                    DataContext="{CompiledBinding ButtonOverflowVM}"
-                    DropdownOpened="PART_BtnOverflowMenu_DropdownOpened"
-                    Focusable="False"
-                    IsOpenDropdownMenuOnClick="True">
-                    <Border
-                        Width="{CompiledBinding IconSize}"
-                        Height="{CompiledBinding IconSize}"
-                        VerticalAlignment="Center">
-                        <Grid RowDefinitions="1*,0.25*,0.5*" ColumnDefinitions="0.25*,1*,0.25*">
-                            <Viewbox
-                                Grid.Row="1"
-                                Grid.Column="1"
-                                VerticalAlignment="Bottom"
-                                Stretch="Uniform">
+                        <!--  Image Information Button  -->
+                        <ui:PhToolButton
+                            x:Name="PART_BtnImageInfo"
+                            Click="ImageInfo_Click"
+                            ToolTip.Tip="图片信息"
+                            Width="30"
+                            Height="30"
+                            Padding="0"
+                            BorderThickness="0"
+                            CornerRadius="6"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Focusable="False">
+                            <Panel Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Path
-                                    Data="{StaticResource IconEllipsis}"
+                                    Width="14"
+                                    Height="14"
+                                    Data="{StaticResource IconInfo}"
                                     Fill="{DynamicResource TextControlForeground}"
-                                    Opacity="0.72"
-                                    Stretch="Uniform" />
-                            </Viewbox>
-                        </Grid>
-                    </Border>
+                                    Opacity="0.85"
+                                    Stretch="Uniform"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Panel>
+                        </ui:PhToolButton>
 
-                    <ui:ToolbarButton.DropdownMenu>
-                        <ContextMenu
-                            x:Name="PART_OverflowMenu"
-                            HorizontalOffset="6"
-                            Placement="BottomEdgeAlignedRight" />
-                    </ui:ToolbarButton.DropdownMenu>
-                </ui:ToolbarButton>
-
-
-                <!--  Toolbar: Secondary Items  -->
-                <StackPanel
-                    x:Name="PART_SecondaryGroup"
-                    Orientation="Horizontal"
-                    Spacing="{CompiledBinding ItemSpacing}" />
-
-
-                <!--  Main Menu button  -->
-                <Panel>
-                    <!--  Update ready badge  -->
-                    <Border
-                        x:Name="PART_UpdateBadge"
-                        Width="13"
-                        Height="13"
-                        Margin="0,4,4,0"
-                        Padding="2"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Background="{DynamicResource PhAccentFill}"
-                        CornerRadius="7"
-                        IsHitTestVisible="False"
-                        IsVisible="False"
-                        ZIndex="95">
-                        <Path
-                            Data="{StaticResource IconUpdateIndicator}"
-                            Fill="{DynamicResource AccentButtonForeground}"
-                            Stretch="Uniform" />
-                    </Border>
-
+                    <!--  Toolbar: Overflow button  -->
                     <ui:ToolbarButton
-                        x:Name="PART_BtnMainMenu"
-                        DataContext="{CompiledBinding ButtonMenuVM}"
-                        DropdownOpened="PART_BtnMainMenu_DropdownOpened"
+                        x:Name="PART_BtnOverflowMenu"
+                        IsVisible="False"
+                        Width="30"
+                        Height="30"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        DataContext="{CompiledBinding ButtonOverflowVM}"
+                        DropdownOpened="PART_BtnOverflowMenu_DropdownOpened"
                         Focusable="False"
                         IsOpenDropdownMenuOnClick="True">
+                        <Border
+                            Width="18"
+                            Height="18"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                            <Path
+                                Data="{StaticResource IconEllipsis}"
+                                Fill="{DynamicResource TextControlForeground}"
+                                Opacity="0.85"
+                                Stretch="Uniform"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+
+                        <ui:ToolbarButton.DropdownMenu>
+                            <ContextMenu
+                                x:Name="PART_OverflowMenu"
+                                HorizontalOffset="6"
+                                Placement="BottomEdgeAlignedRight" />
+                        </ui:ToolbarButton.DropdownMenu>
+                    </ui:ToolbarButton>
+
+
+                    <!--  Toolbar: Secondary Items  -->
+                    <StackPanel
+                        x:Name="PART_SecondaryGroup"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="2" />
+
+
+                    <!--  Main Menu button  -->
+                    <Panel VerticalAlignment="Center">
+                        <!--  Update ready badge  -->
+                        <Border
+                            x:Name="PART_UpdateBadge"
+                            Width="8"
+                            Height="8"
+                            Margin="0,2,2,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource PhAccentFill}"
+                            CornerRadius="4"
+                            IsHitTestVisible="False"
+                            IsVisible="False"
+                            ZIndex="95" />
+
+                        <ui:ToolbarButton
+                            x:Name="PART_BtnMainMenu"
+                            DataContext="{CompiledBinding ButtonMenuVM}"
+                            DropdownOpened="PART_BtnMainMenu_DropdownOpened"
+                            Width="30"
+                            Height="30"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Focusable="False"
+                            IsOpenDropdownMenuOnClick="True">
                         <ui:ToolbarButton.DropdownMenu>
                             <ContextMenu
                                 x:Name="PART_MainMenu"
@@ -641,6 +683,7 @@
             </Border>
 
         </StackPanel>
+        </Border>
     </Border>
 
 </ui:PhControl>

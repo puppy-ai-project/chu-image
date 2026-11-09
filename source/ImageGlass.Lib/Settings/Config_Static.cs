@@ -301,16 +301,6 @@ public partial class Config
             ConfigBindingValue = "True",
             OnClick = new(LangId.Menu_MnuSlideshow, API.IG_ToggleSlideshow),
         },
-        ToolbarItemModel.Separator,
-
-
-        // delete
-        new() {
-            Id = $"Btn_{nameof(IgThemeIcon.Delete)}",
-            Image = nameof(IgThemeIcon.Delete),
-            Text = Lang.KeysMap[LangId.Menu_MnuMoveToRecycleBin],
-            OnClick = new(LangId.Menu_MnuMoveToRecycleBin, API.IG_Delete),
-        }
     ];
 
 

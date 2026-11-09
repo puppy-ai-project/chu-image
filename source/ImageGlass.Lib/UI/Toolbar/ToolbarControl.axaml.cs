@@ -390,6 +390,9 @@ public partial class ToolbarControl : PhControl
             srcIndex++;
             vm.SourceIndex = srcIndex;
 
+            // Older saved toolbar layouts may still contain the removed delete button.
+            if (vm.Id == "Btn_Delete") continue;
+
 
             // create toolbar item element
             Control itemEl;
@@ -472,6 +475,18 @@ public partial class ToolbarControl : PhControl
             secondaryList.Remove(actualSize);
         }
         primaryList.Insert(Math.Min(2, primaryList.Count), actualSize);
+
+        var afterCrop = false;
+        foreach (var item in primaryList.OfType<ToolbarButton>())
+        {
+            if (item.VM.Id == "Btn_Crop") afterCrop = true;
+            if (afterCrop) item.SetIconSize(14);
+        }
+        if (afterCrop)
+        {
+            foreach (var item in secondaryList.OfType<ToolbarButton>()) item.SetIconSize(14);
+            PART_BtnMainMenu.SetIconSize(14);
+        }
 
         // append to visual tree
         PART_PrimaryGroup.Children.AddRange(primaryList);
