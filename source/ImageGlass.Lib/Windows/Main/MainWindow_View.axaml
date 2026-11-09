@@ -245,7 +245,8 @@
                     x:Name="PART_WinButtons"
                     Grid.Column="2"
                     Orientation="Horizontal"
-                    VerticalAlignment="Stretch">
+                    VerticalAlignment="Stretch"
+                    Background="{StaticResource WindowBarGradient}">
                     <Button
                         x:Name="PART_WinBtnMinimize"
                         Classes="win-caption-btn"
@@ -391,6 +392,17 @@
                 <TextBlock Foreground="#F3F4F6" FontWeight="Medium" FontSize="12.5" x:Name="PART_ZoomPercentage" Width="58" VerticalAlignment="Center" TextAlignment="Right" />
             </StackPanel>
         </Border>
+
+        <!-- Bottom resize edge for the custom client area. -->
+        <Border
+            x:Name="PART_BottomResizeGrip"
+            Grid.Row="2"
+            Height="6"
+            VerticalAlignment="Bottom"
+            Background="Transparent"
+            Cursor="SizeNorthSouth"
+            PointerPressed="BottomResizeGrip_PointerPressed"
+            ZIndex="2000" />
 
         <!--  ======================================================  -->
         <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层)               -->

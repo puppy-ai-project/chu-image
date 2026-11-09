@@ -46,7 +46,7 @@ public partial class QuickSetupView : PhControl
     private readonly List<Border> _dots = [];
 
     private bool _isPopulatingLangs;
-    private string _selectedLangValue = "English";
+    private string _selectedLangValue = "Chinese Simplified.iglang.json";
     private readonly Action _loadLangAction;
 
     // local language used to preview the wizard only; the app is untouched until Save
@@ -279,8 +279,7 @@ public partial class QuickSetupView : PhControl
     {
         var packs = await Lang.LoadAllLanguagePacksAsync();
 
-        // built-in English first (so users can revert)
-        List<Lang> langs = [new(string.Empty), .. packs];
+        List<Lang> langs = packs;
 
         _isPopulatingLangs = true;
         PART_LanguageList.ItemsSource = langs;
@@ -288,14 +287,14 @@ public partial class QuickSetupView : PhControl
         var current = Core.Config.Language;
         PART_LanguageList.SelectedItem = langs
             .FirstOrDefault(l => ToConfigValue(l).Equals(current, StringComparison.OrdinalIgnoreCase))
-            ?? langs[0];
+            ?? langs.FirstOrDefault(l => l.FileName.Equals("Chinese Simplified.iglang.json", StringComparison.OrdinalIgnoreCase));
 
         _selectedLangValue = current;
         _isPopulatingLangs = false;
     }
 
 
-    private static string ToConfigValue(Lang lang) => lang.IsBuiltIn ? "English" : lang.FileName;
+    private static string ToConfigValue(Lang lang) => lang.FileName;
 
     #endregion // Language
 

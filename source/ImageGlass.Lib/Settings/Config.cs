@@ -817,7 +817,7 @@ public partial class Config : PhReactive
     /// </summary>
     public string Language
     {
-        get => Get(ConfigId.Language, "English");
+        get => Get(ConfigId.Language, "Chinese Simplified.iglang.json");
         set => Set(ConfigId.Language, value);
     }
 

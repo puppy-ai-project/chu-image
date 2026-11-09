@@ -96,8 +96,7 @@ public partial class LanguageSettingsView : SettingsPageView
     {
         var packs = await Lang.LoadAllLanguagePacksAsync();
 
-        // built-in English (no pack file, so its path line stays hidden) always first, to revert to
-        _langs = [new Lang(string.Empty), .. packs];
+        _langs = packs;
         PopulateCombo();
     }
 
@@ -111,10 +110,10 @@ public partial class LanguageSettingsView : SettingsPageView
 
         PART_LanguageList.ItemsSource = _langs;
 
-        var current = VM.GetValue(ConfigId.Language, "English");
+        var current = VM.GetValue(ConfigId.Language, "Chinese Simplified.iglang.json");
         PART_LanguageList.SelectedItem = _langs
             .FirstOrDefault(l => ToConfigValue(l).Equals(current, StringComparison.OrdinalIgnoreCase))
-            ?? _langs[0];
+            ?? _langs.FirstOrDefault(l => l.FileName.Equals("Chinese Simplified.iglang.json", StringComparison.OrdinalIgnoreCase));
 
         _isPopulating = false;
         ShowSelectedContributors();
@@ -196,12 +195,12 @@ public partial class LanguageSettingsView : SettingsPageView
 
         // export from a fresh instance so SaveAsFileAsync's English->placeholder rewrite never
         // mutates the metadata of the entry still shown in the combo
-        var toExport = selected.IsBuiltIn ? new Lang(string.Empty) { Items = Lang.DefaultLangMap } : selected;
+        var toExport = selected;
         await toExport.SaveAsFileAsync(path);
     }
 
 
-    private static string ToConfigValue(Lang lang) => lang.IsBuiltIn ? "English" : lang.FileName;
+    private static string ToConfigValue(Lang lang) => lang.FileName;
 
 
 }

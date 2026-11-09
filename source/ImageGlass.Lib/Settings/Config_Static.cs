@@ -1014,8 +1014,8 @@ public partial class Config
         var langPath = Lang.ResolveFilePath(Language);
         var isInvalid = !Lang.IsPackFileCompatible(langPath);
 
-        // an incompatible pack (e.g. a hand-edited config) falls back to built-in English
-        if (isInvalid) langPath = string.Empty;
+        // An incompatible pack falls back to the built-in Simplified Chinese pack.
+        if (isInvalid) langPath = Lang.ResolveFilePath("Chinese Simplified.iglang.json");
 
         var lang = new Lang(langPath);
 
