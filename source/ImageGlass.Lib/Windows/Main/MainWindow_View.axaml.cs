@@ -25,6 +25,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using D2Phap.FileWatcherEx;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Loggers;
@@ -72,7 +73,7 @@ public partial class MainWindowView : PhControl
         var min = Math.Max(0.001, PART_Viewer.MinZoom);
         var max = Math.Max(min * 1.001, PART_Viewer.MaxZoom);
         var factor = min * Math.Pow(max / min, e.NewValue / 1000);
-        PART_Viewer.ZoomToPoint((float)factor, PART_Viewer.DrawingArea.Center);
+        PART_Viewer.ZoomAroundImageCenter((float)factor);
         UpdateZoomSlider();
     }
 
@@ -102,6 +103,14 @@ public partial class MainWindowView : PhControl
             MaximizeWindow_Click(sender, e);
         else
             App.MainWindow.BeginMoveDrag(e);
+        e.Handled = true;
+    }
+
+    private void BottomBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.Source is not Visual source || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        if (source.GetSelfAndVisualAncestors().Any(v => v is Button or ToggleButton or Slider or Thumb)) return;
+        App.MainWindow.BeginMoveDrag(e);
         e.Handled = true;
     }
 

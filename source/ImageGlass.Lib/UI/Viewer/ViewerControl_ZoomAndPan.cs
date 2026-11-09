@@ -891,6 +891,26 @@ public partial class ViewerControl
     ///     <item><c>false</c> if the viewport is unchanged.</item>
     ///   </list>
     /// </returns>
+    public bool ZoomAroundImageCenter(float factor)
+    {
+        if (BitmapSize.Width <= 0 || BitmapSize.Height <= 0) return false;
+
+        var scale = _zooming.Factor / Dpi;
+        var center = new Point(
+            DestRect.X + (BitmapSize.Width / 2 - SrcRect.X) * scale,
+            DestRect.Y + (BitmapSize.Height / 2 - SrcRect.Y) * scale);
+
+        _mousePanPositionEnabled = true;
+        if (!ZoomToPoint(factor, DrawingArea.Center)) return false;
+
+        scale = _zooming.Factor / Dpi;
+        var newCenter = new Point(
+            DestRect.X + (BitmapSize.Width / 2 - SrcRect.X) * scale,
+            DestRect.Y + (BitmapSize.Height / 2 - SrcRect.Y) * scale);
+        PanTo(newCenter.X - center.X, newCenter.Y - center.Y, null);
+        return true;
+    }
+
     public bool ZoomToPoint(float factor, Point? point = null, bool requestRerender = true)
     {
         if (factor >= _zooming.Max || factor <= _zooming.Min) return false;

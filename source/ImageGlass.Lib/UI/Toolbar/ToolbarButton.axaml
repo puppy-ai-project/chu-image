@@ -38,14 +38,17 @@
             </Setter>
         </Style>
         <Style Selector="ui|ToolbarButton:pointerover">
-            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralHoverBrush}" />
+            <Setter Property="Background" Value="#22FFFFFF" />
         </Style>
         <Style Selector="ui|ToolbarButton:pressed">
-            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralPressedBrush}" />
+            <Setter Property="Background" Value="#35FFFFFF" />
             <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
         <Style Selector="ui|ToolbarButton:checked">
-            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundChecked}" />
+            <Setter Property="Background" Value="#2F80ED" />
+        </Style>
+        <Style Selector="ui|ToolbarButton:disabled">
+            <Setter Property="Opacity" Value="0.4" />
         </Style>
     </ui:PhToolButton.Styles>
     <StackPanel
@@ -65,7 +68,7 @@
                 Height="{Binding #PART_Icon.Height}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Opacity="0.85"
+                Opacity="0.95"
                 Path="{CompiledBinding ImagePath}" />
 
             <!--  placeholder for a button that runs something but has no icon  -->
@@ -73,7 +76,7 @@
                 Width="{Binding #PART_Icon.Width}"
                 Height="{Binding #PART_Icon.Height}"
                 Data="{StaticResource IconPlaceholder}"
-                Fill="{DynamicResource TextControlForeground}"
+                Fill="#E8E6EB"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{CompiledBinding IsPlaceholderIconVisible}"

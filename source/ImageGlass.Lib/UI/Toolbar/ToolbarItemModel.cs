@@ -273,6 +273,13 @@ public partial class ToolbarItemModel : PhReactive, IJsonOnDeserialized
             var themeIconName = Core.Theme.GetIconPath(themeIconNameEnum);
             if (string.IsNullOrWhiteSpace(themeIconName)) return svgPath;
 
+            // The toolbar sits on a dark surface even when the light app theme is selected.
+            if (Core.Theme.FolderName == Const.DEFAULT_LIGHT_THEME)
+            {
+                var lightIcon = BHelper.BaseDir("_themes", Const.DEFAULT_THEME, Path.GetFileName(themeIconName));
+                if (File.Exists(lightIcon)) return lightIcon;
+            }
+
             // theme icon path
             svgPath = Path.Combine(Core.Theme.FolderPath, themeIconName);
 

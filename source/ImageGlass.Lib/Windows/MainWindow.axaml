@@ -15,7 +15,8 @@
     Title="{CompiledBinding Title}"
     BackdropStyle="{CompiledBinding Config.WindowBackdrop}"
     IsFrameless="{CompiledBinding Config.EnableFrameless}"
-    ShowTitleBarIcon="{CompiledBinding Config.ShowAppIcon}">
+    ShowTitleBarIcon="{CompiledBinding Config.ShowAppIcon}"
+    Background="#202226">
 
     <wv:MainWindowView x:Name="PART_MainView" DataContext="{CompiledBinding .}" />
 

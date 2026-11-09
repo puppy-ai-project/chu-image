@@ -53,14 +53,13 @@
         x:Name="PART_Root"
         Margin="0,0,8,0"
         Background="{x:Null}">
-        <!--  Single Unified Toolbar Container  -->
+        <!--  Single Unified Toolbar Container (现代磨砂晶体胶囊)  -->
         <Border
             Classes="toolbar-container"
-            Background="{DynamicResource IG_BackgroundNeutralBrush}"
-            BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
-            BorderThickness="1"
+            Background="Transparent"
+            BorderThickness="0"
             CornerRadius="8"
-            Padding="2"
+            Padding="3,2"
             VerticalAlignment="Center">
             <StackPanel
                 x:Name="PART_RootGrid"
@@ -130,8 +129,8 @@
                                     Width="14"
                                     Height="14"
                                     Data="{StaticResource IconInfo}"
-                                    Fill="{DynamicResource TextControlForeground}"
-                                    Opacity="0.85"
+                                    Fill="#E2E5EB"
+                                    Opacity="0.95"
                                     Stretch="Uniform"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center" />
@@ -157,8 +156,8 @@
                             HorizontalAlignment="Center">
                             <Path
                                 Data="{StaticResource IconEllipsis}"
-                                Fill="{DynamicResource TextControlForeground}"
-                                Opacity="0.85"
+                                Fill="#E2E5EB"
+                                Opacity="0.95"
                                 Stretch="Uniform"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
@@ -690,7 +689,7 @@
                         ToolTip.Tip="设置"
                         Click="SettingsButton_Click">
                         <Path Width="14" Height="14" Data="{StaticResource IconSettings}"
-                              Fill="{DynamicResource TextControlForeground}" Stretch="Uniform" />
+                              Fill="#E8E6EB" Stretch="Uniform" />
                     </ui:PhToolButton>
 
             </StackPanel>

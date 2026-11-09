@@ -15,6 +15,19 @@
     x:DataType="vm:MainWindowViewModel"
     x:Name="Root">
 
+    <ui:PhControl.Resources>
+        <!--  Modern Studio Slate Gradient: 通透高质感工作台深灰垂直微渐变 (明快高雅，不沉闷死黑)  -->
+        <LinearGradientBrush x:Key="WindowBarGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#292929" Offset="0.0" />
+            <GradientStop Color="#222222" Offset="1.0" />
+        </LinearGradientBrush>
+        <!--  Bottom Bar Gradient: 工作台深灰底部渐变  -->
+        <LinearGradientBrush x:Key="WindowBottomBarGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#292929" Offset="0.0" />
+            <GradientStop Color="#222222" Offset="1.0" />
+        </LinearGradientBrush>
+    </ui:PhControl.Resources>
+
     <ui:PhControl.Styles>
         <Style Selector="ui|GalleryControl">
             <Setter Property="Background" Value="{DynamicResource IG_ThemeGalleryBackgroundBrush}" />
@@ -124,15 +137,13 @@
         </Style>
     </ui:PhControl.Styles>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,*,Auto" Background="#202226">
         <!--  Custom Title Bar  -->
         <Border
             x:Name="PART_CustomTitleBarBorder"
             Grid.Row="0"
             Height="42"
-            Background="{DynamicResource IG_ThemeBackgroundBrush}"
-            BorderThickness="0,0,0,1"
-            BorderBrush="{DynamicResource IG_BorderNeutralBrush}">
+            Background="{StaticResource WindowBarGradient}">
             <Grid
                 x:Name="PART_CustomTitleBar"
                 ColumnDefinitions="Auto,*,Auto"
@@ -205,10 +216,9 @@
                         x:Name="PART_CustomTitle"
                         VerticalAlignment="Center"
                         Margin="4,0,12,0"
-                        FontSize="12"
+                        FontSize="12.5"
                         FontWeight="Medium"
-                        Foreground="{DynamicResource IG_ThemeForegroundBrush}"
-                        Opacity="0.88"
+                        Foreground="#F3F4F6"
                         TextTrimming="CharacterEllipsis"
                         MaxWidth="280"
                         IsHitTestVisible="False" />
@@ -245,7 +255,7 @@
                             <Line
                                 StartPoint="0,5"
                                 EndPoint="10,5"
-                                Stroke="{DynamicResource TextControlForeground}"
+                                Stroke="#E5E7EB"
                                 StrokeThickness="1" />
                         </Panel>
                     </Button>
@@ -259,7 +269,7 @@
                                 x:Name="PART_PathMaximize"
                                 Width="10"
                                 Height="10"
-                                Stroke="{DynamicResource TextControlForeground}"
+                                Stroke="#E5E7EB"
                                 StrokeThickness="1" />
                             <Path
                                 x:Name="PART_PathRestore"
@@ -267,7 +277,7 @@
                                 Height="10"
                                 Data="M 2,0 H 10 V 8 H 8 M 0,2 H 8 V 10 H 0 Z"
                                 IsVisible="False"
-                                Stroke="{DynamicResource TextControlForeground}"
+                                Stroke="#E5E7EB"
                                 StrokeThickness="1" />
                         </Panel>
                     </Button>
@@ -280,12 +290,12 @@
                             <Line
                                 StartPoint="0,0"
                                 EndPoint="10,10"
-                                Stroke="{DynamicResource TextControlForeground}"
+                                Stroke="#E5E7EB"
                                 StrokeThickness="1.1" />
                             <Line
                                 StartPoint="10,0"
                                 EndPoint="0,10"
-                                Stroke="{DynamicResource TextControlForeground}"
+                                Stroke="#E5E7EB"
                                 StrokeThickness="1.1" />
                         </Panel>
                     </Button>
@@ -300,8 +310,9 @@
                 x:Name="PART_ViewerWrapper"
                 Grid.Row="1"
                 RowDefinitions="*, Auto">
-                <Border Background="{DynamicResource IG_ViewerBackgroundBrush}">
-                    <viewer:ViewerControl
+                <Border Background="{StaticResource WindowBarGradient}">
+                    <Border Background="Transparent">
+                        <viewer:ViewerControl
                         x:Name="PART_Viewer"
                         Grid.Row="0"
                         CheckerboardMode="{CompiledBinding CheckerboardMode, Source={x:Static cm:Core.Config}}"
@@ -327,6 +338,7 @@
                             <ui:MotionPhotoOverlayControl x:Name="PART_MotionOverlay" />
                         </Panel>
                     </viewer:ViewerControl>
+                </Border>
                 </Border>
 
                 <!--  Tool host  -->
@@ -356,22 +368,27 @@
                 ResizeDirection="Columns" />
         </Grid>
 
-        <Border Grid.Row="2" Background="{DynamicResource IG_ThemeBackgroundBrush}"
-                BorderBrush="{DynamicResource IG_BorderNeutralBrush}" BorderThickness="0,1,0,0"
-                Padding="8,3">
+        <Border Grid.Row="2" Background="{StaticResource WindowBottomBarGradient}"
+                Padding="8,4" PointerPressed="BottomBar_PointerPressed">
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="6">
-                <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="28" Height="28">
-                    <TextBlock Text="−" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="28" Height="28" CornerRadius="6">
+                    <TextBlock Foreground="#F3F4F6" Text="−" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </ui:PhToolButton>
-                <Slider x:Name="PART_ZoomSlider" Width="140" Minimum="0" Maximum="1000"
-                        VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged" />
-                <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="28" Height="28">
-                    <TextBlock Text="+" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <Slider x:Name="PART_ZoomSlider" Width="260" Minimum="0" Maximum="1000"
+                        VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged">
+                    <Slider.Resources>
+                        <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
+                        <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />
+                        <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="#2563EB" />
+                    </Slider.Resources>
+                </Slider>
+                <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="28" Height="28" CornerRadius="6">
+                    <TextBlock Foreground="#F3F4F6" Text="+" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </ui:PhToolButton>
-                <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" Width="40" Height="28">
-                    <TextBlock Text="1:1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" Width="40" Height="28" CornerRadius="6">
+                    <TextBlock Foreground="#F3F4F6" Text="1:1" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </ui:PhToolButton>
-                <TextBlock x:Name="PART_ZoomPercentage" Width="58" VerticalAlignment="Center" TextAlignment="Right" />
+                <TextBlock Foreground="#F3F4F6" FontWeight="Medium" FontSize="12.5" x:Name="PART_ZoomPercentage" Width="58" VerticalAlignment="Center" TextAlignment="Right" />
             </StackPanel>
         </Border>
 
