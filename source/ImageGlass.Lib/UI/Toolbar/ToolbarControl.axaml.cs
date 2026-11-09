@@ -37,6 +37,8 @@ namespace ImageGlass.UI;
 
 public partial class ToolbarControl : PhControl
 {
+    private async void SettingsButton_Click(object? sender, RoutedEventArgs e) =>
+        await Core.API.RunApiAsync(API.IG_OpenSettings);
     private void ImageInfo_Click(object? sender, RoutedEventArgs e) => App.MainWindow.ToggleImageInfoWindow();
 
     public ToolbarControlModel VM => (ToolbarControlModel)DataContext!;
@@ -390,8 +392,8 @@ public partial class ToolbarControl : PhControl
             srcIndex++;
             vm.SourceIndex = srcIndex;
 
-            // Older saved toolbar layouts may still contain the removed delete button.
-            if (vm.Id == "Btn_Delete") continue;
+            // Keep these tools hidden even when they are present in a saved layout.
+            if (vm.Id is "Btn_Delete" or "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker") continue;
 
 
             // create toolbar item element
@@ -476,11 +478,11 @@ public partial class ToolbarControl : PhControl
         }
         primaryList.Insert(Math.Min(2, primaryList.Count), actualSize);
 
-        var afterCrop = false;
+        var cropIndex = ItemsSource.ToList().FindIndex(item => item.Id == "Btn_Crop");
+        var afterCrop = cropIndex >= 0;
         foreach (var item in primaryList.OfType<ToolbarButton>())
         {
-            if (item.VM.Id == "Btn_Crop") afterCrop = true;
-            if (afterCrop) item.SetIconSize(14);
+            if (afterCrop && item.VM.SourceIndex > cropIndex) item.SetIconSize(14);
         }
         if (afterCrop)
         {

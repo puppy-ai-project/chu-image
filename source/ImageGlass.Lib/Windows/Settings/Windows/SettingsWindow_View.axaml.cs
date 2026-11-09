@@ -322,7 +322,9 @@ public partial class SettingsWindowView : PhControl
     private void InitSettingsPage(SettingsViewModel vm)
     {
         _vm = vm;
-        _navItems = SettingsNavItem.CreateDefaultList();
+        // Keep only file associations visible and searchable for now.
+        _navItems = SettingsNavItem.CreateDefaultList()
+            .Where(item => item.NavId == SettingsNavId.FileAssociations).ToList();
 
         // Build every page up front so the search index and navigate-by-config see all
         // settings (not just visited pages). Pages are lightweight.

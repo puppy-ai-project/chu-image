@@ -130,7 +130,7 @@ public partial class MainWindow : PhWindow
         // the application (⌘) menu is defined in App.axaml
         if (OperatingSystem.IsMacOS())
         {
-            NativeMenu.SetMenu(this, PART_MainView.PART_Toolbar.BuildNativeWindowMenu());
+            NativeMenu.SetMenu(this, new NativeMenu());
         }
 
         // control events
@@ -223,6 +223,13 @@ public partial class MainWindow : PhWindow
         {
             e.Handled = true;
             await Core.API.RunApiAsync(API.IG_CloseTool, CropImageToolControl.TOOL_ID);
+            return;
+        }
+
+        if (new Hotkey(e).IsSame(Key.Escape) && Core.Config.EnableFullScreen)
+        {
+            e.Handled = true;
+            await Core.API.RunApiAsync(API.IG_ToggleFullScreen, "false");
             return;
         }
 

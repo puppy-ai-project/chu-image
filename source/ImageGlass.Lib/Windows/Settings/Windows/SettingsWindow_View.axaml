@@ -130,6 +130,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     Click="License_Click"
+                    IsVisible="False"
                     FontWeight="SemiBold"
                     Variant="Outline" />
 

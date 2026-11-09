@@ -182,7 +182,7 @@
 
 
                     <!--  Main Menu button  -->
-                    <Panel VerticalAlignment="Center">
+                    <Panel VerticalAlignment="Center" IsVisible="False">
                         <!--  Update ready badge  -->
                         <Border
                             x:Name="PART_UpdateBadge"
@@ -678,6 +678,20 @@
                         </ui:ToolbarButton.DropdownMenu>
                     </ui:ToolbarButton>
                 </Panel>
+
+                    <ui:PhToolButton
+                        x:Name="PART_BtnSettings"
+                        Width="30"
+                        Height="30"
+                        Padding="0"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        Focusable="False"
+                        ToolTip.Tip="设置"
+                        Click="SettingsButton_Click">
+                        <Path Width="14" Height="14" Data="{StaticResource IconSettings}"
+                              Fill="{DynamicResource TextControlForeground}" Stretch="Uniform" />
+                    </ui:PhToolButton>
 
             </StackPanel>
             </Border>

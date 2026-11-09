@@ -317,6 +317,7 @@ public class ImageInfoOverlayControl : PhOverlay
     {
         get
         {
+            if (Core.Config.EnableFullScreen) return false;
             var mode = Core.Config.ImageInfoOverlayMode;
             if (mode == ImageInfoOverlayMode.Hidden) return false;
 
