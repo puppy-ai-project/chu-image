@@ -1,0 +1,164 @@
+<div align="center">
+
+# 🖼️ ImageGlass
+
+### A Fast, Seamless Photo Viewer
+
+ImageGlass is a fast, modern, open-source image viewer for Windows, macOS, and Linux. It pairs high-performance rendering with a smooth, immersive viewing experience and powerful tools for everyday users and designers alike, with seamless navigation across 90+ image formats, including `WEBP`, `JXL`, `SVG`, `HEIC`, `AVIF`, `HDR`, and raw images.
+
+Built enterprise-ready, ImageGlass Pro supports managed deployment through preset config files that work across every platform and package. IT teams can roll out a preconfigured app config, enforce admin-locked settings, and lock individual features on every managed device.
+
+<br/>
+
+[![Total downloads](https://img.shields.io/github/downloads/d2phap/imageglass/total?color=%23d60068&label=Total%20downloads&)](https://imageglass.org/pricing)
+[![Latest version downloads](https://img.shields.io/github/downloads/d2phap/imageglass/latest/total?color=%23e66700&label=Latest%20version&)](https://imageglass.org/pricing)
+
+[![Discord](https://img.shields.io/discord/818852544859209748?label=chat&logo=discord&color=%233097B8&style=social)](https://discord.gg/tWjbynH2X8)
+[![Twitter Follow](https://img.shields.io/twitter/follow/d2phap?style=social)](https://twitter.com/d2phap)
+[![Crowdin](https://d322cqt584bo4o.cloudfront.net/imageglass/localized.svg)](https://crowdin.com/project/imageglass)
+
+<br/>
+
+[**🌐 Website**](https://imageglass.org) &nbsp;•&nbsp;
+[**📥 Pricing**](https://imageglass.org/pricing) &nbsp;•&nbsp;
+[**🧩 Plugins**](https://imageglass.org/plugins) &nbsp;•&nbsp;
+[**📐 Tools**](https://imageglass.org/tools) &nbsp;•&nbsp;
+[**📚 Docs**](https://imageglass.org/docs) &nbsp;•&nbsp;
+[**💬 Support**](https://imageglass.org/support)
+
+<br/>
+
+[![ImageGlass 10](https://github.com/user-attachments/assets/ca49c1be-4ab6-4714-b23b-8b094b5eda90)](https://imageglass.org/news/introducing-imageglass-10-rebuilt-for-speed-and-cross-platform-support-107)
+
+</div>
+
+<br/>
+
+
+<table>
+<tr valign="top">
+<td width="25%" align="center"><a target="_blank" href="https://buy.stripe.com/dRmfZh2wJaCSaOB1h7fUQ09?client_reference_id=pro-individual__onetime__imageglass-10-0-6-906-66"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-individual-dark.svg"/>
+  <img src=".github/assets/pricing/pro-individual.svg" width="100%" alt="Pro Individual: $14.90 one-time, 1 user or device, Pro license, Pro v10.x updates"/>
+</picture></a></td>
+<td width="25%" align="center"><a target="_blank" href="https://buy.stripe.com/6oU8wP5IVh1g4qdcZPfUQ0a?client_reference_id=pro-team__onetime__imageglass-10-0-6-906-66"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-team-dark.svg"/>
+  <img src=".github/assets/pricing/pro-team.svg" width="100%" alt="Pro Team: $69 one-time, up to 3 users, Commercial Pro license, Pro v10.x updates"/>
+</picture></a></td>
+<td width="25%" align="center"><a target="_blank" href="https://imageglass.org/pricing"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-business-dark.svg"/>
+  <img src=".github/assets/pricing/pro-business.svg" width="100%" alt="Pro Business: volume pricing by number of users, invoiced for 1–3 years, Commercial Pro license, all versions, priority support"/>
+</picture></a></td>
+<td width="25%" align="center"><a target="_blank" href="https://imageglass.org/download"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/classic-dark.svg"/>
+  <img src=".github/assets/pricing/classic.svg" width="100%" alt="Classic: free, unlimited users, GPLv3 license, all versions, community support"/>
+</picture></a></td>
+</tr>
+</table>
+
+👉 Compare all plans and features at [imageglass.org/pricing](https://imageglass.org/pricing).
+
+<br/>
+
+
+> [!Caution]
+> ### Security Alert: Beware of Fake ImageGlass Downloads
+> Malicious campaigns are using AI tools to impersonate trusted software through fake GitHub profiles, forks, and Gists that spread malware. Download ImageGlass only from its official sources:
+> - Website: [**imageglass.org**](https://imageglass.org)
+> - GitHub: [**github.com/d2phap/ImageGlass**](https://github.com/d2phap/ImageGlass) and the [**github.com/ImageGlass**](https://github.com/ImageGlass)
+>
+> Any other repo, fork, or Gist offering ImageGlass builds is not mine. Always check the URL before downloading.
+
+<br/>
+
+
+## Features
+Primarily a photo viewer, ImageGlass offers a wide array of features geared toward image viewing, along with some focused editing capabilities. Here are some of the key features:
+- Supports [90+ image formats](https://imageglass.org/docs/supported-formats) out of the box
+- Hardware-aware smart caching
+- Super-fast image browsing with Turbo mode
+- Slideshow with random interval and sound notification
+- Native SVG and SVGZ vector rendering
+- Animated GIF, WEBP, and SVG playback
+- Color management and basic HDR support
+- Different cursor-precise zoom modes with flexible image interpolations
+- Different window modes: Frameless, Window Fit, Full screen
+- Built-in Tools: Rotate, Flip, Crop, Resize, Color Picker, Frame Navigation, Lossless compression...
+- EXIF metadata viewing through the [ExifGlass tool](https://github.com/d2phap/ExifGlass)
+- Touch gestures for zoom and pan
+- Themes, layouts, and custom hotkeys
+- Custom action binding for toolbar, mouse...
+- [Plugins](https://imageglass.org/plugins) and [external tools](https://imageglass.org/tools) support via [ImageGlass.SDK](https://github.com/ImageGlass/SDK)
+- Managed deployment with [preset app config](https://imageglass.org/docs/app-configs), admin-locked settings, and feature lock, for all platforms and packages (Available for Pro only)
+- Windows: Explorer sort order support
+- Windows: Custom file type icon pack (Not available for Store release)
+
+👉 Visit https://imageglass.org/docs/features to explore all features of ImageGlass.
+
+<br/>
+
+
+## Plugins & Tools
+Extend ImageGlass with codec plugins that open more image formats, and with tools that work alongside it.
+
+
+| Plugin | Author | Description | Platforms |
+| :--- | :--- | :--- | :--- |
+| [AVIF Codec](https://github.com/aplefull/imageglass-avif-plugin) | [aplefull](https://github.com/aplefull) | Opens still and animated `.avif` files, using libavif, dav1d and libyuv | Windows, macOS, Linux |
+| [WIC Codec](https://github.com/d2phap/wic-imageglass-plugin) | [d2phap](https://github.com/d2phap) | Brings the Windows Imaging Component in as a native codec, including JPEG XR (`.jxr`, `.hdp`, `.wdp`) | Windows |
+| [APNG Codec](https://github.com/d2phap/apng-imageglass-plugin) | [d2phap](https://github.com/d2phap) | Plays animated `.apng` files | Windows, macOS, Linux |
+| [ITHMB Codec](https://github.com/B67687/Imageglass-Ithmb-Plugin) | [B67687](https://github.com/B67687) | Decodes `.ithmb` thumbnail files using [Ithmb-Codec](https://github.com/B67687/Ithmb-Codec) | Windows, macOS, Linux |
+
+
+| Tool | Author | Description | Platforms |
+| :--- | :--- | :--- | :--- |
+| [ExifGlass](https://github.com/d2phap/ExifGlass) | [d2phap](https://github.com/d2phap) | Reads the camera settings, lens, location, and color profile in any photo | Windows, macOS, Linux |
+| [FewerPhotos](https://imageglass.org/fewerphotos) | [d2phap](https://github.com/d2phap) | Cleans up the photo folders you already have: duplicates, blurry shots, and sorting by date | Windows, macOS |
+
+👉 Browse the [plugins](https://imageglass.org/plugins) and [tools](https://imageglass.org/tools), or build your own with [ImageGlass.SDK](https://imageglass.org/docs/codec-plugins).
+
+<br/>
+
+
+## System Requirements
+**Version 10**
+- Windows 10/11 x64 or arm64, version 1809 (build 17763) or later
+- macOS 14+, Apple Silicon arm64
+- Linux Desktop X11 x64: Ubuntu 20.04+, Linux Mint 20+, Debian 11+, Fedora 30+, RHEL/Alma/Rocky 9+,...
+
+**Version 9**
+- Windows 10/11 x64 or arm64, version 1809 (build 17763) or later
+- Optional: [WebView2 Runtime 64-bit v119.0.2151 or later](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+
+<br/>
+
+
+## Development
+The `develop` branch contains the latest commits, while the `prod` branch holds the final stable release.
+
+**Version 10**: Located in `source` folder
+- Visual Studio 2026 for Windows build
+- VS Code for macOS, Linux build
+- Run a task from VS Code to build, publish, or pack the app
+  + Note: for debug builds, copy the contents of `source/__assets/__app/` into the build output folder, beside the ImageGlass executable, before launching it.
+
+**Version 9**: Located in `v9` folder
+- Visual Studio 2026 on Windows 11
+- VS Code for `WebUI`
+
+<br/>
+
+
+## Roadmap
+
+[![ImageGlass 2026 roadmap](.github/assets/ig_roadmap.svg)](https://github.com/d2phap/ImageGlass/discussions/2287)
+
+<br/>
+
+
+## This project needs your help!
+
+If you find ImageGlass useful and would like to support its ongoing development, please consider making a donation or purchase Pro edition. Your support — whether financial or simply sharing ImageGlass with others — means the world to me. Every bit helps keep the project alive for everyone.
+
+#### 👉 Explore the ways to support at [imageglass.org/donate](https://imageglass.org/donate).
+

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Platforms>x64;ARM64</Platforms>
+    <IgPlatformId>linux</IgPlatformId>
+
+    <LangVersion>Preview</LangVersion>
+    <Features>$(Features);runtime-async=on</Features>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  
+
+  <PropertyGroup Label="Avalonia">
+    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaNameGeneratorDefaultFieldModifier>Public</AvaloniaNameGeneratorDefaultFieldModifier>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>icon256.ico</ApplicationIcon>
+    <AssemblyName>ImageGlass</AssemblyName>
+    <AssemblyTitle>ImageGlass $(Version)</AssemblyTitle>
+    <PublishAot>True</PublishAot>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.HarfBuzz" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Tmds.DBus.Protocol" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\ImageGlass.Lib\ImageGlass.Lib.csproj" />
+  </ItemGroup>
+</Project>

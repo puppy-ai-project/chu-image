@@ -1,0 +1,150 @@
+<ui:PhControl
+    x:Class="ImageGlass.Tools.CropImageToolControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:ImageGlass.UI"
+    mc:Ignorable="d"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:Name="Root"
+    Padding="6,12">
+
+    <WrapPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        ItemSpacing="24"
+        ItemsAlignment="Center"
+        LineSpacing="8"
+        Orientation="Horizontal">
+
+        <!--  Aspect ratio  -->
+        <StackPanel
+            MinWidth="150"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="6">
+            <ui:PhTextBlock
+                VerticalAlignment="Center"
+                LangKey="Tool_Crop_LblAspectRatio"
+                Opacity="0.6" />
+            <ComboBox x:Name="PART_CmdAspectRatio" MinWidth="100">
+                <ComboBoxItem>[Free Ratio]</ComboBoxItem>
+                <ComboBoxItem>[Custom]</ComboBoxItem>
+                <ComboBoxItem>[Original]</ComboBoxItem>
+                <ComboBoxItem>1:1</ComboBoxItem>
+                <ComboBoxItem>1:2</ComboBoxItem>
+                <ComboBoxItem>2:1</ComboBoxItem>
+                <ComboBoxItem>2:3</ComboBoxItem>
+                <ComboBoxItem>3:2</ComboBoxItem>
+                <ComboBoxItem>3:4</ComboBoxItem>
+                <ComboBoxItem>4:3</ComboBoxItem>
+                <ComboBoxItem>9:16</ComboBoxItem>
+                <ComboBoxItem>16:9</ComboBoxItem>
+            </ComboBox>
+
+            <!--  Custom ratio  -->
+            <NumericUpDown
+                x:Name="PART_NumRatioFrom"
+                Minimum="1"
+                ParsingNumberStyle="Integer"
+                ShowButtonSpinner="False" />
+            <NumericUpDown
+                x:Name="PART_NumRatioTo"
+                Minimum="1"
+                ParsingNumberStyle="Integer"
+                ShowButtonSpinner="False" />
+        </StackPanel>
+
+
+        <!--  Selection rectangle  -->
+        <WrapPanel
+            ItemSpacing="24"
+            LineSpacing="8"
+            Orientation="Horizontal">
+            <!--  Location  -->
+            <StackPanel
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="6">
+                <ui:PhTextBlock
+                    VerticalAlignment="Center"
+                    LangKey="Tool_Crop_LblLocation"
+                    Opacity="0.6" />
+
+                <NumericUpDown
+                    x:Name="PART_NumX"
+                    KeyDown="NumericUpDown_KeyDown"
+                    Minimum="0"
+                    ParsingNumberStyle="Integer"
+                    ShowButtonSpinner="False" />
+                <NumericUpDown
+                    x:Name="PART_NumY"
+                    KeyDown="NumericUpDown_KeyDown"
+                    Minimum="0"
+                    ParsingNumberStyle="Integer"
+                    ShowButtonSpinner="False" />
+            </StackPanel>
+
+            <!--  Size  -->
+            <StackPanel
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="6">
+                <ui:PhTextBlock
+                    VerticalAlignment="Center"
+                    LangKey="Tool_Crop_LblSize"
+                    Opacity="0.6" />
+
+                <NumericUpDown
+                    x:Name="PART_NumWidth"
+                    KeyDown="NumericUpDown_KeyDown"
+                    Minimum="0"
+                    ParsingNumberStyle="Integer"
+                    ShowButtonSpinner="False" />
+                <NumericUpDown
+                    x:Name="PART_NumHeight"
+                    KeyDown="NumericUpDown_KeyDown"
+                    Minimum="0"
+                    ParsingNumberStyle="Integer"
+                    ShowButtonSpinner="False" />
+            </StackPanel>
+        </WrapPanel>
+
+
+        <!--  Action buttons  -->
+        <WrapPanel
+            HorizontalAlignment="Center"
+            ItemSpacing="6"
+            LineSpacing="6"
+            Orientation="Horizontal">
+            <ui:PhButton
+                x:Name="PART_BtnCrop"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconCrop}" />
+            <ui:PhButton
+                x:Name="PART_BtnCopy"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconCopy}" />
+            <ui:PhButton
+                x:Name="PART_BtnSave"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconSave}" />
+            <ui:PhButton
+                x:Name="PART_BtnSaveAs"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconSaveAs}" />
+            <ui:PhButton
+                x:Name="PART_BtnReset"
+                MinWidth="80"
+                HorizontalContentAlignment="Center"
+                IconData="{StaticResource IconReset}" />
+        </WrapPanel>
+
+    </WrapPanel>
+</ui:PhControl>

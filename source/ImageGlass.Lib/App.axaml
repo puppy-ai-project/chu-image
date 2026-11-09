@@ -1,0 +1,68 @@
+<Application
+    x:Class="ImageGlass.Common.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ImageGlass.UI"
+    Name="ImageGlass"
+    RequestedThemeVariant="Default">
+
+    <!--  macOS application menu  -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem
+                Click="AppMenuAbout_Click"
+                CommandParameter="Menu_MnuAbout"
+                Header="About ImageGlass" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem
+                Click="AppMenuUpgradeLicense_Click"
+                CommandParameter="Menu_MnuUpgradeLicense"
+                Header="Upgrade to ImageGlass Pro" />
+            <NativeMenuItem
+                Click="AppMenuManageLicense_Click"
+                CommandParameter="Menu_MnuManageLicense"
+                Header="Manage Pro license" />
+            <NativeMenuItemSeparator />
+            <NativeMenuItem
+                Click="AppMenuSettings_Click"
+                CommandParameter="Menu_MnuSettings"
+                Header="Settings…" />
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/ButtonStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/ComboBoxStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/TextBoxStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/NumericUpDownStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/CheckBoxStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/RadioButtonStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/ToggleSwitchStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/MenuStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/ListBoxItemStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/TabControlStyle.axaml" />
+        <StyleInclude Source="avares://ImageGlass.Lib/UI/Styles/ControlStyle.axaml" />
+
+    </Application.Styles>
+
+
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/CommonResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/ToggleSwitchResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/IconResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/ScrollBarResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/MenuResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/ComboBoxResources.axaml" />
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/SliderStyle.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

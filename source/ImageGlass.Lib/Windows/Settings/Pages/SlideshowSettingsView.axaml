@@ -1,0 +1,156 @@
+<windows:SettingsPageView
+    x:Class="ImageGlass.Common.Windows.SlideshowSettingsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:types="using:ImageGlass.Common.Types"
+    xmlns:ui="using:ImageGlass.UI"
+    xmlns:windows="using:ImageGlass.Common.Windows"
+    mc:Ignorable="d"
+    d:DesignWidth="600"
+    HorizontalAlignment="Stretch">
+
+    <StackPanel Orientation="Vertical">
+
+        <!--  Appearance  -->
+        <ui:PhTextBlock Classes="group" LangKey="Settings_Slideshow_Appearance" />
+        <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
+            <CheckBox x:Name="PART_FullscreenSlideshow">
+                <ui:PhTextBlock LangKey="Settings_EnableFullscreenSlideshow" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox x:Name="PART_SlideshowCountdown">
+                <ui:PhTextBlock LangKey="Settings_EnableSlideshowCountdown" TextWrapping="Wrap" />
+            </CheckBox>
+
+            <!--  Slideshow Background  -->
+            <StackPanel Margin="0,10,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
+                <ui:PhTextBlock LangKey="_BackgroundColor" />
+                <ui:PhColorPickerControl x:Name="PART_BgColor" HorizontalAlignment="Left" />
+            </StackPanel>
+        </StackPanel>
+
+
+        <!--  Playback  -->
+        <ui:PhTextBlock Classes="group" LangKey="Settings_Slideshow_Playback" />
+        <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
+            <CheckBox x:Name="PART_LoopSlideshow">
+                <ui:PhTextBlock LangKey="Settings_EnableLoopSlideshow" TextWrapping="Wrap" />
+            </CheckBox>
+            <CheckBox x:Name="PART_RandomInterval">
+                <ui:PhTextBlock LangKey="Settings_EnableSlideshowRandomInterval" TextWrapping="Wrap" />
+            </CheckBox>
+
+            <!--  Interval sub-group (heading shows the live from–to range)  -->
+            <TextBlock
+                x:Name="PART_IntervalHeading"
+                Classes="subgroup"
+                TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="14">
+                <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
+                    <ui:PhTextBlock x:Name="PART_IntervalFromLabel" LangKey="Settings_SlideshowInterval_From" />
+                    <ui:PhTextBox
+                        x:Name="PART_SlideshowInterval"
+                        Width="150"
+                        AcceptValue="UnsignedFloatValueOnly" />
+                </StackPanel>
+                <StackPanel x:Name="PART_IntervalToSection" Spacing="{DynamicResource SettingsLabelInputGap}">
+                    <ui:PhTextBlock LangKey="Settings_SlideshowInterval_To" />
+                    <ui:PhTextBox
+                        x:Name="PART_SlideshowIntervalTo"
+                        Width="150"
+                        AcceptValue="UnsignedFloatValueOnly" />
+                </StackPanel>
+            </StackPanel>
+
+            <!--  Notification sound  -->
+            <StackPanel Margin="0,14,0,0" Spacing="{DynamicResource SettingsLabelInputGap}">
+                <ui:PhTextBlock LangKey="Settings_SlideshowImagesToNotifySound" TextWrapping="Wrap" />
+                <ui:PhTextBox
+                    x:Name="PART_NotifySound"
+                    Width="200"
+                    HorizontalAlignment="Left"
+                    AcceptValue="UnsignedIntValueOnly" />
+            </StackPanel>
+
+            <!--  Sub-group: Transition effect (both labels share the subgroup style, so they sit on one line)  -->
+            <StackPanel Spacing="{DynamicResource SettingsLabelInputGap}">
+                <Grid
+                    HorizontalAlignment="Left"
+                    ColumnDefinitions="Auto,Auto"
+                    RowDefinitions="Auto,Auto">
+                    <ui:PhTextBlock Classes="subgroup" LangKey="Settings_TransitionEffect" />
+                    <ui:PhTextBlock
+                        Grid.Column="1"
+                        Margin="14,10,0,4"
+                        Classes="subgroup"
+                        FontWeight="Normal"
+                        LangKey="Settings_TransitionDuration" />
+
+                    <ComboBox
+                        x:Name="PART_Transition"
+                        Grid.Row="1"
+                        MinWidth="200">
+                        <ComboBox.Styles>
+                            <Style x:DataType="windows:TransitionEffectOption" Selector="ComboBoxItem">
+                                <Setter Property="IsEnabled" Value="{CompiledBinding !IsDivider}" />
+                                <Setter Property="ToolTip.Tip" Value="{CompiledBinding DisplayFilePath}" />
+                            </Style>
+                            <Style Selector="ComboBoxItem:disabled">
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="Padding" Value="0,2" />
+                            </Style>
+                        </ComboBox.Styles>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="windows:TransitionEffectOption">
+                                <Panel>
+                                    <Separator Margin="0" IsVisible="{CompiledBinding IsDivider}" />
+                                    <StackPanel
+                                        MaxWidth="200"
+                                        IsVisible="{CompiledBinding !IsDivider}"
+                                        Spacing="2">
+                                        <TextBlock Text="{CompiledBinding Name}" TextTrimming="CharacterEllipsis" />
+
+                                        <!--  effect file path  -->
+                                        <TextBlock
+                                            FontSize="{x:Static types:Const.FONT_SIZE_SMALL}"
+                                            IsVisible="{CompiledBinding HasFilePath}"
+                                            Opacity="0.6"
+                                            Text="{CompiledBinding DisplayFilePath}"
+                                            TextTrimming="PathSegmentEllipsis" />
+                                    </StackPanel>
+                                </Panel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.SelectionBoxItemTemplate>
+                            <DataTemplate x:DataType="windows:TransitionEffectOption">
+                                <TextBlock Text="{CompiledBinding Name}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ComboBox.SelectionBoxItemTemplate>
+                    </ComboBox>
+                    <ui:PhTextBox
+                        x:Name="PART_TransitionDuration"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Width="200"
+                        Margin="14,0,0,0"
+                        AcceptValue="UnsignedIntValueOnly" />
+                </Grid>
+
+                <ui:PhTextBlock
+                    x:Name="PART_TransitionError"
+                    Foreground="{DynamicResource IG_TextDangerBrush}"
+                    IsVisible="False"
+                    TextWrapping="Wrap" />
+                <StackPanel
+                    Margin="0,8,0,8"
+                    HorizontalAlignment="Left"
+                    Spacing="8">
+                    <ui:PhButton x:Name="PART_OpenTransitionsFolder" Variant="Link" />
+                    <ui:PhButton x:Name="PART_GetMoreTransitions" Variant="Link" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+    </StackPanel>
+</windows:SettingsPageView>

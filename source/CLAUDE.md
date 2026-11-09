@@ -1,0 +1,673 @@
+# ImageGlass v10
+
+## Project Overview
+ImageGlass v10 is a complete rewrite in **C# with .NET 11**, using **Avalonia 12** for cross-platform image viewing and **SkiaSharp 4.152.x** for high-performance rendering. The primary targets are **Windows, macOS, Linux** on x64 and ARM64 with AOT (Ahead-of-Time) publishing enabled.
+
+## Repository Layout
+- **`/source`** — v10 source code (the active codebase; this `CLAUDE.md` lives here). All development happens here.
+- **`/v9`** — legacy v9 source code (WinForms/.NET, archived).
+
+> **Default to v10 (`/source`).** Do not read, modify, or reference the v9 source in `/v9` unless the user explicitly asks about v9 or requests porting/comparison work.
+
+**Key Projects:**
+- `ImageGlass.Lib`: Core library (net11.0) — UI controls, rendering, codecs, themes, localization, settings
+- `ImageGlass.Win32`: Windows desktop app (net11.0-windows10.0.19041.0) — entry point with Win32 APIs and platform-specific services
+- `ImageGlass.Linux`: Linux desktop app (net11.0) — entry point with Linux-specific services
+- `ImageGlass.Mac`: macOS desktop app (net11.0) — entry point with macOS-specific services
+
+---
+
+## Critical Focus Areas (Always Prioritize)
+
+### 1. AOT/Trim Safety
+- **All platform projects** (Win32, Linux, Mac) use `PublishAot=true` and `PublishTrimmed=true` with trim analyzer enabled.
+- **Win32 project** additionally uses `DisableRuntimeMarshalling=true` and CsWin32 code generation.
+- Avoid reflection-based serialization; use custom JSON converters in `Common/Types/JsonTypeConverters/`.
+- Test AOT builds: `dotnet publish ImageGlass.Win32 -c Release` produces a self-contained, trimmed executable.
+
+### 2. Thread-Safety (No Data Races)
+- Use `Lock` for protecting shared state (not `object` locks).
+- Use `InterlockedBool` instead of plain `bool` for concurrent flags.
+- Use `ConcurrentDictionary` for thread-safe collections (`PhotoManager` index).
+- Always check `IsDisposed` before accessing resources in multi-threaded contexts.
+- Example: `PhotoManager` uses `Lock _lock` to protect `_items`, `_dict`, and `_cachedIndexes`.
+
+### 3. Memory Leak Prevention
+- Use `try/finally` or `using` statements for all `SKObject` acquisitions.
+- Override `OnDisposing()` in `PhDisposable` subclasses to clean up unmanaged resources.
+- Example: `MipmapTileCache` evicts with `RequestDispose()` (never `Dispose()`) so an in-flight render lease stays valid.
+- Always dispose `SKImageRef` leases when done; use `KeepAlive()` pattern in `MipmapTileCache`.
+
+### 4. Memory Usage Control
+- Respect cache limits: `MipmapTileCache` caps 100 tiles; `PhotoManager_Caching` honors `Config.MaxMemoryCacheInMb`, `Config.MaxFileSizeCacheInMb`, `Config.MaxDimensionCache`.
+- LRU eviction is mandatory in tile and photo caches to prevent unbounded growth.
+- **Hard decode ceiling**: no `SKBitmap` or raster `SKImage` may exceed `int.MaxValue` bytes, whatever the free RAM. That is ~536 MP at 4 bpp, ~268 MP at `RgbaF16`, ~134 MP at `RgbaF32`. There is no bypass: `SKImage.FromPixels` from an `SKData`, a raw pointer, or an `SKPixmap` all fail at the same boundary, so host-owned-buffer tricks do not help. Both codecs shrink to fit instead of failing (see "Oversized image decode").
+- Mark a finished bitmap `SetImmutable()` before `SKImage.FromBitmap` (`SkiaCodec.ToSKImageNoCopy`), otherwise Skia duplicates the entire pixel buffer and doubles peak memory.
+- Profile memory with large images and GIF animations to ensure caches don't leak.
+
+### 5. Cross-Platform Design
+- **Interfaces first** in `ImageGlass.Lib/Common/ServiceProviders/*`: `IFileSearchProvider`, `IShellProvider`, `IPrintProvider`, etc.
+- **Implementations** per platform:
+  - `ImageGlass.Win32/Common/ServiceProviders/*`: `Win32FileSearchProvider`, `Win32ShellProvider`, etc.
+  - `ImageGlass.Linux/Common/ServiceProviders/*`: `LinuxPrintProvider`, `LinuxShellProvider`, etc.
+  - `ImageGlass.Mac/Common/ServiceProviders/*`: `MacPrintProvider`, `MacShellProvider`, etc.
+- Register service providers in each platform's `Program.cs` before app bootstrap.
+- Avoid platform-specific code in library; use dependency injection via `Core.API`, `Core.FileSearchProvider`, etc.
+
+---
+
+## Architecture Highlights
+
+### Core Application Layers
+1. **Core Static Hub** (`Core.cs`, `Core_Events.cs`): Central event dispatcher and singleton registry
+   - `Core.AppInstance`: App lifecycle & unique instance enforcement
+   - `Core.Config`: Global configuration state
+   - `Core.Photos`: Photo collection and file searching
+   - Events: `LanguageChanged`, `ThemeChanged`, `PhotoUnloaded`, `PhotoSaved`, `ColorProfileChanged`
+   - Service provider slots: `ShellProvider`, `PreviewProvider`, `FileSearchProvider`, `PrintProvider`, `API`
+
+2. **Service Providers** (Plug-in Pattern)
+   - Platform-agnostic interfaces in `ImageGlass.Lib/Common/ServiceProviders/*`
+   - Platform implementations:
+     - Win32: `ImageGlass.Win32/Common/ServiceProviders/*`
+     - Linux: `ImageGlass.Linux/Common/ServiceProviders/*`
+     - macOS: `ImageGlass.Mac/Common/ServiceProviders/*`
+   - Shared concrete providers in library: `PhotoPreviewProvider`, `SlideshowProvider`, `UpdateProvider`
+   - Examples: `IFileSearchProvider`, `IShellProvider`, `IPrintProvider`, `IWindowColorProfileProvider`, `IPhotoPreviewProvider`
+   - Registered at startup in each platform's `Program.cs`; initialized in `App.xaml.cs`
+
+3. **Photo & Codec Abstraction**
+   - `PhotoManager`: Thread-safe collection with `AvaloniaList<Photo>` + `ConcurrentDictionary` index
+   - Codecs: `SkiaCodec` (fast SkiaSharp pipeline) and `MagickCodec` (Magick.NET fallback for obscure formats)
+   - Async loading via `PhotoLoadingOptions` + frame animation support via `SkiaAnimator`/`AnimatorImpl`
+   - Caching: `PhotoManager_Caching.cs` uses spiral pattern, LRU eviction, memory budgets
+
+4. **Viewer & Rendering** (`ViewerControl`)
+   - Partial classes split by concern: `ViewerControl_Render.cs`, `ViewerControl_ZoomAndPan.cs`, `ViewerControl_Events.cs`, `ViewerControl_Animation.cs`, `ViewerControl_NavButtons.cs`, etc.
+   - High-performance mipmap tile caching: `MipmapTileCache` with LRU eviction for large images (8192×8192+)
+   - Gesture recognizers: `PhPanGestureRecognizer`, `PhPinchGestureRecognizer` accumulate points for smooth interaction
+   - SkiaSharp rendering in `ViewerControl_Render.cs` + `PhotoRenderer.cs`
+   - **Navigation buttons**: `NavButtonsOverlay` (separate `PhControl` overlay) renders left/right arrow buttons on hover; uses `RequestAnimationFrame` for frame-rate-independent slide+fade animation; click detection on pointer release (does not interfere with panning); config-bound via `EnableNavButtonsProperty` StyledProperty
+   - **Image info overlay**: `ImageInfoOverlayControl` (a non-hit-testable `PhOverlay` in the viewer panel) shows the `Config.ImageInfoTags` items in a bar at the top. `MainWindow.Status_Changed` pushes `AppStatusInfo.GetItems()` into it (the app name is left out). One setting, `ImageInfoOverlayMode`: `Hidden`, `Always`/`AlwaysAutoHide` (every window), `Borderless`/`BorderlessAutoHide` (only while the title bar is hidden, `ImageInfoOverlayControl.IsTitleBarHidden`: full screen or frameless); auto-hide tracks the pointer on the window with a hysteresis zone and a delayed hide, and a running slideshow (`Config.EnableSlideshow`) makes every visible mode auto-hide. It is set in Settings > Layout only, with no menu item or hotkey. `CoveredHeight` is how far the bar reaches, which `MainWindowView` insets the in-app message by
+
+---
+
+## Code Organization & Naming Conventions
+
+### Folder Structure
+```
+ImageGlass.Lib/
+├── Common/
+│   ├── Actions/                   # Action definitions
+│   ├── Commands/                  # Command definitions
+│   ├── AppThemes/                 # Theme system: IgTheme, IgThemeColors, AppThemeColors, IgThemeMetadata
+│   ├── BHelper/                   # Static helper methods (see "Reusing Shared Code"): Color, Format, General, JsonEx, Path, ProcessHelper, Sound, Task
+│   ├── Extensions/                # Extension methods (see "Reusing Shared Code"): Color_Exts, DrawingContext_Exts, ISolidColorBrush_Exts, Point_Exts, Rect_Exts, Size_Exts, SKObject_Exts
+│   ├── Localization/              # Lang.cs, LangId enum
+│   ├── Photoing/                  # Photo management, codecs, animators
+│   │   ├── Animators/             # SkiaAnimator, AnimatorImpl
+│   │   ├── Codecs/                # Codec pipeline
+│   │   │   ├── MagickCodecs/      # Magick.NET fallback codec
+│   │   │   ├── Registry/          # CodecRegistry
+│   │   │   ├── SkiaCodecs/        # SkiaSharp fast-path codec
+│   │   │   └── SvgCodecs/         # SVG (vector) codec
+│   │   ├── Manager/               # PhotoManager & PhotoManager_*.cs (search, watcher, caching)
+│   │   └── Photos/                # Photo, PhotoMetadata, PhotoColorProfile, etc.
+│   ├── Printing/                  # Print layouts, layout engine, page renderer, PDF writer, PrintSession (see "Printing")
+│   ├── ServiceProviders/          # Interface contracts + shared providers
+│   │   ├── AppAPIs/               # App API provider interfaces
+│   │   ├── FileSearchService/     # File search service abstractions
+│   │   ├── Update/                # Update provider abstractions
+│   │   ├── I*.cs                  # Interfaces (IFileSearchProvider, IShellProvider, etc.)
+│   │   ├── PhotoPreviewProvider.cs
+│   │   ├── SlideshowProvider.cs
+│   │   └── UpdateProvider.cs
+│   └── Types/                     # Base classes + shared types: PhReactive, PhDisposable, InterlockedBool, Resx, Const, Hotkey, SKImageRef, Enums, Dir
+│       └── JsonTypeConverters/    # AOT-safe JSON converters (see "Reusing Shared Code")
+├── Plugins/                       # Native plugin host: PluginRegistry, codec proxies
+├── Settings/                      # Config.cs, Config_Static.cs, ConfigMetadata.cs
+├── Tools/                         # Built-in & external tool framework
+│   ├── Builtins/                  # ColorPicker, CropImage, FrameNav, ImageResizer, LosslessCompression
+│   └── External/                  # External tool process management
+├── UI/
+│   ├── BaseControls/              # Ph* controls (see "Designing UI"): PhControl, PhButton, PhTextBox, PhTextBlock, PhToolButton, PhMenuItem, PhHotkeyPicker, PhGridSplitter, PhVirtualizingUniformPanel, PhCommandPreview, PhSearchBoxControl, PhTableControl
+│   ├── Gallery/                   # Gallery browsing UI (GalleryControl)
+│   ├── Styles/                    # App-wide XAML styles + resource dictionaries (see "Designing UI"); merged in App.axaml
+│   ├── Toolbar/                   # Toolbar UI and model (ToolbarControl)
+│   ├── Viewer/                    # ViewerControl (partial classes by feature)
+│   │   ├── Checkerboard/          # Transparency checkerboard background
+│   │   ├── NavButtons/            # NavButtonsOverlay, NavButtonsInfo, NavButtonClickedEventArgs
+│   │   ├── Renderer/              # MipmapTileCache, PhotoRenderer
+│   │   ├── Selection/             # Selection tools
+│   │   └── ZoomAndPan/            # Gesture recognizers, zoom/pan math
+│   └── Windowing/                 # PhWindow, ModalWindow, DialogWindow, PhColorPickerDialog
+├── ViewModels/                    # MainWindowViewModel, MainWindowModel, SettingsViewModel
+└── Windows/                       # Top-level windows: MainWindow, AboutWindow, SettingsWindow, UpdateWindow, ExportFramesWindow
+    ├── Main/                      # MainWindow_View partial
+    ├── Print/                     # PrintWindow, its view, preview and layout tiles
+    └── Settings/                  # Settings UI: Controls/, Pages/, Windows/
+
+ImageGlass.Win32/
+├── Program.cs                     # Entry point, service registration, AOT bootstrap
+├── Properties/                    # PublishProfiles
+├── Windows/                       # MainWindow32.cs (Win32-specific window)
+└── Common/
+    ├── ServiceProviders/          # Win32 implementations (Win32FileSearchProvider, etc.)
+    └── WinAPI/                    # P/Invoke wrappers (Win32*.cs files)
+
+ImageGlass.Linux/
+├── Program.cs                     # Entry point, service registration
+└── Common/
+    └── ServiceProviders/          # Linux implementations (LinuxPrintProvider, etc.)
+
+ImageGlass.Mac/
+├── Program.cs                     # Entry point, service registration
+└── Common/
+    ├── Sandbox/                   # macOS sandbox helpers
+    └── ServiceProviders/          # macOS implementations (MacPrintProvider, etc.)
+```
+
+### Naming Rules
+- **Classes inheriting from Control/UserControl**: Use `PhControl` base (e.g., `ToolbarControl : PhControl`)
+- **View Models**: Suffix with `ViewModel` (e.g., `MainWindowViewModel : PhReactive`)
+- **Async methods**: Always suffix with `Async`
+- **Codecs/Providers**: Prefix with platform/source (e.g., `SkiaCodec`, `Win32FileSearchProvider`, `MagickCodec`)
+- **Partial class files**: Name by concern (e.g., `ViewerControl_Render.cs`, `PhotoManager_Caching.cs`, `AppAPIProvider_Hotkeys.cs`)
+
+---
+
+## Reusing Shared Code (Always Check Before Writing New)
+
+Before adding a helper, converter, or extension, check these folders; the utility you need likely already exists.
+
+### Type Extensions: `Common/Extensions/`
+Extension methods on framework types. Prefer these over re-implementing:
+- `Color_Exts`: `ToBrush()`, `WithAlpha()`, `NoAlpha()`, `Blend()`, `WithBrightness()`, `IsLight()`, `BlackOrWhite()` / `InvertBlackOrWhite()`, `ToHex()`, `ToRgbaString()`, `ToCmyk()` / `ToCmykString()`, `ToHslString()`, `ToHsvString()`, `ToCIELAB()` / `ToCIELABString()`
+- `ISolidColorBrush_Exts`, `DrawingContext_Exts`, `Point_Exts`, `Rect_Exts`, `Size_Exts`: Avalonia geometry & drawing helpers
+- `SKObject_Exts`: `IsDisposed()` and other SkiaSharp guards
+
+### Helper Methods: `Common/BHelper/` (static `BHelper` partial class)
+- `Color.cs`: `ColorFromHex()`
+- `Format.cs`: `FormatSize()`, `FormatDateTime()`, `SimplifyFractions()`, star-rating formatting
+- `General.cs`: `OS`, `GenerateWrappedIndexes()` (spiral cache order), `ComputeIndexInRange()`, `ResizeRatio()`, `GetInAppError()`
+- `Path.cs`: `ConfigDir()` / `BaseDir()`, `ResolvePath()`, `CheckPath()`, `OpenUrlAsync()`, `OpenFilePath()` / `OpenFolderPath()`, `DeleteFile()`
+  - `ResolvePath()` is the **single** public path normalizer: it unwraps `ig://`, strips quotes, expands env vars, follows `.lnk` and macOS `.app`, then makes the result absolute. Never add a second normalizer beside it; if a caller needs only part of that, make the missing piece a `private` helper *inside* `ResolvePath` rather than a parallel public API.
+- `ProcessHelper.cs`: `RunExeAsync()` / `RunExeCmd()`, `RunSync()`, `ExitApp()`
+- `Sound.cs`: `PlayNotificationSoundAsync()` (extracts the bundled `Assets/Sounds/notification.wav` to `_temp`, then plays it via NetCoreAudio on Windows/macOS, or a probed CLI player on Linux)
+- `JsonEx.cs`: `CreateJsonOptions()`, `ReadJsonFromFile()` / `WriteJsonToFileAsync()` (AOT-safe via `JsonTypeInfo<T>`); both go through `FileIO.cs`, so every JSON file is multi-instance safe
+- `FileIO.cs`: `OpenReadShared()` / `WriteAllTextSharedAsync()`, the multi-instance-safe file primitives (see "Concurrent file writes")
+- `Task.cs`: `Debounce()`, `GcCollect()`
+
+### JSON Converters: `Common/Types/JsonTypeConverters/`
+AOT-safe converters for `Config` serialization. Reuse an existing one, or add a new converter here; never use reflection-based serialization.
+- `JsonStringEnumSafeConverter<T>` (always use for enums; never the built-in `JsonStringEnumConverter`)
+- `JsonStringToHotkeyConverter`, `JsonArrayToZoomFactorConverter`, `JsonArrayToRectConverter` / `JsonArrayToPixelRectConverter`, `JsonArrayToDoubleConverter` / `JsonArrayToIntConverter`, `JsonDateTimeConverter`, `JsonHashSetToStringConverter`, `JsonObservableCollectionToStringConverter`
+
+---
+
+## Designing UI
+
+When building or restyling UI, reuse the app's existing controls, design tokens, styles, icons, and fonts instead of raw Avalonia controls or hardcoded values.
+
+### 1. Controls: prefer `UI/` over raw Avalonia
+- **Base controls** (`UI/BaseControls/`, all inherit `PhControl`): `PhButton`, `PhTextBox`, `PhTextBlock`, `PhToolButton`, `PhMenuItem`, `PhHotkeyPicker`, `PhGridSplitter`, `PhVirtualizingUniformPanel`, `PhCommandPreview`, `PhTableControl` (read-only data table: aligned auto-fit columns + hover/focus-revealed icon-button actions; use for settings tables), `PhOverlay` (floating surface in the in-app message style: set `IsShown` to fade it in or out, `TransitionDirection` picks the side it slides in from, `Auto` fades in place; place it with `Margin`/`Padding`/alignment; `MessageOverlayControl`, `ImageInfoOverlayControl` and `MotionPhotoOverlayControl` derive from it).
+- **Windows & dialogs** (`UI/Windowing/`): inherit `PhWindow`; for modal/dialog flows use `ModalWindow` / `DialogWindow`; use `PhColorPickerDialog` for color picking.
+- **Feature controls**: `ViewerControl` (`UI/Viewer/`), `GalleryControl` (`UI/Gallery/`), `ToolbarControl` (`UI/Toolbar/`).
+
+### 2. Colors, brushes & styles: never hardcode
+- **Themed resources via `Resx` / `ResxId`** (`Common/Types/Resx.cs`): resolve in XAML with `{DynamicResource <ResxId-name>}`, or in code with `Resx.Get<T>(ResxId.X)` / `Resx.CreateBinding(ResxId.X)`. The resource name equals the `ResxId` enum name. These keys are populated at runtime by the `Update*` methods in `Core.cs` (`UpdateBaseResources`, `UpdateAppThemedColorResources`, `UpdateViewerBackgroundBrushResource`, `UpdateAccentColorResources`; see `Core.cs:387-635`). To add a new themed value: add a `ResxId` entry and set it inside the matching `Update*` method.
+- **Brush vs Color**: `ResxId` keys ending in `Brush` resolve to an `IBrush`; keys ending in `Color` resolve to a `Color`. Use the `*Color` variant where a `Color` is required (e.g. `GradientStop.Color`).
+- **Theme & situational colors** (`Common/AppThemes/AppThemeColors.cs`): the static source of truth for text success/warning/danger, situational backgrounds, and window backgrounds. The `Update*` methods derive `Resx` resources from these, so reuse them rather than duplicating hex literals. `IgThemeColors.cs` is the per-theme-pack color model.
+- **Shared styles & tokens** (`UI/Styles/`, merged in `App.axaml`): control styles (`ButtonStyle`, `TextBoxStyle`, `ComboBoxStyle`, `CheckBoxStyle`, `RadioButtonStyle`, `MenuStyle`, `SliderStyle`, `ListBoxItemStyle`, `ControlStyle`) and resource dictionaries (`CommonResources`, `MenuResources`, `ComboBoxResources`, `ScrollBarResources`, `IconResources`). Reuse tokens from `CommonResources.axaml`: `ControlCornerRadius` (7), `OverlayCornerRadius` (10), `PhAccentFill` / `PhAccentFillPointerOver` / `PhAccentFillPressed`, and the shared disabled palette (`PhControlFillDisabled`, `PhControlGlyphDisabled`, `PhControlBorderDisabled`, `PhControlContentOpacityDisabled`, `PhSvgCssDisabled`).
+
+### 3. Icons: `UI/Styles/IconResources.axaml`
+Reuse the `StreamGeometry` icon resources via `{StaticResource IconName}`: `IconSearch`, `IconSettings`, `IconSave`, `IconSaveAs`, `IconCrop`, `IconCopy`, `IconReset`, `IconClose`, `IconEllipsis`, `IconArrowPrevious` / `IconArrowNext` / `IconArrowLeft` / `IconArrowRight`, `IconPlay`, `IconPause`, `IconImageForward`, `IconLivePhoto`, `IconFolderOpen`. In code-behind, resolve the same geometries with `Resx.GetIcon(ResxIconId.X)` (enum name equals the resource key). Add new icons here as `StreamGeometry` and add a matching `ResxIconId` entry in `Resx.cs`. Platform stock icons (window/system bitmaps) come from `Resx.GetStockIcon(StockIconId.X)` / `Resx.GetDefaultWindowIcon()`.
+
+### 4. Fonts: `Common/Types/Const.cs:81-104`
+- **Font family**: `Const.FONT_CODE` (OS-specific monospace stack for code / credits / metadata text).
+- **Font sizes**: `Const.FONT_SIZE_BODY`, `FONT_SIZE_TITLE`, `FONT_SIZE_SUBTITLE`, `FONT_SIZE_SMALL`. Reference in XAML via `{x:Static types:Const.FONT_SIZE_SMALL}` (with `xmlns:types="using:ImageGlass.Common.Types"`); do not hardcode sizes.
+
+---
+
+## Critical Base Classes & Patterns
+
+### 1. Reactive Programming — `PhReactive`
+- All ViewModels inherit from `PhReactive : INotifyPropertyChanged`
+- Thread-safe property change notifications using `Lock` (not `object`)
+- Use with Avalonia compiled bindings: `{CompiledBinding PropertyName}`
+- Example:
+  ```csharp
+  public class MainWindowViewModel : PhReactive
+  {
+      public string Title
+      {
+          get; set
+          {
+              if (field.Equals(value)) return;
+              field = value;
+              OnPropertyChanged();
+          }
+      } = BHelper.AppName;
+  }
+  ```
+
+### 2. Resource Management — `PhDisposable`
+- Inherit when managing unmanaged resources (SKImage, file handles, etc.)
+- Override `OnDisposing()` (called on Dispose, not destructor)
+- Uses `InterlockedBool _isDisposed` for thread-safe disposal checks
+- Use with `await using` in async contexts
+- Example:
+  ```csharp
+  public sealed class MipmapTileCache : PhDisposable
+  {
+      protected override void OnDisposing()
+      {
+          lock (_lock)
+          {
+              foreach (var bitmap in _tiles.Values)
+              {
+                  bitmap.Dispose();
+              }
+              _tiles.Clear();
+          }
+      }
+  }
+  ```
+
+### 3. Thread-Safe Operations — `InterlockedBool`
+- Use instead of `bool` for concurrent state flags
+- Atomic read/write using `Volatile` and `Interlocked` operations
+- Example: `_isPreviewing`, `_isFirstDraw`, `_isDisposed` in ViewerControl
+- Check with `.Value` property or implicit conversion
+
+### 4. SkiaSharp Safety — `IsDisposed()` Extension
+- Always check `SKObject.IsDisposed()` before using SkiaSharp objects
+- Defined in `ImageGlass.Common.Extensions.SKObject_Exts`
+- Returns `true` if object is `null` or `Handle == IntPtr.Zero`
+- Example:
+  ```csharp
+  if (_skImage.IsDisposed()) { _skImage = null; }
+  ```
+
+---
+
+## Critical Workflows & Commands
+
+### Build
+```powershell
+# Restore and build
+dotnet build
+
+# Publish AOT-enabled binary (ImageGlass.Win32)
+dotnet publish ImageGlass.Win32 -c Release -o ./bin/publish
+
+# Run from source
+dotnet run --project ImageGlass.Win32 -- [image_path] [additional_args]
+```
+
+### Debug
+- Open solution in Visual Studio 2026
+- Set `ImageGlass.Win32` as startup project
+- **Breakpoints work normally in C# code**
+- **Avalonia Hot Reload**: Available with `--debug` flag (limited to XAML/styles)
+- **Profiling**: Use Visual Studio's memory profiler for cache leak detection
+
+### Testing
+- No dedicated test projects in v10 (focus on functional validation)
+- Manual testing via `dotnet run`
+- Test command-line parsing with sample images
+- Profile memory usage with large images and GIF animations
+
+### Key C# Version & Langversion
+- **LangVersion**: `Preview` (C# 15 features available)
+- **Features**: `runtime-async=on` in all projects (a .NET 11 preview, NativeAOT-supported): `async Task`/`ValueTask` methods compile to runtime-async methods instead of `<X>d__N` state machines; `async void` and async iterators still use the compiler's. Remove it from all four projects to fall back.
+- **Nullable**: `enable` across projects
+- **AllowUnsafeBlocks**: `true` (for P/Invoke, SkiaSharp interop)
+- **PublishAot**: `true` in all platform projects (Win32, Linux, Mac)
+- **PublishTrimmed**: `true` in all projects (library + platform)
+- **PublishSingleFile** + **SelfContained** + **PublishReadyToRun**: `true` in all platform projects
+- **DisableRuntimeMarshalling**: `true` in Win32 only (AOT-safe marshalling)
+
+---
+
+## Key Integration Points
+
+### 1. Photo Loading Pipeline
+```
+App.Initialize() 
+  → Core.InitializeAsync() 
+    → PhotoManager.Add/SearchAsync()
+    → ViewerControl.LoadPhotoAsync(photoPath)
+      → Codec.DecodeAsync() (SkiaCodec or MagickCodec with fallback)
+      → shrink to fit the pixel ceiling if needed → Photo.DecodeScale
+      → PhotoRenderer.RenderAsync()
+      → AnimatorImpl for GIF/WEBP animation
+    → PhotoLoading/PhotoAnimatorFrameChanged events
+    → MipmapTileCache.Create() if image > 8192×8192
+```
+
+### Oversized image decode
+- Images past the `int.MaxValue`-byte ceiling are decoded smaller rather than refused.
+- **Skia** (`SkiaCodec.GetDecodableImageInfo`): steps down through the codec's native scales, JPEG eighths largest-first. Non-JPEG codecs cannot scale and throw a readable `NotSupportedException`.
+- **Magick** (`SkiaCodec.FromMagick`): resizes in place to fit, so it lands closer to the ceiling than Skia can. Callers must be handing over an image they are about to discard.
+- The reduction flows `SkiaDecoderOutput`/`MagickCodecAdapter` → `CodecDecodeResult.DecodeScale` → `Photo.DecodeScale`, and `AppStatusInfo.Dimension` shows it.
+- `Photo.Size` and `ViewerControl.BitmapSize` follow the DECODED size so zoom, selection, crop, and the color picker stay consistent; only `Photo.Metadata.Width/Height` keep the true file dimensions.
+
+### Multi-size icons (ICO/CUR)
+- A multi-size `.ico`/`.cur` opens on its largest frame (then deepest color, then first). `MagickCodec` picks it into `PhotoMetadata.DefaultFrameIndex` from the frames it already pinged, and the metadata `Width/Height` describe that frame so the preview and its zoom match the final image.
+- **Built-in Magick only.** The index is in Magick's frame order (the ICO directory order), and WIC numbers ICO frames differently, so `Photo.GetDefaultFrameIndex()` returns 0 unless the decode codec is `CodecRegistry.FallbackDecodeCodec`. Plugin-decoded icons open on frame 0; no ABI change.
+- `ReadOptions.FrameIndex` is the frame a load opens on: `LoadAsync__` re-points it once metadata is loaded, and both `FromConfig` resets (`ViewPhotoAsync`, the prefetch) pass `GetDefaultFrameIndex()`, because a cached photo is shown with no decode and Save As writes `ReadOptions.FrameIndex`.
+- `ApplyDecodeResult` must record the decoded frame in `_frameIndex`: the viewer asks `GetFrameAsync(Math.Max(0, FrameIndex))`, so a missing index decodes and shows frame 0 again.
+
+### 2. Theme/Localization Changes
+- Change language: `Core.LanguageChanged?.Invoke()`
+- Change theme: `Core.ThemeChanged?.Invoke(new ThemePackChangedEventArgs(...))`
+- UI elements auto-refresh via bindings + event subscribers
+
+### 3. Win32 Service Registration
+Occurs in `Program.cs` before Avalonia app setup (Linux/Mac have equivalent registrations):
+- `FileSearchProvider` (shell enumeration in the view order of File Explorer or a supported third-party file manager; see "Explorer sort order & the foreground shell")
+- `ShellProvider` (context menu, file properties, Windows Share API)
+- `PrintProvider` (GDI printing through the spooler; Print Pictures as the system dialog; see "Printing")
+- `ColorProfileProvider` (Monitor color profile retrieval via Win32 APIs)
+- `PreviewProvider` (thumbnail cache via Windows shell)
+
+### 4. Configuration Persistence
+- `Config.cs` handles JSON serialization with custom converters
+- Converters in `Common/Types/JsonTypeConverters/` (e.g., `JsonStringToHotkeyConverter`, `JsonArrayToZoomFactorConverter`)
+- Cached in `AppData\Local\ImageGlass\`, or the startup dir in portable mode (see below)
+- Async save via `Config.SaveAsync()`
+
+### Concurrent file writes (`BHelper.WriteAllTextSharedAsync`)
+- Every instance writes the **same** `igconfig.json`, and closing a taskbar group closes them all at once, so a plain `File.WriteAllTextAsync` loses the race with a sharing violation. All JSON writes therefore stage into `<path>.<pid>.tmp` and rename over the target, guarded by a per-path `SemaphoreSlim` (two windows of one process) plus a bounded retry.
+- **`File.Move(overwrite: true)` is only atomic while no one holds the target for writing.** Held, it degrades into an in-place copy, and a concurrent reader then sees a truncated file. That is why `OpenReadShared` asks for `FileShare.Read | FileShare.Delete`: `Delete` lets the rename proceed under an open handle, and withholding `Write` is what keeps the swap a rename. Measured over ~166k reads: `ReadWrite` gave 878 truncated reads, `Read` gave 0.
+- **`File.Replace` is not the fix**, despite being the usual advice: it leaves `~RF*.TMP` litter, and the target name briefly does not exist mid-call, which makes a concurrent reader *and* a concurrent writer fail with `FileNotFoundException`.
+- `Config.SaveAsync` never throws: it returns `false` and records `Config.SavingException`, because it is reached from `async void` close handlers and a fire-and-forget save in `SettingsWindow.OnClosing`, where an escaping exception is an unhandled-exception dialog on a window that is already closing. Every path the **user** explicitly triggered still reports the failure (`ModalWindow.ShowSettingsSaveErrorAsync`, or a throw out of `IG_ApplySettings`); only the two close paths stay silent, and `QuickSetupWindow` additionally refuses to restart, since the restart would reload the unwritten file and discard every choice.
+- Last writer wins is unchanged and intended: each instance persists its own whole `Config`.
+
+### Portable mode (`ConfigMode`)
+- A `.igportable` marker file (`Const.PORTABLE_MARKER_FILE`) in the **startup dir** moves the whole config dir there: `BHelper.ConfigPath` returns `BasePath` instead of `%LocalAppData%\ImageGlass`, so `igconfig.json`, `_cache`, `_logs`, `_plugins`, `_lang`, `_themes` all live next to the exe and the folder can be relocated without losing settings.
+- `ConfigMode` only answers **which mode** (`IsPortable`, resolved once per process on first access); `BHelper.ConfigPath` stays the single accessor that turns that into a path, so every existing `ConfigDir()` caller follows automatically. Never expose a second config-path property, and never re-read the marker at a new call site.
+- The marker must be resolved before anything touches the config dir, so `App.InitializeAppInstance` forces it (trace mark `InitInstance:portableMode`) ahead of `LicenseService.LoadActive` and `Config.Load`.
+- **A marker in a non-writable startup dir is fatal, never a fallback.** `ConfigMode.PortableError` holds the raw exception from a single create-probe (a per-process temp file, never the marker itself), `App.OnFrameworkInitializationCompleted` shows it (real message + `GetExceptionDetails`) and quits before creating the main window, and `Config.SaveAsync` refuses to write. Falling back to `%LocalAppData%` would hide the portable settings behind a second config.
+- `ConfigDir()` swallows directory-creation failures on purpose: a read-only config dir must not throw out of a path getter, or startup crashes before it can report the real problem.
+- Shipped by the **ZIP packer only** (`__assets/win/script-pack-win-zip.ps1`, `-NoPortable` to omit). Never add it to `__assets/__app`: the MSIX payload folder is read-only, so a packaged build would refuse to start.
+
+### Linux self-update (`LinuxUpdateProvider`)
+- Same shared pipeline as the sideload MSIX (Pro, download-now/install-on-click, sha256), with artifacts `linux-<arch>-appimage` and `linux-<arch>-flatpak`. The tarball stays check-only.
+- **AppImage: two renames in the image's own folder, never an in-place write.** The running session reads its FUSE mount through the old inode, so a truncating write corrupts it. The path is kept, so launchers and associations still resolve. Supported only when that folder is writable.
+- **The relaunch is also a probe.** If the new process exits non-zero within `RELAUNCH_PROBE_MS`, the old image is renamed back. An AppImage runs on the host glibc, so a release that raises the floor would otherwise leave an install that cannot even report the failure. A session started with `--appimage-extract-and-run` relaunches with `APPIMAGE_EXTRACT_AND_RUN=1`, or a FUSE-less host fails a healthy build.
+- **Flatpak: bundle installs only.** A bundle's origin (`imageglass-origin`) has no URL, so `flatpak update` answers "Nothing to do."; the new `.flatpak` goes through `flatpak install --bundle` on the host instead. An install from a remote with a URL (Flathub, or the dev install `flatpak-builder --install` makes) stays check-only: a bundle over it keeps that origin but deploys a commit the remote lacks, and the next `flatpak update` can downgrade it.
+- Host `flatpak` commands target the installation the app runs from, read from `/.flatpak-info` `app-path` (`--system` for `/var/lib/flatpak`, else `--user` plus `FLATPAK_USER_DIR`), and need `--talk-name=org.freedesktop.Flatpak`. **Never pass `--noninteractive`**: it also suppresses the polkit prompt a system installation needs. Exit code 0 proves nothing (`Nothing to do.` is 0), so success means the deployed commit changed.
+- The new instance must start on the host (`flatpak-spawn --host flatpak run`); a child inside the sandbox dies with it. Both formats release `Core.AppInstance` first, or the new process hands its launch to the exiting one, and they clear the pending update before relaunching, or the old instance's close-time save re-arms it.
+- The install-while-alive helpers (`RunInstallThenExitAsync`, `RelaunchAsync`, `ForgetInstalledUpdateAsync`, `RunCommandAsync`) live in the base `UpdateProvider`, shared with macOS.
+
+### macOS self-update (`MacUpdateProvider`)
+- Same shared pipeline, artifact `mac-<arch>-dmg` (only arm64 is published, so an Intel build stays check-only). Supported only when running as `<name>.app/Contents/MacOS/<exe>` with the bundle and its folder passing `access(W_OK)`: a loose dev binary, a Gatekeeper-translocated copy, the DMG volume itself, or a non-admin's `/Applications` stay check-only.
+- **The DMG is mounted privately (`hdiutil attach -nobrowse -readonly -mountpoint $TMPDIR/…`), its root `.app` is `ditto`'d beside the running bundle, then swapped in by two renames**, never copied over: this session keeps reading its files through the renamed bundle, and the path (Dock, Finder, associations) is unchanged. A renamed bundle still validates, so the hidden `.<name>.app.<pid>.new` sibling is checked in place.
+- **The staged copy must satisfy the running app's own designated requirement** (`MacCodeSignApi`, Security.framework with the `codesign --verify --deep --strict` flags): same identifier, Developer ID, same team. `HttpClient` downloads carry no quarantine, so Gatekeeper never assesses the new app; this check stands in for it. An ad-hoc dev build has no team to pin and only demands a valid signature. A rejected package is discarded.
+- The relaunch starts the new binary directly and doubles as the probe (`RELAUNCH_PROBE_MS`); an early non-zero exit renames the old bundle back. `IsMeteredConnection` is not implemented on macOS (always `false`).
+
+### Photo transitions (`UI/Viewer/Transitions/`)
+- **Effects are written only in gl-transitions GLSL** (`vec4 transition(vec2 uv)` with `getFromColor`/`getToColor`/`progress`/`ratio`), built-ins included. SkSL is a backend detail: `GlTransitionsAdapter` translates GLSL to an `SKRuntimeEffect` (GPU through Avalonia's Skia lease, CPU raster without a `GRContext`, AOT-safe since the source is a string). Avalonia plans to move from Skia to Impeller, so never let SkSL leak into an effect file; an Impeller port replaces the adapter, not the effects.
+- **The adapter's inputs are a frozen contract**: only add, never rename or remove, or every shipped and user effect breaks. On top of gl-transitions it adds `resolution` (logical px) and `navigationDirection` (1 forward, -1 backward); it is not `direction`, which real gl-transitions effects already declare as a parameter. `PhotoRenderer` sets an input only if the shader declares it, so a new input is backward compatible. The adapter also renames a bare `half`, a plain GLSL name that SkSL reserves as a type; add any other SkSL-only keyword the same way if an effect trips over it. `ToSkSL` normalizes line endings before any regex: git `autocrlf` checks effect files out as CRLF, a multiline `$` matches only before `
+`, and the default-value regex once silently skipped every CRLF file, so Wipe/Dissolve/Circle ran with their parameters at 0 (only in published builds, whose payload came from the CRLF working tree).
+- No effect is compiled in. An effect is a `*.igtransition.glsl` file (id = the name before that suffix; any other file is ignored); only Fade, Circle, Dissolve, Wipe and Push ship, in `__assets/__app/_transitions`. The rest live in `__assets/transitions` (not packaged) for download from https://imageglass.org/effects, the "Get more effects…" link. `TransitionEffects` reads the config dir `_transitions` first, then the base dir one, and the first file of an id wins, so a user file overrides a shipped one.
+- **After any SkiaSharp upgrade, check every shipped effect by hand** (select it in Settings, then navigate): a broken effect never crashes the app, it silently stops playing, and Settings only shows compile errors, not an effect that compiles but renders wrong.
+- Only `AppAPIProvider.ViewByStep__` creates a `TransitionRequest` (skipped while `IsQuickBrowsing`); it travels in `PhotoLoadingOptions.Transition`, and `SetPhotoAsync` must call `BeginTransition` **before** `UnloadPhoto`, because the old frame is recorded as an `SKPicture` whose native refs keep the old images alive after unload.
+- The viewer holds the old frame until the new photo has something to draw (`MAX_TRANSITION_HOLD_MS`), which also hides the preview flash. `PhotoRenderer.RenderTransition` then renders both sides (image layer only; the checkerboard stays the viewer's own layer beneath) into per-frame offscreen surfaces and blends them through the shader; per-frame surfaces keep every GPU object inside the render call, never across threads.
+- Every path must complete the request (`TransitionRequest.Complete`): the slideshow awaits `Completion` before counting the next interval (`SlideshowProvider.WaitForAdvanceAsync`, bounded by `MAX_ADVANCE_WAIT_MS`). A new navigation snaps the running transition, and one still holding hands its old frame over (`TakeFromFrame`).
+- **A mirror (projector) plays the same transition through its own viewport.** `BeginTransition` raises `TransitionStarting` inside the source lock, before `UnloadPhoto`, so each mirror records its own old frame (`CaptureMirrorFrame`) while the old images still exist, then runs its own clock. It plays a **copy** of the request, because only the source's request may tell the slideshow the effect ended. A mirror's `_transition` is guarded by the source's lock (`TransitionLock`), the one its renderer draws under; a second lock there would deadlock against the render thread.
+
+### Full screen & the windowed layout
+- Full screen is destructive: it writes the *hidden* toolbar/gallery and clears frameless/window fit straight into `Config`. So the layout to come back to lives in one `WindowLayoutSnapshot` (`AppAPIProvider._preFullScreenLayout`), captured by `MainWindow.CaptureWindowLayout()` **before** anything else in the enter branch runs.
+- Invariant: `Config.ShowToolbar` / `ShowGallery` / `EnableFrameless` / `EnableWindowFit` / `EnableMainWindowMaximized` / `MainWindowBounds` always describe the **windowed** layout; `EnableFullScreen` is the one orthogonal flag. `SaveConfigOnClosingAsync` enforces it by persisting `Core.API.PreFullScreenLayout` instead of the live values whenever a session ends in full screen.
+- Startup must enter through `IG_ToggleFullScreen(true)`, never a raw `WindowState = FullScreen`: the raw assignment captures nothing (so leaving full screen restored hardcoded defaults) and skips the `ShowToolbarInFullscreen`/`ShowGalleryInFullscreen` hide policy. Full screen is also checked **before** window fit, since both can now be saved as `true`.
+- Any new path that reaches `WindowState.FullScreen` must capture the snapshot (see `StartSlideshow__`) and null it out when it leaves (see `StopSlideshow__`), or the close-time save persists a stale layout.
+- The close handler reads `RestorableWindowState`, not `WindowState`: closing a *minimized* window would otherwise record `EnableFullScreen`/`EnableMainWindowMaximized` as false.
+- Leaving full screen defers the window-fit recompute through `Dispatcher.UIThread.Post`, because `PhControl.IsContentVisible` posts the real visibility change and `ApplyWindowFitMode` measures `Toolbar.Bounds` / `Gallery.Bounds`.
+
+### 5. Photo Caching Strategy
+- **Tier 1**: Current photo in viewer (always loaded)
+- **Tier 2**: Neighboring photos preloaded via `PhotoManager.RequestCacheAround()`
+- **Tier 3**: LRU eviction when memory budget exhausted
+- Spiral pattern: right-1, left-1, right-2, left-2, ... to balance browsing directions
+- **A decoded photo must never be reachable only through `_cachedIndexes`.** `RunCacheAroundAsync` registers an index the moment `LoadAsync` returns, *before* the cancel check, because a photo that is decoded but untracked escapes both `EstimateCachedMemory` and eviction, and is then never freed for the process lifetime. Rapid navigation cancels a pass on every step, so this is the common path, not the rare one; it once held an entire 80-photo folder (3.6 GB) against a 1000 MB budget.
+- **Eviction is authoritative over the whole list, not over the tracked set.** `UnloadPhotosOutside(keepIndexes, excludePhoto)` walks every item and unloads any `PhotoState.Loaded` photo outside the keep set, whatever decoded it, so the pass self-heals regardless of how a photo became loaded. `centerIndex` and `CurrentIndex` are always kept (the viewer owns the shown photo). `ClearCache(excludePhoto)` is the same sweep with an empty keep set, which is what makes a plugin unload safe: an orphaned photo still holding a plugin buffer would otherwise outlive `NativeLibrary.Free`.
+- **The budget accumulates from the spiral, not from `_cachedIndexes`.** The pass seeds `usedMemory` with the current photo alone and adds each already-decoded photo as the spiral re-visits it; seeding from the tracked set double-counts every re-adopted photo and breaks the loop early.
+- **A `LoadAsync` that returns without raising `Loaded` is a blank viewer, not a no-op.** `SetPhotoAsync` disposes the old image up front, and nothing else re-invalidates, so a silent return leaves the photo black until the user navigates away and back. Hence: loads are serialized per `Photo` by `_loadGate` (the prefetch pass and the viewer both load the same file, and cancelling the one in flight is what produced the silent return); a cache hit dispatches `Loaded` through `DispatchLoadedAsync` instead of just returning; `_cancelEpoch` still drops a load cancelled while queued; `ViewerControl.RecoverIfNothingRenderedAsync` is the backstop for every remaining path, and `PhotoRenderer.ReturnFirstDrawClaim` hands back a first-draw claim whose frame never rendered.
+- **`UnloadPhotosOutside(..., keepCurrent: true)` re-reads `CurrentIndex` per item**, because the sweep is long enough for the user to navigate onto an index the keep set was built without. `ClearCache` deliberately leaves it off; it must be able to free every photo before a plugin unload.
+- **The pass also color-manages each neighbour ahead of its view** (`Photo.PrepareDisplayFrameAsync`, keyed by a `DisplayColorPass` holding every input of the pass), so a cached view skips the HDR tone map and the monitor-profile conversion; the budget pays for the extra frame (`Photo.DisplayFrameBytes`). The viewer's `TakeDisplayFrameAsync` also **claims** the frame, after which the viewer may free it, so no cache pass reads it again; both run under the photo's `_displayFrameGate`, which `OnDisposing` holds while it frees the bitmap. Any new background reader of `Photo.Bitmap` needs that gate, and multi-frame photos are skipped because a page switch frees the frame. `ViewPhotoAsync` cancels the running pass first, so a navigation's load never competes with the old neighbourhood.
+
+### File search & captured file metadata
+- `FileSearchProvider.EnumerateFileEntries` captures `FileInfo` (size, timestamps, attributes) during enumeration into a `FileSearchEntry`, and `PhotoManager.Add(IEnumerable<FileSearchEntry>)` builds `Photo`/`PhotoMetadata` from it, so no per-file re-stat. On Windows those fields come free from `WIN32_FIND_DATA`; on Unix they cost one `stat`, still fewer than before.
+- `PhotoMetadata(FileSearchEntry)` deliberately skips `SetFilePath__` (which re-stats). It is a **partial** fill: `IsOutdated()` stays true until a codec loads real image metadata, so the capture *defers* the codec metadata load rather than replacing it.
+- Enumeration emits `FileInfo.FullName`, i.e. absolute paths, and `PhotoManager.IndexOf` is an exact-string `ConcurrentDictionary` lookup (`OrdinalIgnoreCase`). Every path entering `StartLoadingFiles` must therefore pass through `BHelper.ResolvePath` or the init photo never resolves to a list index (gallery shows nothing selected, navigation starts from -1).
+- `FileSearchingEventArgs.Results` is a materialized `IReadOnlyList`, and filtering/sorting now run on the background thread instead of lazily on the UI thread during `Add`.
+- The **Win32** override publishes progress through `Dispatcher.UIThread.Post` with a token re-check *inside* the posted lambda, which is what serializes a stale batch against `PhotoManager.Clear()`. The base provider (Linux/macOS) still invokes `progressFn` directly on the worker, so that race remains open there.
+
+### Explorer sort order & the foreground shell (EggShell)
+- **The list has three possible sources, tried in order** by `Win32FileSearchProvider.SearchAsync`: the foreground view captured at launch (`IShellProvider.ForegroundShell`, when `CanUseForegroundShell()` allows it), then, with `EnableExplorerSortOrder`, an opening view that shows the folder (`EggShell.FindOpeningView(dir, includeDesktop: true)`), then plain enumeration sorted by `ImageLoadingOrder`. A view only decides which files are listed and in what order: `FindFiles_WithShell` still enumerates the folder for metadata and drops folders, hidden files and unsupported extensions.
+- **`CanUseForegroundShell()` gates the foreground view.** A search result (a `search-ms:` path or a saved `.search-ms`) always uses it, since that list exists nowhere else; a plain folder only when it is the opened file's own folder *and* `EnableExplorerSortOrder` is on. The foreground window is read once in `App.OnFrameworkInitializationCompleted` (and again for a single dropped file), before the main window shows, so a launch from a terminal or script sees that window, not the file manager.
+- **ImageGlass only ever sees EggShell's `ShellAppView`**: `GetTabViewPath()` and `GetTabViewItems()` (full paths in view order; `null` when unreadable, which falls back to a plain search of that folder). File Explorer and the desktop are `ExplorerView`; each supported third-party file manager is an internal EggShell class behind `IShellApp`. Support for another file manager goes into EggShell (one `IShellApp` + view registered in `EggShell._shellApps`), never into ImageGlass.
+- **Third-party file managers have no folder view in the Explorer window list**, so EggShell reads each one through its own app-specific interface. That lookup is not free: some of them answer through a helper process, which costs tens of milliseconds per query.
+- **Views wrap cross-process COM proxies, so use them on the UI thread**: step 1 and the per-folder search post `FindFiles_WithShell` to the UI thread, and the step-2 lookup runs inside `Dispatcher.UIThread.InvokeAsync`.
+- **A shell failure must never fault `SearchAsync`.** `StartLoadingFiles` discards its task, so an exception there becomes an empty photo list plus an unobserved-task dialog; a third-party file manager whose shell browser answers `QueryActiveShellView` with `E_NOTIMPL` caused exactly that. The step-2 lookup catches everything and falls back to the plain search, and EggShell's view methods catch every exception: a third-party shell can fail with any HRESULT, and the generated COM stubs map the common ones to non-`COMException` types (`E_NOTIMPL` -> `NotImplementedException`, `E_NOINTERFACE` -> `InvalidCastException`).
+- EggShell is a separate repo shipped as the `D2Phap.EggShell-x64` / `-ARM64` packages (pinned in `Directory.Packages.props`), so an EggShell API change compiles in ImageGlass only once the new package is published.
+
+### Gallery thumbnail pipeline (`Photo.LoadThumbnailAsync`)
+- Tiers in order, all skipped when `useCache` is false: in-memory `GalleryThumbnail`, `ThumbnailDiskCache`, `IPhotoPreviewProvider.TryGetCachedThumbnailAsync` (platform cache), then `GetThumbnailAsync` (decodes).
+- Both cache tiers run **before** `LoadMetadataAsync`; that ordering is the whole point, since neither may read the source file. `ThumbnailDiskCache.TryGetAsync` therefore validates against the `Metadata.FileLastWriteTimeUtc` captured at enumeration, not a fresh stat, so an out-of-band edit is corrected by the file watcher rather than by the cache check.
+- `_galleryThumbnailRequestSize` keys the in-memory thumbnail to the size it was produced for, so a DPI or `Config.ThumbnailSize` change reloads instead of serving a stale size.
+- **Shrink whatever a cache returns** to `thumbSize` via `SkiaCodec.ScaleDown` before `ToWritableBitmap`. The Windows Shell hands back whole cache tiers (96/256/768/1920), and retaining one costs MBs of gallery memory per photo. Keep the *original* cached image as the size authority for `IsPreviewLargeEnough` and the too-small check.
+- **Never nest a process-wide gate inside this call.** The caller already holds a `_thumbnailThrottleLock` slot, so a second semaphore parks threads while they hold a slot and collapses the gallery to one photo at a time.
+- **The throttle is sized by the cache budget, not the core count**: `clamp(CacheMaxMemoryInMb / MB_PER_THUMBNAIL_SLOT, 4, clamp(ProcessorCount-1, 4, 16))`, lazily so it reads the loaded config. A cache miss decodes the full image before shrinking it, so each slot can transiently hold one full-resolution bitmap; CPU-only sizing let 16 concurrent 4K decodes outweigh the entire photo-cache budget on a many-core machine.
+- `TryGetCachedThumbnailAsync` must not decode: Win32 implements it with `SIIGBF_INCACHEONLY`, and the base returns `null`, so Linux/macOS have only the disk tier. Pass `skipPlatformCache` down to `GetThumbnailAsync`/`GetPreviewAsync` when the caller already probed, or the same shell query runs twice per photo.
+- `GalleryThumbnail` is assigned on the UI thread (`ShowGalleryThumbnailAsync`) because the compiled binding writes `Image.Source` on whichever thread raises `PropertyChanged`.
+
+### 6. Color Management (`Config.ColorProfile`)
+- The display profile is applied at **two** points; never let both hit the same pixels:
+  - **Decode-time (Magick only)**: `MagickCodec.ProcessMagickImage__()` bakes it via `TransformColorSpace`; runs only when `MagickCodecAdapter` decodes (Skia decode applies no profile).
+  - **Viewer-time (Skia)**: `ViewerControl.ApplySkiaColorSpaceAsync()` (HDR tone-map + SDR ICC), applied in `HandlePhotoLoadedAsync()`. The pass itself is `DisplayColorPass.Apply()`, which the cache pass also runs ahead of time, so a cached view usually just takes the prepared frame (see "Photo Caching Strategy").
+- **CMYK profiles**: `SKColorSpace.CreateIcc()` returns `null` for CMYK → `Core.IsDestColorProfileSupported=false` → `SkiaCodecAdapter.CanDecode` refuses → Magick decodes. `ProcessMagickImage__` must never output CMYK pixels (they render inverted): cast `refImgM.ColorSpace = ColorSpace.sRGB` (keeps the print-like tint; do not ICC round-trip, it over-brightens).
+- **Codec-selection cache**: `Core.UpdateDestColorProfile()` calls `CodecRegistry.InvalidateSelectionCaches()` and always fires `ColorProfileChanged`. Without the invalidation, a CMYK choice leaves `.jpg` stuck on Magick ("sticky downgrade") and every later profile double-applies (brighter/over-saturated until restart).
+- **On change**: `Core_ColorProfileChanged()` re-decodes the current photo via `SetPhotoAsync(photo, { ResetZoom = false, UseCache = false })` — re-applies cleanly while keeping zoom/pan; never transforms `_imgSource` in place. `ColorProfile` is intentionally NOT in `SettingsViewModel.reloadPhoto` (a generic reload would reset zoom).
+- **Monitor change vs settings change**: `UpdateDestColorProfile(requiresPhotoReload)` carries the intent through `DestColorProfileChangedEventArgs`. The monitor-profile provider passes `false` (dragging the window between monitors must not flash the viewer, matching the `Settings_CurrentMonitorProfile_Description` note); the settings page uses the default `true`. The profile still updates for later loads either way.
+
+### 7. HDR tone mapping (`HdrToneMapper`, `Core.HdrToneMappingConfig`)
+- **Each transfer function means something different by `1.0`, and `EncodingWhiteNits()` is the only place that knows it**: Skia decodes PQ and HLG against BT.2408 reference white (linear `1.0` = **203 nits**, so PQ code 1.0 reads back 49.26 = 10000/203), `ScRgb` = **80 nits** (IEC 61966-2-2, display-referred), `Linear`/`None` = diffuse white (scene-referred EXR / Radiance HDR). After the scale `v` is always `nits / ReferenceWhiteNits`, which is the cross-check: the same scene as PQ and as scRGB must land on the same `v`.
+- **The PQ/HLG anchor is a SkiaSharp 4 convention, and reverting it silently over-exposes 49x.** SkiaSharp 3.x decoded PQ to absolute luminance (linear `1.0` = 10000 nits), which is why `EncodingWhiteNits` once had a `PqPeakNits` arm; 4.x moved to Chrome's reference-white-relative model, visible in the named transfer function itself (`SKColorSpaceTransferFn.Pq` is the marker form `G=-5 A=203`, where `A` **is** reference white in nits). Never reintroduce a per-transfer-function absolute anchor without re-measuring the decoder.
+- **WIC infers scRGB for every float and fixed-point pixel format**, so anything the WIC codec plugin returns as `RgbaFloat16` is `HdrTransferFunction.ScRgb`, never `Linear`. Tagging it `Linear` reads the image 203/80 = 2.54x too bright, which shows up as washed out with lifted blacks. `IGHdrTransferFn.ScRgb` = 5 arrived in plugin ABI 1.1.1; plugins gate on the `hostAbiVersion` passed to `ig_plugin_get_api` and fall back to `Linear` below `1_001_000`, because an older host maps an unknown value to `None` and skips tone mapping entirely.
+- **`ReferenceWhiteToneMap` (BT2408) is a global roll-off, not a knee, on purpose.** Reference white lands near `0.5` linear (188/255) and the curve reaches 1.0 only at its white level, which is the file's declared content peak (see below), or 6x reference white when the file declares none. BT.2408 the spec does say reference white maps to SDR white, and doing that clips the top quarter of a real grade: a 1164-nit sample has 29% of pixels above reference white, and a knee at 0.9 renders its p75 at 252/255. The low landing is headroom, not a bug. `Reinhard` (knee 0.7) and `ACES` (knee 0.5) are identity below their knees and clip that content much sooner.
+- **The tone curve's white level is the file's declared peak, not a guess.** `MagickCodec.DetectHdrInfo` step 10 fills `PhotoMetadata.ContentPeakNits` from the container's HDR10 metadata (ISOBMFF `clli` MaxCLL, else `mdcv` mastering max; PNG spells the chunk **`cLLi`**, not the spec's `cLLI`, and uses 0.0001-nit units where ISOBMFF uses whole nits), and `ComputeToneCurveWhiteLevel` turns it into `peak / ReferenceWhiteNits` clamped to 1..24. A declared 10000 is **rejected**, not honoured: it is the PQ container ceiling encoders emit when they do not know the real peak, and trusting it holds back 24x of headroom for content that is not there. Only BT2408 consumes it; Reinhard/ACES stay knee-based. `HighlightCompression` now means extra headroom *past* the declared peak (`x (1 + 3c)`), for a grade brighter than its own metadata claims.
+- **`ReferenceWhiteNits` rising makes the image darker, and that is correct, not inverted.** It is the normalization *divisor* (`ComputeNormScale`), i.e. source-side HDR reference white per BT.2408, so declaring a brighter level as white necessarily renders everything below it darker. The confusion is that "paper white" at the *display* end (Windows SDR content brightness) brightens as it rises. Do not "fix" the direction; the label says `Reference white` and the tooltip states the direction.
+- **The two tone-map loops run a `Vector128` body (four pixels per step) and the original scalar loop on the rest of the row, and the two must stay op-for-op identical**, NaN and -0 included (`Clamp01` mirrors `Math.Clamp`), or the last pixels of each row differ from the rest. Verify a change with an old-vs-new harness, not by eye. Do not add a `Vector256` path or raise `IlcInstructionSet` for it: the default NativeAOT target never accelerates `Vector256`, and x86-64-v3 measured no gain while locking out CPUs without AVX2.
+- **Avalonia presents SDR only**, so a desktop in HDR mode makes MS Photos structurally better looking than any tone-map setting can be. Check `advancedColorEnabled` via `DisplayConfigGetDeviceInfo` before chasing it, and never use a GDI screen capture of an HDR desktop as ground truth for another app (it is faithful for ImageGlass's own SDR output).
+
+### 8. Printing (`Common/Printing/`, `Windows/Print/`)
+**See the `ig-app-print` skill for the full contract**; the invariants worth knowing here:
+- **One renderer for everything that prints.** `PrintPageRenderer.DrawPageAsync` draws a page in points (1/72 in) onto any canvas: the preview bitmap, a PDF page (`PdfPrintWriter`, `SKDocument.CreatePdf`), and each Windows GDI cell raster. Never draw a print any other way, or the preview stops being what prints.
+- **Layout is pure and in points** (`PrintLayoutEngine.Paginate`). Auto orientation breaks ties by prints per page, then paper per print, then prints that stand upright; without the last key, landscape photos on "4 per page" went onto a turned portrait page. **Every quarter turn is counter-clockwise** (auto-rotate in a cell, and a landscape page turned onto portrait paper), as IPP "landscape" turns.
+- **"Current state" is the viewer's.** `ViewerControl.CaptureImageState()` leases the shown image with its edits recipe (orientation, invert, channels, HDR tone mapping); `PrintSession` uses those pixels for the shown frame when `HasExactColorTag` and not a preview, and `PhotoFrameReader` with `SkipDisplayProfile` for every other frame. Output is always 8-bit sRGB; the display profile applies only to the preview bitmap.
+- **`PrintSession` images are opaque on white**, the paper they print on, so a PDF stores them as JPEG q95 (`PdfWriteOptions.EncodingQuality`); lossless made a 1.5 MB photo a 5.8 MB PDF. They come in power-of-two buckets under a 256 MB LRU, and every surface checks the `int.MaxValue` byte ceiling.
+- **Providers never lay out.** `IPrintProvider` + `PrintProviderBase` own Save as PDF (`ig:pdf`) on every OS. Windows prints through GDI (`Win32GdiPrintJob`): each cell a raster at its image's own density (150 dpi floor, 300 for photos, 600 for vectors), sent in 32 MB bands by an STA thread that owns the DC. Linux sends a PDF job to CUPS (`CupsApi`, `print-scaling=none`, portrait pages only) and "system dialog" is the XDG print portal (`XdgPrintPortal`, the PDF as a descriptor). macOS sends the PDF through `PMPrinterPrintWithFile` (`MacPrintCoreApi`) and opens PDFKit's print panel.
+- **macOS: PrintCore drops what CUPS needs.** Two-sided and grayscale reach the job only as the CUPS options `sides`/`print-color-mode` on the print settings (`PMSetDuplex` never does, and a queue may default to two-sided); the state comes from CUPS `printer-state-reasons` (PrintCore calls an offline printer idle); the PPD opens only with the type `PMPPDDescriptionType` (any other string, "PPD" included, is paramErr). "Use the system dialog…" opens PDFKit's panel on the window's printer, paper, orientation and copies, and a cancelled panel keeps the Print window (`ShowSystemDialogAsync` returns whether the dialog took the job).
+- **Linux: one scheduler connection per CUPS operation, and the portal's D-Bus connection kept until it answers.** `cupsLocalizeDestMedia` refuses `CUPS_HTTP_DEFAULT` (every paper name fell back to its PWG name), and xdg-desktop-portal closes the requests of a caller that leaves the bus (a cancel in its dialog still closed the Print window); the window counts that dialog as a job while it is open. A job carries the destination's own options (a CUPS instance's) under the window's, as `lp` does. Metric or inches comes from `LC_MEASUREMENT` there: the app pins its culture to invariant, which `RegionInfo.CurrentRegion` follows off Windows.
+- **Windows measures printable areas lazily** (`IPrintProvider.MeasurePaperAsync`): a `CreateIC` per paper costs ~20 ms and Microsoft Print to PDF lists 84 papers, so capabilities measure only the default paper and mark the rest `IsPrintableAreaMeasured = false`. The GDI job places everything by the real device geometry, so an estimate never misplaces output.
+- **Completion says "Sent to {printer}" for every system printer**, a file printer included: the spooler writes the file after `EndDoc`, so only the app's own Save as PDF may say "Saved". A cancelled job's output file is deleted after `AbortDoc` with retries, since the spooler opens it with the first page and still holds it, and only after `StartDoc` succeeded, so a failed open never deletes a file the user chose to overwrite.
+- **Captions are outlines** (`SKFont.GetTextPath`), so a PDF embeds no font, and they are split into per-script runs (`CaptionFonts`): one fallback font for a whole caption printed Hangul as boxes next to Japanese.
+- **"Add a printer" opens the OS's own settings** (`IPrintProvider.OpenAddPrinterSettingsAsync`: `ms-settings:printers`, macOS Printers & Scanners, on Linux the desktop's printer panel, else the CUPS web page), and from then on the window lists printers again on every activation, choosing a newly added one. That refresh keeps the chosen `PrinterInfo` instance and never re-selects it: the view drops stale capability and status replies by `ReferenceEquals(_printer, printer)`, and re-selecting would discard the driver's `PlatformState`.
+
+---
+
+## Code Style & Best Practices
+
+### General
+- **Comments**: Explain *why*, not what; only add if needed. **Write one line.** Two only when genuinely unavoidable, never three; that ceiling covers XML doc tags (`<param>`, `<summary>`) exactly as much as `//` and `<!-- -->`. If the reasoning does not fit on one line, it belongs in the commit message or the PR, not in the source.
+- **XML documentation comments**: For C# classes, methods, and public properties in infrastructure / coordination code (plugins, tools, host bridges, process managers, IPC handlers, similar files), keep XML docs present and current.
+- **XML summary format**: Never use single-line XML summaries like `/// <summary>Text</summary>`. Always use the multi-line form:
+  ```csharp
+  /// <summary>
+  /// Text
+  /// </summary>
+  ```
+- **Long/complex methods**: Add brief inline comments for the main implementation phases so the control flow is easy to scan.
+- **Async/Await**: Use `ConfigureAwait(false)` in library code; omit in UI entry points
+- **Timeouts**: Use `CancellationTokenSource.CancelAfter()` for time-based cancellation
+- **Cancellation**: Always check `token.IsCancellationRequested` in loops; throw on cancellation
+
+### Avalonia-Specific
+- **Reuse UI components**: when building UI, always check and reuse the existing controls in `ImageGlass.Lib/UI/` (e.g. `PhButton`, `PhTextBox`, `PhTextBlock` in `UI/BaseControls/`) instead of raw Avalonia controls; use the app's style resources via `Resx`/`ResxId` (`Common/Types/Resx.cs`) rather than hardcoding colors/brushes. See the **Designing UI** section for the full controls/resources/icons/fonts inventory.
+- **Platform-conditional visibility**: hide/show controls per platform with the XAML `OnPlatform` markup extension directly on `IsVisible`, not with `OperatingSystem.IsWindows()` in code-behind. Example: `IsVisible="{OnPlatform False, Windows=True, x:TypeArguments=x:Boolean}"` (see `UI/Toolbar/ToolbarControl.axaml`).
+- **Compiled bindings**: `AvaloniaUseCompiledBindingsByDefault = true` (type-safe, zero-runtime cost). Always write `{CompiledBinding ...}` explicitly in XAML — never `{Binding ...}` — including in styles, `ControlTheme`s, and `DataTemplate`s. Compiled bindings need an `x:DataType` in scope; for a self-binding to an untyped collection (e.g. a `DataValidationErrors` error template) set `x:DataType` on the `DataTemplate` (e.g. `coll:IEnumerable` via `xmlns:coll="using:System.Collections"`). Element/ancestor/`TemplatedParent` bindings (`#name`, `$parent[Type]`, `RelativeSource={RelativeSource TemplatedParent}`) infer their type and need no `x:DataType`.
+- **Attached behaviors**: Prefer to UI trigger patterns for event handling
+- **Threading**: Use `Dispatcher.UIThread.Post()` or `Dispatcher.UIThread.InvokeAsync()` for cross-thread updates
+- **Resources**: XAML/PNG/ICO in `Assets/`, referenced via `avares://` protocol
+- **Gestures**: Accumulate pointer events before expensive calculations; use `PhPanGestureRecognizer` and `PhPinchGestureRecognizer`
+- **Animations**: Use `TopLevel.GetTopLevel(this)?.RequestAnimationFrame(callback)` for frame-rate-independent animations synced to the render loop; compute delta from the `TimeSpan` timestamp parameter; request the next frame at the end of each callback to continue the loop (see `ViewerControl_Animation.cs`, `NavButtonsOverlay.cs`)
+
+### SkiaSharp-Specific
+- **Always dispose**: SKImage, SKPaint, SKCanvas, SKMatrix (use try/finally or `using`)
+- **No pooling in hot paths**: Allocation is fast; premature pooling hurts readability
+- **Pixel formats**: `SKColorType.Rgba8888` for sRGB; consider `ColorSpace` for ICC
+- **Bitmap to image**: use `SkiaCodec.ToSKImageNoCopy()` when the bitmap is finished (shares pixels); plain `ToSKImage()` copies the whole buffer
+- **Full-image color conversion**: draw through `SkiaCodec.TryDrawInBands()` (parallel row bands, straight into the destination bitmap); a Skia CPU draw is single-threaded, so one `SKSurface` draw plus `Snapshot` is several times slower
+- **Size ceiling**: check `width * height * bytesPerPixel` against `int.MaxValue` before allocating any full-image buffer
+- **Filtering**: `SKFilterQuality.High` for thumbnails; `Medium` for interactive zoom
+- **Mipmap strategy**: Precompute at load time; cache tiles on-demand; preserve zoom-aware LRU
+
+### Magick.NET-Specific (native heap safety)
+A cancelled gallery scroll has crashed the app twice, as `0xc0000374` (`BlockNotBusy DOUBLE_FREE`) and later as `0xc0000005`, both in `Magick.Native-*.dll`.
+- **Never `Ping` then `Read` into the same `MagickImage`.** `Ping` allocates a native image, and reading into that same wrapper leaves a second one to be freed twice. Probe with a throwaway `using var`, or `Dispose()` before re-reading (`MagickCodec.DecodeImageAsync` does the latter).
+- **Dispose the `MagickImage` on every failure path**, including early returns and `catch`. An abandoned partially-read image handed to the finalizer is what turns the above into a delayed crash that surfaces at an unrelated allocation, pointing nowhere near the read.
+- **Cancelling a Magick `ReadAsync` was a hard process kill in 14.15.0-14.17.0, so the floor is 14.17.1** ([upstream #2084](https://github.com/dlemstra/Magick.NET/issues/2084)). 14.15.0 rewrote the file overload to stream through a reverse-P/Invoke callback; a firing token killed the pump, the callback returned `-1`, and libjpeg read that as an unsigned `bytes_in_buffer` and walked off the heap. The same race could instead strand the decode thread in `_readDone.Wait()` forever. 14.17.0 fixed only the access violation (natively), 14.17.1 fixed the deadlock. Never lower this floor to pick up an older Magick.NET.
+- Applies to any path a fast gallery scroll can cancel: `QuickDecodeAsync` is reached from `PhotoPreviewProvider.GetThumbnailAsync`, whose token is cancelled on every container recycle.
+
+### Performance-Critical Code
+- **Mipmap caching**: Use `MipmapTileCache` for images > 8192×8192; reuse instance across frames
+- **Gesture recognizers**: Accumulate points in `PhPanGestureRecognizer` and `PhPinchGestureRecognizer` before expensive math
+- **File searching**: Async + debounce in `PhotoManager_FileWatcher.cs`; use `IFileSearchProvider` for platform-specific optimizations
+- **Photo preloading**: Use spiral pattern in `PhotoManager_Caching.RunCacheAroundAsync()` to balance memory and responsiveness
+- **PNG writes through Magick**: call `MagickCodec.SetPngCompressionLevel` next to every `Quality` assignment. Magick's PNG writer reads `Quality` as the zlib level (`quality / 10`), so the usual 80-100 meant level 8-9: ~9-18 s for a 12 MP photo, against ~2.5 s at the capped level 6, for files only ~5% smaller.
+
+---
+
+## Important Files to Know
+
+| File/Folder | Purpose |
+|---|---|
+| `Core.cs`, `Core_Events.cs` | Global event hub and singleton access; service provider slots |
+| `App.xaml.cs` | Avalonia app lifecycle, theme/lang initialization |
+| `ImageGlass.Win32/Program.cs` | Entry point, service registration, AOT bootstrap |
+| `PhotoManager.cs` + `PhotoManager_*.cs` | Photo collection, file search, caching (LRU), file watching |
+| `ImageGlass.Win32/Common/ServiceProviders/Win32FileSearchProvider.cs` | Explorer sort order: the list from the foreground or an opening file manager view (EggShell `ShellAppView`), else plain enumeration |
+| `ViewerControl.cs` + `ViewerControl_*.cs` | Image rendering, zoom/pan, selection, animation, nav buttons |
+| `UI/Viewer/Renderer/MipmapTileCache.cs` | Tiled mipmap cache with LRU eviction |
+| `Common/Photoing/Codecs/SkiaCodecs/HdrToneMapper.cs` | HDR-to-SDR tone mapping; per-transfer-function `1.0` anchors in `EncodingWhiteNits` (PQ/HLG = 203 nits, scRGB = 80 nits); `Vector128` loops that must match their scalar tails bit for bit |
+| `Common/Photoing/Codecs/SkiaCodecs/DisplayColorPass.cs` | The viewer's whole color pass (HDR tone map, then monitor profile) as a value-comparable record; shared by the viewer and the cache pass's prepared display frames |
+| `Common/Printing/` + `Windows/Print/` | Printing: layout engine, page renderer, PDF writer, `PrintSession`, and the Print window; each platform's `PrintProvider` spools (see "Printing") |
+| `Common/ServiceProviders/` | Interface contracts + shared providers for cross-platform features |
+| `ImageGlass.Win32/Common/ServiceProviders/` | Win32 implementations of service providers |
+| `ImageGlass.Linux/Common/ServiceProviders/` | Linux implementations of service providers |
+| `ImageGlass.Mac/Common/ServiceProviders/` | macOS implementations of service providers |
+| `Common/ServiceProviders/AppAPIs/FeatureManager.cs` | Feature lock (static `Config.LockedFeatures` API names, admin-only): `IsLocked`, `IsZoomLocked`/`IsPanLocked`, `HideLockedMenuItems` |
+| `Common/Types/ConfigMode.cs` | Portable-mode detection (`.igportable` marker in the startup dir) consumed by `BHelper.ConfigPath`; an unwritable folder is a fatal startup error |
+| `Settings/Config_Static.cs` (`AdminLockedConfigs`/`IsConfigLocked`) + `Windows/Settings/` | Admin settings-lock: disables + refuses to save settings defined in `igconfig.admin.json` (Pro only; read by `ReadAdminConfigDocument()` from the startup dir, else the config dir) |
+| `Common/AppThemes/` | Theme loading, color management (`AppThemeColors`, `IgThemeColors`) |
+| `Common/Localization/Lang.cs` | Translation key registry |
+| `Common/Types/Resx.cs` | Themed resource registry (`ResxId`); resolve via `{DynamicResource}` / `Resx.Get`. Also hosts icon helpers (`ResxIconId` + `GetIcon`) and platform stock icons (`StockIconId` + `GetStockIcon` / `GetDefaultWindowIcon`) |
+| `Common/Types/Const.cs` | App constants: icon sizes, `FONT_CODE`, `FONT_SIZE_*` |
+| `Common/Extensions/`, `Common/BHelper/`, `Common/Types/JsonTypeConverters/` | Shared extensions, helpers, AOT-safe JSON converters (check before writing new) |
+| `UI/BaseControls/` | Reusable `Ph*` controls (`PhButton`, `PhTextBox`, etc.) |
+| `UI/Styles/` | App-wide XAML styles + resource dictionaries (incl. `IconResources.axaml`) |
+| `Directory.Packages.props` | Central package version management (Avalonia 12.1.x, SkiaSharp 4.152.x, Magick.NET 14.x, etc.). SkiaSharp is transitive (Avalonia.Skia asks for 3.x), so it needs `CentralPackageTransitivePinningEnabled` plus explicit `SkiaSharp.NativeAssets.*` pins |
+
+---
+
+## Project-Specific Conventions
+
+1. **No auto-generated code edits**: Skip `/obj/`, `*.g.cs`, generated Win32 P/Invoke (`NativeMethods.g.cs`)
+2. **Event naming**: Use `TEventHandler<TSender, TArgs>` for type-safe events (defined in `Common/Types/TEventHandler.cs`)
+3. **Weak event subscriptions**: Prefer `IDisposable` unsubscribe over weak events for clarity
+4. **Config JSON**: Add custom converters in `JsonTypeConverters/` folder if new types need serialization
+5. **Cross-thread calls**: Always check `IsDisposed` before invoking on disposed ViewModels/Services
+6. **Horizontal code splits**: Many large classes split into partial files; search by concern (e.g., `PhotoManager_*.cs`)
+7. **Lock usage**: Always use `Lock` for critical sections; avoid nested locks to prevent deadlock
+8. **Resource cleanup**: Use try/finally or `using` for all `SKObject` allocations; dispose tiles in `MipmapTileCache` on eviction
+
+---
+
+## Tools & Build Integration
+
+- **Tools/CodeSigning/sign_publish_files_x64.bat** (repo-level): Legacy v9 code signing script; documents publication binaries but does not apply to `v10` output paths without modification.
+- **AOT Publishing**: Use `dotnet publish ImageGlass.Win32 -c Release` to generate trimmed, self-contained executable.
+- **NativeMethods.g.cs**: Auto-generated by CsWin32 from `NativeMethods.json`; do not edit manually.
+
+### Packaging (all platforms)
+Scripts in `__assets/<win|mac|linux>/`, VS Code tasks `pack-*`, output in `__artifacts/bundle/`. **See the `ig-app-packing` skill for the full contract**; the invariants worth knowing here:
+- **Version**: `Directory.Build.props` is the only place to bump (`IgVersion`, `IgReleaseType`, `IgBundleShortVersion`, `IgBundleBuild`). `Directory.Build.targets` bakes it into `AppBuildInfo.g.cs`, so packing a stale publish dir ships old code under a new version. The msstore MSIX uses `<Major>.<Minor>.<IgBundleBuild>.0` (the Store reserves the 4th part); the sideload MSIX and the MSI use `IgVersion` verbatim.
+- **Windows** (`script-pack-win-msix.ps1`, `script-pack-win-zip.ps1`): two MSIX flavours (msstore: unsigned, Store re-signs, virtualized; signed sideload: `-Sign -UnvirtualizedResources`), plus the portable ZIP that writes `.igportable` unless `-NoPortable`. Both scripts publish a fresh AOT build themselves.
+- **macOS** (`script-pack-mac-arm64-app.sh` -> `-dmg.sh`): `Contents/MacOS` may hold only Mach-O files, so bundled data is staged into `Contents/Resources/` and symlinked back or `codesign` fails. The DMG is Developer ID signed, notarized, and stapled.
+- **Linux** (`script-pack-linux-x64-flatpak.sh`, `script-pack-linux-x64-appimage.sh`): the Flatpak manifest installs a prebuilt tarball, so the GitHub release must exist before Flathub submission, and `--disable-cache` is mandatory or the bundle ships the previous binary. The AppImage stages an AppDir with the payload under `usr/lib/imageglass/` (mirroring the Flatpak's `/app/imageglass/`, so `BHelper.BaseDir()` behaves identically in both) and a generated `AppRun`; unlike Flatpak it runs against the **host** glibc and host libraries. NativeAOT links against the *build* machine's glibc (a plain 24.04 publish needed 2.38, #2484), so both Linux scripts publish with `-p:SysRoot` against a pinned Ubuntu 20.04 sysroot (`script-linux-x64-sysroot.sh`, sha256-checked `.deb`s cached in `__artifacts/tools/`) and **fail** when a shipped ELF needs more than its glibc 2.31. `LinkNative`'s only inputs are the object files, so a `SysRoot` change alone never relinks; the scripts delete the old linked binary first. Both share one `metainfo.xml`, in `__assets/linux/flatpak/`. The AppImage also embeds `gh-releases-zsync` update information (tag `latest` for stable, `latest-all` when `IgReleaseType` is non-empty or `IgUpdateChannel` is not `stable`, so an rc/beta still rolls onto the stable superseding it) and emits a `.zsync` that **must** be uploaded to the same release — its `URL:` is relative, and an image advertising an update with no `.zsync` fails every check. `zsyncmake` writes into the **CWD**, not beside its input, so appimagetool is run from `__artifacts/bundle/`.
+- **`__assets/__app/` is shared payload**; `_ext_icons` is Windows-only and is stripped for macOS, Linux, and the msstore MSIX. `.igportable` must never live there (a read-only MSIX payload would refuse to start).
+
+---
+
+## Debugging Tips
+
+- **PhotoLoading hangs?** Check `_cancelPreview` in ViewerControl; may be a codec timeout
+- **A photo shows black during fast navigation, and is fine on the next visit?** The load ended without raising `Loaded` (see "A `LoadAsync` that returns without raising `Loaded`"), so the viewer holds no source at all; "fine the second time" is the tell, since the photo is decoded and the fast path renders it. Trace with `--ig-photo-trace` and look for a `viewer:set-photo` with no following `render:first-draw`, plus `viewer:recover*`, `load:queued-cancel` and `load:cache-hit`. Full screen makes it visible because the gallery is hidden there, so `Photo.GalleryThumbnail` is null and no preview covers the gap.
+- **Memory leak?** Verify disposal of `SKImage`, `SKBitmap`, `SKSurface`, and `PhDisposable` subclasses; profile with large images
+- **Theme not updating?** Ensure `Core.ThemeChanged` is invoked and subscribers listen
+- **Gesture not working?** Check `PhPanGestureRecognizer`, `PhPinchGestureRecognizer` in `ZoomAndPan/`; verify point accumulation
+- **Nav buttons not showing?** Check `Config.EnableNavigationButtons` binding, `NavButtonsOverlay.Background` must be `Brushes.Transparent` for hit-testing, and `EnableSelection` disables nav buttons
+- **Color wrong after switching profiles (brighter/over-saturated, persists until restart)?** The codec-selection cache is stuck on Magick (double profile application); ensure `Core.UpdateDestColorProfile()` calls `CodecRegistry.InvalidateSelectionCaches()`. CMYK profile showing inverted/negative? `ProcessMagickImage__` must cast a CMYK result to `ColorSpace.sRGB`.
+- **A cached HDR or color-managed photo still pauses before it shows?** The prepared display frame was not used. With `--ig-photo-trace`, a used one logs `viewer:display-frame` and `viewer:color-managed` lands ~0 ms after `viewer:set-photo`; without it the pass ran on demand because an HDR option, the monitor profile or the HDR switch changed since the cache pass (expected, the frame was stale), the budget had no room for it, or the photo is multi-frame. `cache:display-frame` shows each prepare and its time.
+- **HDR image looks washed out or blown out, or two viewers disagree on its brightness?** That is a normalization bug, not a color one: `EncodingWhiteNits()` anchors `1.0` per transfer function, and scRGB is 80 nits rather than the 203-nit reference white PQ/HLG use. Before judging a curve change by eye, dump the source luminance percentiles, and check `Config.ToolSettings["Tool_HdrToneMapper"].Mode` first, since a hand-tested build may be running `ACES` (knee at 0.5, clips a real HDR photo from p75 up) rather than the `BT2408` default.
+- **Admin-locked setting still editable or saved?** The admin settings-lock (`igconfig.admin.json` keys → `Config.AdminLockedConfigs`/`IsConfigLocked`) enforces at three points, all required: `SettingsViewModel.CommitAsync` (skip locked ids), `Config.ApplyCliOverrides` (skip locked ids), and the settings UI (`SettingsRegistry.DisableLockedControls` for `Bind*` controls + `SettingsPageView.DisableIfLocked` for composite editors). Capture runs in `Config.LoadAdminPolicies()` independently of the user-config read (a corrupt `igconfig.json` must not empty the lock set). Plugins page is UI-disable-only (`PluginTrust` applies live via `PluginTrustPolicy`, never staged).
+- **Whole admin layer ignored?** It is Pro-gated in `ReadAdminConfigDocument()`, so `Core.AppLicense` must be loaded before `Config.Load()` (`App.axaml.cs`). Also check the lookup order: startup dir wins, config dir is only a fallback, and the two files are never merged together.
+- **`igconfig.default.json` ignored?** Both template layers are Pro-only: it is gated in `ReadDefaultConfigDocument()` exactly as the admin file is in `ReadAdminConfigDocument()`, with the same license-before-load ordering and the same startup-dir-then-config-dir lookup. Classic keeps only the developer defaults under `igconfig.json`.
+- **`LockedFeatures` set in `igconfig.json` does nothing?** Intended: it is not a `ConfigId` and not a `Config` property, so every user-writable layer (user file, `igconfig.default.json`, `-p:` CLI, `IG_ApplySettings`) ignores it and a stale key is dropped on the next save. `Config.LoadAdminPolicies()` reads it from `igconfig.admin.json` alone, which is already Pro-gated by `ReadAdminConfigDocument()`. Never re-add it as a `ConfigId`: a user-writable layer could then unlock a feature an admin locked.
+- **Locked feature (`LockedFeatures`) still triggerable?** Only `AppAPIProvider.RunApiAsync` (both overloads) and the hotkey handler are auto-gated by `FeatureManager.IsLocked`. Any path that skips them must self-guard: context-menu items (bound via `GetApiCommand`) go through the `LockAwareApiCommand` wrapper; viewer wheel/drag/touch zoom-pan self-checks `FeatureManager.IsZoomLocked()`/`IsPanLocked()`. A new input path or a direct command execution without one of these is a bypass.
+- **"Unable to allocate pixels for the bitmap" on a huge image?** Not an out-of-memory problem, so do not chase RAM or fragmentation. Skia refuses any pixel buffer over `int.MaxValue` bytes; the decode must shrink to fit first (`GetDecodableImageInfo` on the Skia path, the in-place resize in `FromMagick` on the Magick path). A new code path that allocates a full-image buffer without that check reintroduces the crash.
+- **Huge image opens smaller than the file?** Expected: `Photo.DecodeScale < 1` and the status bar shows the reduction. `Photo.Metadata.Width/Height` keep the true size; everything else follows the decoded size.
+- **Memory balloons only when a codec plugin is enabled?** Plugin pixel buffers are native memory the GC never sees, so `NativeCodecProxy.WrapPluginBufferAsImage` must pair `PluginPixelBufferRelease.TrackNativeMemory` with the release, and the cache budget must read `Photo.BytesPerPixel` (a plugin frame can be 8 bytes/px, not 4).
+- **Plugin-owned format shows a garbage gallery thumbnail (thin line, blank) while the viewer renders it fine?** A content-sniffing built-in decoder (`SKCodec.Create`, Magick) succeeded with absurd dimensions instead of failing, and that satisfies `IsPreviewLargeEnough` (longest side only), so the plugin is never asked. Every preview/thumbnail source must gate on `CodecRegistry.IsDecodingExtensionOwnedByPlugin` (via `PhotoPreviewProvider.IsPluginOwnedFormat`); trace with `--ig-photo-trace` (`preview:*` = which source won, `thumb:preview`/`thumb:codec`/`thumb:decode` = whether the slow path ran).
+- **File type icons work in a debug run but never from the MSIX?** Not a path or virtualization bug: registry writes DO reach the real HKCU on the unvirtualized sideload flavour. A package that declares `windows.fileTypeAssociation` owns the icon of every type it claims and outranks the classic `DefaultIcon`. Confirm with `AssocQueryString(ASSOCSTR_DEFAULTICON, ".png")`: an `@{<PackageFullName>?ms-resource://...}` result means the manifest is winning. The sideload flavour therefore declares no association at all; the Store flavour declares one per format with its own `uap:Logo`. Blank icon in the Open With list instead? Every MSIX execution alias is a 0-byte reparse point, so `LaunchCommandExe` must register the real exe (see `ig-app-packing`).
+- **AppImage exits immediately (`version 'GLIBC_2.xx' not found`), or `libgomp.so.1: cannot open shared object file`?** An AppImage links against the **host** glibc, unlike the Flatpak, which brings its own runtime. The floor is glibc 2.29 (Ubuntu 20.04+), set by the prebuilt `Magick.Native`; the pack script refuses anything above the sysroot's 2.31 and names the symbols forcing it. A floor above that means the binary was linked without the sysroot. `libgomp` is a `DT_NEEDED` of `Magick.Native-*.so` (which has no `RUNPATH`), bundled in `usr/lib/fallback/` and added to `LD_LIBRARY_PATH` by `AppRun` **only** when the host has none — an unconditional entry would shadow the host's own glibc-matched copy. Never bundle `libGL`/`libX11`/`libfontconfig`: they are coupled to the host's drivers and font config.
+- **AppImage cannot open a file passed as a relative path, or Save As defaults into `/tmp/.mount_*`?** Both depend on the cwd (`BHelper.ResolvePath` ends in `Path.GetFullPath`), so `AppRun` pins it to `$OWD`, the caller's dir that the runtime exports in mount mode (extract-and-run leaves it unset, hence the `-n`/`-d` guard). Measured on type2-runtime `75849dc`, all three launch modes already preserve the cwd, so that `cd` is a no-op guard against a runtime that does not — do not remove it and do not assume it is what makes relative paths work. `AppRun` must also never export `TMPDIR` (`AppInstance`'s lock lives there, and an unwritable path is swallowed, so every launch silently claims "first instance") or `XDG_DATA_HOME` (it would orphan the settings shared with the tarball install).
+- **App does not come back after a restart (Quick Setup, Pro activation) in an AppImage?** `Environment.ProcessPath` is the binary inside the mount, which is unmounted the moment the exiting process dies. Relaunch through `BHelper.AppRelaunchPath` (`$APPIMAGE` when set, else `AppExePath`); a new relaunch site using `AppExePath` reintroduces it.
+- **Settings not staying with the app folder (or the app quits at startup with "Cannot use portable mode")?** Portable mode is driven by the `.igportable` marker in the startup dir (`ConfigMode`). The marker must exist next to the exe AND that folder must be writable; an unwritable folder is a hard stop by design, not a fallback to `%LocalAppData%`. The ZIP packer writes the marker; the MSIX must never carry it.
+- **A path shown for an app-owned folder cannot be opened ("Unable to find /app/imageglass"), or a file under the app dir is suddenly not found?** Two platform indirections hide the real location from the process: Flatpak mounts the install dir at `/app`, and MSIX may redirect `%LocalAppData%` into the package container. `BHelper.GetRealPlatformPath()` is the single translator to the path the OS and the user see — use it for anything displayed or handed outside the process (`BasePath`, `GetRealPlatformConfigDir`, `Lang.DisplayFilePath`, `IgTheme.DisplayFolderPath`, `XdgPortal`, `ApplyFlatpakHostSpawn`), and `IShellProvider.GetActualPath` is its per-platform half. A path used for I/O keeps the process form, so a type that needs both exposes a `Display*` twin (see those two) rather than mapping the stored value. `BHelper.BasePath` is therefore always the **full, real** dir of the binary; inside the sandbox that path is NOT readable, raw or via `/run/host`, even with `--filesystem=host`. Every read goes through `BHelper.BaseDir()`, which maps back to the mount — `Path.Combine(BasePath, x)` for I/O is the bug. Off Flatpak/MSIX every mapping is identity, so Windows/macOS behave exactly as before. Never add a second base-path accessor.
+- **A Flatpak build is missing `_lang`, `default.webp` or another asset the tarball does contain?** The manifest's `build-commands` copy the payload as a whole from `dest: payload`; a re-introduced explicit file list silently drops every asset added to `__assets/__app` afterwards.
+- **App vanishes with no error dialog (no in-app exception, nothing logged)?** That is a native crash, so `App.UIThread_UnhandledException` never runs. Do not hunt for a managed exception. Read the real fault first: `Get-WinEvent -FilterHashtable @{LogName='Application'}` filtered to `Application Error` gives the exception code (`0xc0000374` = heap corruption, `0xc0000005` = access violation). Then bucket it with `cdb.exe -z <dump> -c ".lastevent; !analyze -v; q"` (WinDbg installs via `winget install Microsoft.WinDbg`; `cdb.exe` sits in the package's `amd64` folder). Dumps land in `%LocalAppData%\CrashDumps`. `!analyze -v` names the faulting module and whether it was a double free, which is usually the whole answer. `dotnet-dump analyze <dump> -c "clrstack -all"` then shows which managed call was in flight on that thread.
+- **App vanishes on macOS with `EXC_CRASH (SIGABRT)` / `abort() called` on a `.NET TP Worker`?** That is NativeAOT `FailFast` from a *managed* exception that escaped a background thread — usually `async void`, whose `AsyncVoidMethodBuilder.SetException` rethrows with no `SynchronizationContext`. Do not chase native heap corruption. Symbolicate before theorising: crash reports are `~/Library/Logs/DiagnosticReports/ImageGlass-*.ips`, and `ImageGlass.Mac/bin/<Platform>/Release/net11.0/osx-arm64/native/ImageGlass.dSYM` matches when `dwarfdump --uuid` equals the report's UUID. Then `atos -o <dSYM>/Contents/Resources/DWARF/ImageGlass -arch arm64 -l <load addr> <frame addrs>` names the exact method — the frame under `AsyncVoidMethodBuilder__SetException` is the culprit.
+- **An `async void` outside a UI event handler is a crash, not a bug.** On the UI thread `Dispatcher.UIThread.UnhandledException` catches it; on any worker it kills the process silently. Every `async void` reachable from a worker (`Photo.OnDisposing`/`Unload`, `GalleryItem.LoadThumbnail`, file-search callbacks) must wrap its whole body in `try/catch (Exception)`. `AppDomain.CurrentDomain.UnhandledException` cannot save it: the process is torn down as soon as the handler returns, so a `Dispatcher.Post` there never renders.
+- **An integrated external tool (ExifGlass) opens but never shows the current photo, and does not follow navigation?** The IPC socket is unreachable, not the tool. On Linux a tool is commonly a Flatpak app (the seeded ExifGlass registration runs `flatpak run`), and **every Flatpak gets a private `/tmp`**, so the default `NamedPipeServerStream` socket at `/tmp/CoreFxPipe_*` is invisible to it. `ToolProcessManager.CreatePipeName()` therefore keys off `BHelper.OS == Linux`, **not** `IsFlatpakSandbox`: the tool's reachability is what matters, not whether ImageGlass itself is sandboxed. `~/.cache/ImageGlass/tools` works because the tool's manifest grants `--filesystem=host`. Keying it off `IsFlatpakSandbox` silently breaks every non-Flatpak Linux build (AppImage, tarball, `dotnet run`) while working under Flatpak.
+- **Works on Windows but crashes on macOS/Linux in the file-search path?** Only `Win32FileSearchProvider` overrides `SearchAsync` to publish through `Dispatcher.UIThread.Post` with a token re-check; the base provider invokes `progressFn` straight from its `Task.Run` worker. So a search callback that touches `Core.Photos.Items` (bound to the gallery) or any control runs off-thread on macOS/Linux only. Marshal the *whole* callback body, not just the `Add`.
+- **App starts on Linux but no window ever appears — no error, no crash, nothing logged?** The main window is gated on `_taskUi`, and `_taskUi.TrySetResult()` is the *last line of* `ApplyThemePackAsync`, so anything that skips that method hangs the show. `App.OnFrameworkInitializationCompleted` awaits `_taskUi.Task` before `desktop.MainWindow = MainWindow`, so the process stays alive with its event loop idle and the window created but never mapped. Diagnose with `xwininfo -root -tree | grep 'ImageGlass 10"'` then `xwininfo -id <id> | grep 'Map State'`: `IsUnMapped` (and no `mutter-x11-frames` parent) means created-but-never-shown, and Avalonia builds the X window in the `Window` constructor but maps it only on `Show()`. Never leave `_taskUi` completable on one path only — `ApplyUIConfigsAsync` sets it in a `finally` for exactly this reason.
+- **Linux dark mode: `PlatformSettings.GetColorValues()` is a provisional `Light` at startup, and `ColorValuesChanged` fires only when the resolved value *differs*.** Avalonia resolves the theme asynchronously from `org.freedesktop.portal.Settings`, so `GetColorValues()` returns `Light` at t=0 whatever the desktop is set to, and the event lands ~20-34ms later **only on a dark desktop**. On a light/default desktop it never fires at all, which is why waiting for it unconditionally hung startup. `LINUX_SYSTEM_THEME_GRACE_MS` bounds that wait: high enough that the event wins the race (so the pack loads once), low enough that a light desktop does not pay it in full. Dropping it below ~20ms is not a correctness bug but makes the event always lose, costing a redundant disk theme load plus a spurious `Core.OnThemeChanged()` on every dark launch.
+- **Gallery thumbnails load twice per item, or a wrong-size thumbnail flashes then gets replaced?** `PhVirtualizingUniformPanel.GetOrCreateElement` sets `DataContext` *before* `AddInternalChild`, so a brand-new `GalleryItem` is still detached when its `DataContextProperty` handler runs, `TopLevel.GetTopLevel(this)` is null, and `Dpi` silently falls back to `1`. Gate that handler on `IsLoaded`: `OnLoaded` covers the first attach, and recycled containers stay loaded (`RecycleElement` only sets `IsVisible = false`, it never removes the child) so the handler remains their only trigger.
+- **Gallery shows nothing selected after opening a file (and navigation starts from -1)?** The init photo path did not match the enumerated form. Enumeration emits absolute `FileInfo.FullName` and `IndexOf` is an exact-string lookup, so a relative launch path such as `dotnet run --project ImageGlass.Win32 -- pics\a.jpg` misses unless it went through `BHelper.ResolvePath`.
+- **Opened a photo from a file manager but the list ignores its order?** Make ImageGlass's own order differ (`-p:ImageLoadingOrder=FileSize`) and read the `i/N` index in the window title to see which source won. The file manager must be the foreground window at launch, since that is when it is captured; a plain folder also needs `EnableExplorerSortOrder` and the opened file's own folder, and a third-party file manager is followed only if EggShell supports it. See "Explorer sort order & the foreground shell".
+- **No slideshow notification sound?** `BHelper.PlayNotificationSoundAsync()` plays the bundled `Assets/Sounds/notification.wav`, never a system beep. Windows/macOS use NetCoreAudio (winmm MCI / `afplay`); **Linux deliberately does not**, because NetCoreAudio hardcodes `aplay`, which neither the Flatpak runtime nor an alsa-utils-less distro has — and since it shells out through `/bin/bash`, the missing binary exits 127 without throwing, so nothing reaches the `catch`. `PlayLinuxSoundAsync` instead probes `paplay`/`pw-play`/`aplay`/`ffplay`, keeping the first that exits 0 (a player may exist yet fail for want of a sound server). Flatpak additionally needs `--socket=pulseaudio` in `finish-args`, without which every player fails.
+- **Window comes back the wrong size (or the gallery/toolbar reappears) after leaving full screen?** The pre-fullscreen `WindowLayoutSnapshot` was never captured, or the close handler persisted the live full screen values over it. See "Full screen & the windowed layout".
+- **Projector tiles or window fit stop short of a Linux monitor's edge (a gap at the bottom of a secondary monitor)?** Avalonia's X11 `Screen.WorkingArea` is the screen clipped by `_NET_WORKAREA`, one rectangle for the whole desktop, which mutter shrinks to avoid a panel on *any* monitor: a bottom panel on a shorter laptop screen cuts the same strip off every taller neighbour. Never read `Screen.WorkingArea` directly; use `screen.GetActualWorkingArea()` (`Screen_Exts`), which asks `IShellProvider.GetScreenWorkingArea`. Linux answers from the per-monitor `_GTK_WORKAREAS_D<n>` (`LinuxScreenApi`, a second X connection kept open because window fit asks on every zoom step) and falls back to Avalonia's value where the window manager does not publish it. Compare `xprop -root _NET_WORKAREA _GTK_WORKAREAS_D0` against `xrandr --listmonitors`.
+- **A hotkey in `igconfig.json` changes by itself, or the whole config fails to load?** `Hotkey` has two texts and they are not interchangeable: `KeyString` is the platform display text (`KeyGesture.ToString("p")`, which prints `Back` as "Backspace" and `Meta` as "Win"/"⌘"), `InvariantKeyString` is the only one that may be persisted. Never persist the display text: `KeyGesture.Parse` cannot read it back, and it reads a digit string as the enum *value* ("1" -> `Key.Cancel`). `Hotkey.ParseFrom` is the sole reverse of `ToInvariantString`, accepts the display spellings too, and never throws; `JsonHotkeyArrayConverter` drops an entry it cannot parse so one bad string cannot fail `Config.Load`.
+- **"The process cannot access the file 'igconfig.json'" when several instances close together?** Every instance saves the same file, so a write must go through `BHelper.WriteAllTextSharedAsync` (stage + rename + retry) and a read through `BHelper.OpenReadShared`; a new `File.WriteAllText`/`File.OpenRead` on a config-dir file reintroduces it. See "Concurrent file writes".
+- **Serialization fails?** Validate JSON converter exists in `Common/Types/JsonTypeConverters/`
+- **Cache not evicting?** Check `MipmapTileCache.MAX_CACHED_TILES` (100) and LRU promotion logic
+- **AOT trimming errors?** Review trimmer warnings; add `[DynamicallyAccessedMembers]` annotations or custom converters
+
+---
+
+## When Adding New Features
+
+1. **Cross-platform?** Define interface in `Common/ServiceProviders/`; implement in each platform's `Common/ServiceProviders/` (Win32, Linux, Mac) and register via `Core.API` or service slots
+2. **User-facing string?** Add to `Lang.cs` enum, then reference via `Lang.GetString(LangId.KeyName)`
+3. **New codec?** Inherit from codec base (SkiaCodec or MagickCodec); register in `PhotoManager`
+4. **UI control?** Inherit from `PhControl` or `PhWindow`; use `PhReactive` for ViewModels
+5. **Settings?** Add property to `Config.cs`; if complex JSON, create converter in `JsonTypeConverters/`
+6. **Async operation with cancellation?** Accept `CancellationToken ct`, pass to subtasks, call `ct.ThrowIfCancellationRequested()`
+7. **Memory-critical?** Test with large images (8192×8192+) and profile cache behavior
+8. **Threaded work?** Use `Lock` for shared state; avoid blocking UI thread; prefer async/await over Thread

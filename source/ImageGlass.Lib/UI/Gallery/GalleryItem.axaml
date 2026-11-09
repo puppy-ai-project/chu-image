@@ -1,0 +1,75 @@
+<ui:PhToolButton
+    x:Class="ImageGlass.UI.GalleryItem"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:cm="using:ImageGlass.Common"
+    xmlns:photo="using:ImageGlass.Common.Photoing"
+    xmlns:ui="using:ImageGlass.UI"
+    mc:Ignorable="d"
+    d:DesignHeight="200"
+    d:DesignWidth="800"
+    x:DataType="photo:Photo"
+    Padding="3"
+    BorderThickness="1">
+    <Grid
+        RowDefinitions="*, Auto"
+        VerticalAlignment="Stretch"
+        IsHitTestVisible="False">
+
+        <!--  Gallery Item: Thumbnail Skeleton  -->
+        <Border
+            Grid.Row="0"
+            Margin="2"
+            Background="{DynamicResource IG_BorderNeutralBrush}"
+            CornerRadius="{DynamicResource ControlCornerRadius}"
+            IsVisible="{CompiledBinding GalleryThumbnail, Converter={x:Static ObjectConverters.IsNull}}">
+            <Border.Styles>
+                <Style Selector="Border[IsVisible=True]">
+                    <Style.Animations>
+                        <Animation IterationCount="10" Duration="0:0:1.2">
+                            <KeyFrame Cue="0%">
+                                <Setter Property="Opacity" Value="0.2" />
+                            </KeyFrame>
+                            <KeyFrame Cue="50%">
+                                <Setter Property="Opacity" Value="1" />
+                            </KeyFrame>
+                            <KeyFrame Cue="100%">
+                                <Setter Property="Opacity" Value="0.2" />
+                            </KeyFrame>
+                        </Animation>
+                    </Style.Animations>
+                </Style>
+            </Border.Styles>
+        </Border>
+
+
+        <!--  Gallery Item: Thumbnail Image  -->
+        <Image
+            Grid.Row="0"
+            RenderOptions.BitmapInterpolationMode="LowQuality"
+            Source="{CompiledBinding GalleryThumbnail}"
+            Stretch="Uniform" />
+
+
+        <!--  Gallery Item: File name  -->
+        <Grid
+            Grid.Row="1"
+            ColumnDefinitions="*, Auto"
+            HorizontalAlignment="Center"
+            IsVisible="{CompiledBinding ShowGalleryFileName, Source={x:Static cm:Core.Config}}">
+            <TextBlock
+                Grid.Column="0"
+                Padding="2,0,0,0"
+                Text="{CompiledBinding GalleryFileTitle}"
+                TextTrimming="CharacterEllipsis" />
+
+            <TextBlock
+                Grid.Column="1"
+                Padding="0,0,2,0"
+                HorizontalAlignment="Right"
+                Text="{CompiledBinding GalleryFileExtension}" />
+        </Grid>
+    </Grid>
+</ui:PhToolButton>

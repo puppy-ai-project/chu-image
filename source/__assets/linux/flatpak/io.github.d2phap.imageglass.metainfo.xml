@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.d2phap.imageglass</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>ImageGlass</name>
+  <summary>A Fast, Seamless Photo Viewer</summary>
+
+  <description>
+    <p>
+      ImageGlass is a fast, modern, open-source image viewer built for Windows,
+      macOS, and Linux. Designed for speed and efficiency, it delivers a smooth,
+      immersive viewing experience by combining high-performance rendering with
+      professional-grade tools for both everyday users and designers.
+    </p>
+    <p>
+      ImageGlass provides seamless, quick navigation across more than 90 image
+      formats, including WEBP, GIF, SVG, AVIF, JXL, HEIC, and raw images.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.d2phap.imageglass.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>ImageGlass 10 - A Fast, Seamless Photo Viewer</caption>
+      <image>https://raw.githubusercontent.com/ImageGlass/releases/refs/heads/main/stores/flatpak/ig_flatpak_1.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>90+ Image Formats Support</caption>
+      <image>https://raw.githubusercontent.com/ImageGlass/releases/refs/heads/main/stores/flatpak/ig_flatpak_2.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Your App - Your Personality</caption>
+      <image>https://raw.githubusercontent.com/ImageGlass/releases/refs/heads/main/stores/flatpak/ig_flatpak_3.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Powerful Built-in Tools</caption>
+      <image>https://raw.githubusercontent.com/ImageGlass/releases/refs/heads/main/stores/flatpak/ig_flatpak_4.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://imageglass.org</url>
+  <url type="bugtracker">https://github.com/d2phap/ImageGlass/issues</url>
+  <url type="help">https://imageglass.org/docs</url>
+  <url type="donation">https://imageglass.org/donate</url>
+  <url type="translate">https://crowdin.com/project/imageglass</url>
+  <url type="vcs-browser">https://github.com/d2phap/ImageGlass</url>
+
+  <developer id="io.github.d2phap">
+    <name>Duong Dieu Phap</name>
+  </developer>
+
+  <categories>
+    <category>Graphics</category>
+    <category>Viewer</category>
+  </categories>
+
+  <keywords>
+    <keyword>image</keyword>
+    <keyword>photo</keyword>
+    <keyword>viewer</keyword>
+    <keyword>picture</keyword>
+    <keyword>gallery</keyword>
+  </keywords>
+
+  <content_rating type="oars-1.1" />
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <supports>
+    <control>touch</control>
+  </supports>
+
+  <releases>
+    <release version="10.0.0" date="2026-06-01">
+      <url>https://github.com/d2phap/ImageGlass/releases</url>
+    </release>
+  </releases>
+</component>

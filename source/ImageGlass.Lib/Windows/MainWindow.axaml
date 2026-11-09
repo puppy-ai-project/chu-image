@@ -1,0 +1,22 @@
+<uiw:PhWindow
+    x:Class="ImageGlass.Common.Windows.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cm="using:ImageGlass.Common"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uiw="using:ImageGlass.UI.Windowing"
+    xmlns:vm="using:ImageGlass.ViewModels"
+    xmlns:wv="using:ImageGlass.Common.Windows"
+    mc:Ignorable="d"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:MainWindowModel"
+    Title="{CompiledBinding Title}"
+    BackdropStyle="{CompiledBinding Config.WindowBackdrop}"
+    IsFrameless="{CompiledBinding Config.EnableFrameless}"
+    ShowTitleBarIcon="{CompiledBinding Config.ShowAppIcon}">
+
+    <wv:MainWindowView x:Name="PART_MainView" DataContext="{CompiledBinding .}" />
+
+</uiw:PhWindow>

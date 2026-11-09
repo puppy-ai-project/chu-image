@@ -1,0 +1,211 @@
+<ui:PhControl
+    x:Class="ImageGlass.Tools.ColorPickerToolControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:cv="using:Avalonia.Markup.Xaml.Converters"
+    xmlns:tp="using:ImageGlass.Common.Types"
+    xmlns:ui="using:ImageGlass.UI"
+    mc:Ignorable="d"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:Name="Root"
+    Padding="6,12">
+
+    <ui:PhControl.Resources>
+        <cv:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+    </ui:PhControl.Resources>
+
+
+    <WrapPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        ItemSpacing="24"
+        ItemsAlignment="Center"
+        LineSpacing="6"
+        Orientation="Horizontal">
+
+        <!--  Color Preview  -->
+        <Border
+            BorderBrush="{DynamicResource IG_BorderControlBrush}"
+            BorderThickness="1"
+            ClipToBounds="True"
+            CornerRadius="1">
+            <StackPanel Orientation="Horizontal">
+                <!--  Checkerboard background brush  -->
+                <StackPanel.Background>
+                    <VisualBrush
+                        DestinationRect="0,0,20,20"
+                        SourceRect="0,0,20,20"
+                        TileMode="Tile">
+                        <VisualBrush.Visual>
+                            <Grid
+                                RowDefinitions="10,10"
+                                ColumnDefinitions="10,10"
+                                Width="20"
+                                Height="20">
+                                <Rectangle
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Fill="Black"
+                                    Opacity="0.1" />
+                                <Rectangle
+                                    Grid.Row="0"
+                                    Grid.Column="1"
+                                    Fill="White"
+                                    Opacity="0.1" />
+                                <Rectangle
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Fill="White"
+                                    Opacity="0.1" />
+                                <Rectangle
+                                    Grid.Row="1"
+                                    Grid.Column="1"
+                                    Fill="Black"
+                                    Opacity="0.1" />
+                            </Grid>
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </StackPanel.Background>
+
+
+                <!--  Current color  -->
+                <Border
+                    MinWidth="100"
+                    Padding="4"
+                    Background="{CompiledBinding #Root.CurrentColor, Converter={StaticResource ColorToBrushConverter}}">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="{x:Static, tp:Const.FONT_SIZE_SMALL}"
+                        Foreground="{CompiledBinding #Root.CurrentTextColor, Converter={StaticResource ColorToBrushConverter}}"
+                        Text="{CompiledBinding #Root.CurrentPoint}"
+                        TextAlignment="Center" />
+                </Border>
+                <Border Width="1" Background="{DynamicResource IG_BorderControlBrush}" />
+
+                <!--  Selected color  -->
+                <Border
+                    MinWidth="100"
+                    Padding="4"
+                    Background="{CompiledBinding #Root.SelectedColor, Converter={StaticResource ColorToBrushConverter}}">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="{x:Static, tp:Const.FONT_SIZE_SMALL}"
+                        Foreground="{CompiledBinding #Root.SelectedTextColor, Converter={StaticResource ColorToBrushConverter}}"
+                        Text="{CompiledBinding #Root.SelectedPoint}"
+                        TextAlignment="Center" />
+                </Border>
+            </StackPanel>
+        </Border>
+
+
+        <!--  Color Codes  -->
+        <WrapPanel
+            ItemSpacing="24"
+            LineSpacing="6"
+            Orientation="Horizontal">
+
+            <StackPanel Spacing="6">
+                <!--  RGBA  -->
+                <StackPanel
+                    MinWidth="150"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="RGBA" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorRGB}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+
+                <!--  HEX  -->
+                <StackPanel
+                    MinWidth="150"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="HEX" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorHEX}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+            </StackPanel>
+
+
+            <StackPanel Spacing="6">
+                <!--  HSL  -->
+                <StackPanel
+                    MinWidth="150"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="HSL" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorHSL}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+
+                <!--  HSV  -->
+                <StackPanel
+                    MinWidth="150"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="HSV" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorHSV}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+            </StackPanel>
+
+
+            <StackPanel Spacing="6">
+                <!--  CMYK  -->
+                <StackPanel
+                    MinWidth="200"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="CMYK" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorCMYK}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+
+                <!--  CIELAB  -->
+                <StackPanel
+                    MinWidth="200"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2">
+                    <TextBlock Opacity="0.6" Text="CIELAB" />
+                    <ui:PhToolButton
+                        Padding="4,0"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonCopy_Click"
+                        Content="{CompiledBinding #Root.ColorCIELAB}"
+                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
+                </StackPanel>
+            </StackPanel>
+
+        </WrapPanel>
+
+    </WrapPanel>
+</ui:PhControl>

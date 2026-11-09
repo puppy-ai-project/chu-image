@@ -1,0 +1,30 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "IG Linux X64",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-linux-x64",
+      "program": "${workspaceFolder}/ImageGlass.Linux/bin/x64/Debug/net11.0/linux-x64/ImageGlass.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": "IG Mac ARM64",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-mac-arm64",
+      "program": "${workspaceFolder}/ImageGlass.Mac/bin/ARM64/Debug/net11.0/osx-arm64/ImageGlass.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

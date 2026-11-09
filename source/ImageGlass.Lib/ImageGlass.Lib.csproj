@@ -1,0 +1,88 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Platforms>x64;ARM64</Platforms>
+
+    <LangVersion>Preview</LangVersion>
+    <Features>$(Features);runtime-async=on</Features>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>ImageGlass</RootNamespace>
+
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\Delete.png" />
+    <None Remove="Assets\Error.png" />
+    <None Remove="Assets\Find.png" />
+    <None Remove="Assets\icon256.ico" />
+    <None Remove="Assets\Info.png" />
+    <None Remove="Assets\Lock.png" />
+    <None Remove="Assets\Rename.png" />
+    <None Remove="Assets\Shield.png" />
+    <None Remove="Assets\Warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\Delete.png" />
+    <AvaloniaResource Include="Assets\Error.png" />
+    <AvaloniaResource Include="Assets\Find.png" />
+    <AvaloniaResource Include="Assets\icon256.ico" />
+    <AvaloniaResource Include="Assets\Info.png" />
+    <AvaloniaResource Include="Assets\Lock.png" />
+    <AvaloniaResource Include="Assets\RecycleBin.png" />
+    <AvaloniaResource Include="Assets\Rename.png" />
+    <AvaloniaResource Include="Assets\Shield.png" />
+    <AvaloniaResource Include="Assets\Sounds\notification.wav" />
+    <AvaloniaResource Include="Assets\Svg\*.svg" />
+    <AvaloniaResource Include="Assets\Warning.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pro license public key (embedded so it loads before Avalonia init) -->
+    <EmbeddedResource Include="Assets\Licensing\ig_license_2026.spki.pem">
+      <LogicalName>ig_license_2026.spki.pem</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="D2Phap.FileWatcherEx" />
+    <PackageReference Include="ImageGlass.SDK" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-x64" Condition="'$(Platform)' == 'x64'" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-OpenMP-arm64" Condition="'$(Platform)' == 'ARM64' And !$([MSBuild]::IsOSPlatform('osx'))" />
+    <PackageReference Include="Magick.NET-Q16-HDRI-arm64" Condition="'$(Platform)' == 'ARM64' And $([MSBuild]::IsOSPlatform('osx'))" />
+    <PackageReference Include="NativeMemoryArray" />
+    <PackageReference Include="NetCoreAudio" />
+    <PackageReference Include="Svg.Controls.Skia.Avalonia" />
+    <PackageReference Include="System.IO.Hashing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Tools\Builtins\ColorPicker\ColorPickerToolControl.axaml.cs">
+      <DependentUpon>ColorPickerToolControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Tools\Builtins\CropImage\CropImageToolControl.axaml.cs">
+      <DependentUpon>CropImageToolControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Tools\Builtins\FrameNav\FrameNavToolControl.axaml.cs">
+      <DependentUpon>FrameNavToolControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Tools\Builtins\Projector\ProjectorToolControl.axaml.cs">
+      <DependentUpon>ProjectorToolControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Tools\ToolHostControl.axaml.cs">
+      <DependentUpon>ToolHostControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Windows\UpdateWindow.axaml.cs">
+      <DependentUpon>UpdateWindow.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>
