@@ -415,6 +415,7 @@ public partial class MainWindowView : PhControl
 
     private void PART_ToolHost_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        if (e.Property == BoundsProperty) UpdateGalleryOverlayMargin();
         if (e.Property == ToolHostControl.PluginContentProperty)
         {
             UpdateMotionButtonState();
@@ -1251,12 +1252,30 @@ public partial class MainWindowView : PhControl
             Grid.SetColumnSpan(PART_Toolbar, 1);
         }
 
+        // The bottom filmstrip floats over the viewer while side galleries retain their layout.
+        var galleryOverlay = galleryPos == LayoutPosition.Bottom;
+        PART_Gallery.HideItemFileNames = galleryOverlay;
+        PART_Gallery.Classes.Set("overlay", galleryOverlay);
+        PART_Gallery.VerticalAlignment = galleryOverlay ? VerticalAlignment.Bottom : VerticalAlignment.Stretch;
+        if (galleryOverlay)
+        {
+            Grid.SetRow(PART_Gallery, Grid.GetRow(PART_ViewerWrapper));
+            Grid.SetColumn(PART_Gallery, Grid.GetColumn(PART_ViewerWrapper));
+        }
+        UpdateGalleryOverlayMargin();
+
         // update overlay margin to avoid overlap with floating top toolbar
         var isToolbarTop = toolbarPos == LayoutPosition.Top && Core.Config.ShowToolbar;
         PART_ImageInfoOverlay.Margin = new Thickness(20, isToolbarTop ? 62 : 10, 20, 0);
 
         // 3. update gallery initial width
         UpdateGalleryWidth();
+    }
+
+    private void UpdateGalleryOverlayMargin()
+    {
+        var overlay = Config.GetControlLayout(LayoutControl.Gallery) == LayoutPosition.Bottom;
+        PART_Gallery.Margin = overlay ? new Thickness(0, 0, 0, PART_ToolHost.Bounds.Height) : default;
     }
 
 

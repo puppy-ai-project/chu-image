@@ -84,9 +84,10 @@
         <!--  Gallery Item: File name  -->
         <Grid
             Grid.Row="1"
+            Classes="gallery-filename"
             ColumnDefinitions="*, Auto"
             HorizontalAlignment="Center"
-            IsVisible="{CompiledBinding ShowGalleryFileName, Source={x:Static cm:Core.Config}}">
+            IsVisible="{Binding ShowItemFileNames, RelativeSource={RelativeSource AncestorType=ui:GalleryControl}}">
             <TextBlock
                 Grid.Column="0"
                 Padding="2,0,0,0"

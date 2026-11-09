@@ -15,6 +15,15 @@
     x:DataType="vm:MainWindowViewModel"
     x:Name="Root">
 
+    <ui:PhControl.Styles>
+        <Style Selector="ui|GalleryControl">
+            <Setter Property="Background" Value="{DynamicResource IG_ThemeGalleryBackgroundBrush}" />
+        </Style>
+        <Style Selector="ui|GalleryControl.overlay">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </ui:PhControl.Styles>
+
     <Grid x:Name="PART_Layout" RowDefinitions="Auto, *, Auto, Auto">
 
         <!--  Toolbar  -->
@@ -74,7 +83,6 @@
         <ui:GalleryControl
             x:Name="PART_Gallery"
             Grid.Row="2"
-            Background="{DynamicResource IG_ThemeGalleryBackgroundBrush}"
             IsContentVisible="{CompiledBinding ShowGallery, Source={x:Static cm:Core.Config}}"
             ItemsSource="{CompiledBinding Items, Source={x:Static cm:Core.Photos}}"
             ViewMode="FilmStrip"

@@ -45,7 +45,7 @@
                 BoxShadow="0 8 28 0 #38000000, 0 1 4 0 #18000000"
                 Classes="toolbar-island"
                 CornerRadius="16"
-                Padding="6,4">
+                Padding="4,2">
                 <StackPanel
                     x:Name="PART_PrimaryGroup"
                     HorizontalAlignment="Center"
@@ -65,7 +65,7 @@
                 BoxShadow="0 8 28 0 #38000000, 0 1 4 0 #18000000"
                 Classes="toolbar-island"
                 CornerRadius="16"
-                Padding="6,4"
+                Padding="4,2"
                 ZIndex="90">
                 <StackPanel
                     x:Name="PART_RightGroup"
@@ -96,6 +96,7 @@
                                 <Path
                                     Data="{StaticResource IconEllipsis}"
                                     Fill="{DynamicResource TextControlForeground}"
+                                    Opacity="0.72"
                                     Stretch="Uniform" />
                             </Viewbox>
                         </Grid>

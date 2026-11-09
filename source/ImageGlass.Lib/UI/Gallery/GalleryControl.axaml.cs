@@ -53,6 +53,18 @@ public partial class GalleryControl : PhControl
 
     #region Public Properties
 
+    public bool HideItemFileNames
+    {
+        get => GetValue(HideItemFileNamesProperty);
+        set => SetValue(HideItemFileNamesProperty, value);
+    }
+    public static readonly StyledProperty<bool> HideItemFileNamesProperty =
+        AvaloniaProperty.Register<GalleryControl, bool>(nameof(HideItemFileNames));
+
+    public bool ShowItemFileNames => !HideItemFileNames && Core.Config.ShowGalleryFileName;
+    public static readonly DirectProperty<GalleryControl, bool> ShowItemFileNamesProperty =
+        AvaloniaProperty.RegisterDirect<GalleryControl, bool>(nameof(ShowItemFileNames), o => o.ShowItemFileNames);
+
     /// <summary>
     /// Gets, sets the items source.
     /// </summary>
@@ -167,7 +179,11 @@ public partial class GalleryControl : PhControl
     {
         base.OnPropertyChanged(e);
 
-        if (e.Property == ViewModeProperty)
+        if (e.Property == HideItemFileNamesProperty)
+        {
+            RaisePropertyChanged(ShowItemFileNamesProperty, !ShowItemFileNames, ShowItemFileNames);
+        }
+        else if (e.Property == ViewModeProperty)
         {
             RaisePropertyChanged(MinContentSizeProperty, default, MinContentSize);
             UpdateReservedSize();
@@ -181,6 +197,8 @@ public partial class GalleryControl : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(Config.ShowGalleryFileName))
+            RaisePropertyChanged(ShowItemFileNamesProperty, !ShowItemFileNames, ShowItemFileNames);
         if (e.PropertyName == nameof(Config.ThumbnailSize))
         {
             RaisePropertyChanged(MinContentSizeProperty, default, MinContentSize);

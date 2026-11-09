@@ -44,7 +44,7 @@
         <Panel
             Width="{CompiledBinding IconSize}"
             Height="{CompiledBinding IconSize}">
-            <Svg Path="{CompiledBinding ImagePath}" />
+            <Svg Opacity="0.72" Path="{CompiledBinding ImagePath}" />
 
             <!--  placeholder for a button that runs something but has no icon  -->
             <Path

@@ -53,14 +53,14 @@ public partial class ToolbarItemModel : PhReactive, IJsonOnDeserialized
     /// <summary>
     /// Gets inner spacing of toolbar item.
     /// </summary>
-    public static double IconSize => Core.Config.ToolbarIconHeight * 0.8;
+    public static double IconSize => Core.Config.ToolbarIconHeight * 0.7;
 
     public static double InnerSpacing => IconSize / 6f; // 4
 
     /// <summary>
     /// Gets the padding of toolbar button.
     /// </summary>
-    public static Thickness ItemPadding => new(IconSize / 6f); // 5.33
+    public static Thickness ItemPadding => new(IconSize / 8f);
 
     /// <summary>
     /// Gets the end point of separator line.
