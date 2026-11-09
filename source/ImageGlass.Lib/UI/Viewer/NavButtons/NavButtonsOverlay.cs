@@ -342,7 +342,7 @@ public class NavButtonsOverlay : PhControl
             using (c.PushOpacity(progress))
             {
                 // pressed: scale down around button center
-                var pressScale = (isPressed && !_state.IsDragging) ? 0.95 : 1.0;
+                var pressScale = (isPressed && !_state.IsDragging) ? 0.92 : 1.0;
                 var btnCenterX = btnRect.X + btnRect.Width / 2;
                 var btnCenterY = btnRect.Y + btnRect.Height / 2;
                 using var _scale = c.PushTransform(
@@ -350,17 +350,22 @@ public class NavButtonsOverlay : PhControl
                     * Matrix.CreateScale(pressScale, pressScale)
                     * Matrix.CreateTranslation(btnCenterX, btnCenterY));
 
-                // base backdrop for contrast
-                c.DrawEllipseEx(btnRect, null, Core.Theme.BaseColor.WithAlpha(120));
+                // soft shadow disc
+                c.DrawEllipseEx(btnRect.Inflate(2), null, Color.FromArgb(35, 0, 0, 0));
 
-                // accent ellipse
+                // frosted glass disc background
+                var baseColor = Core.Theme.BaseColor;
+                var fillColor = baseColor.WithAlpha(isPressed ? (byte)215 : (byte)165);
+                var borderColor = Core.Theme.Settings.IsDarkMode
+                    ? Color.FromArgb(50, 255, 255, 255)
+                    : Color.FromArgb(30, 0, 0, 0);
+
+                c.DrawEllipseEx(btnRect, borderColor, fillColor, 1f);
+
+                // accent shimmer on press
                 if (isPressed && !_state.IsDragging)
                 {
-                    c.DrawEllipseEx(btnRect, Core.AccentColor.WithAlpha(180), Core.AccentColor.WithAlpha(100), 1.5f);
-                }
-                else
-                {
-                    c.DrawEllipseEx(btnRect, Core.AccentColor.WithAlpha(120), Core.AccentColor.WithAlpha(100), 1f);
+                    c.DrawEllipseEx(btnRect, Core.AccentColor.WithAlpha(180), Core.AccentColor.WithAlpha(80), 1.5f);
                 }
 
                 // draw icon at 50% of button size, centered

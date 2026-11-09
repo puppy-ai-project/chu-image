@@ -170,7 +170,7 @@ public partial class MainWindowView : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Config.Layout))
+        if (e.PropertyName == nameof(Config.Layout) || e.PropertyName == nameof(Config.ShowToolbar))
         {
             ApplyAppLayout();
         }
@@ -1250,6 +1250,10 @@ public partial class MainWindowView : PhControl
             Grid.SetColumn(PART_Toolbar, Grid.GetColumn(PART_ViewerWrapper));
             Grid.SetColumnSpan(PART_Toolbar, 1);
         }
+
+        // update overlay margin to avoid overlap with floating top toolbar
+        var isToolbarTop = toolbarPos == LayoutPosition.Top && Core.Config.ShowToolbar;
+        PART_ImageInfoOverlay.Margin = new Thickness(20, isToolbarTop ? 62 : 10, 20, 0);
 
         // 3. update gallery initial width
         UpdateGalleryWidth();

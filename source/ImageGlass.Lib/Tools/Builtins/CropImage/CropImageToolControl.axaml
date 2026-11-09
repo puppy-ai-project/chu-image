@@ -123,7 +123,8 @@
                 x:Name="PART_BtnCrop"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
-                IconData="{StaticResource IconCrop}" />
+                IconData="{StaticResource IconCrop}"
+                Variant="Accent" />
             <ui:PhButton
                 x:Name="PART_BtnCopy"
                 MinWidth="80"

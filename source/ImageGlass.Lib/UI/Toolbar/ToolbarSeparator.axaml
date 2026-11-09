@@ -14,16 +14,12 @@
     IsHitTestVisible="False"
     IsVisible="{CompiledBinding IsNotOverflow}"
     Orientation="Horizontal">
-    <Line
-        Stroke="#3111"
-        StrokeLineCap="Round"
-        StrokeThickness="1"
-        StartPoint="0,0"
-        EndPoint="{CompiledBinding SeparatorEndPoint}" />
-    <Line
-        Stroke="#3eee"
-        StrokeLineCap="Round"
-        StrokeThickness="1"
-        StartPoint="0,0"
-        EndPoint="{CompiledBinding SeparatorEndPoint}" />
+    <Border
+        Width="1"
+        Height="{CompiledBinding IconSize}"
+        Margin="3,2"
+        VerticalAlignment="Center"
+        Background="{DynamicResource IG_BorderNeutralBrush}"
+        CornerRadius="0.5"
+        Opacity="0.45" />
 </StackPanel>

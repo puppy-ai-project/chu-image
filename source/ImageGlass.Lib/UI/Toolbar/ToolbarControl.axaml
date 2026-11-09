@@ -1,4 +1,4 @@
-﻿<ui:PhControl
+<ui:PhControl
     x:Class="ImageGlass.UI.ToolbarControl"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -11,28 +11,68 @@
     x:DataType="ui:ToolbarControlModel"
     x:Name="Root">
 
-    <Border x:Name="PART_Root" Padding="{CompiledBinding ItemPadding}">
+    <ui:PhControl.Styles>
+        <Style Selector="Border.toolbar-island">
+            <Setter Property="Opacity" Value="0.94" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.toolbar-island:pointerover">
+            <Setter Property="Opacity" Value="1.0" />
+        </Style>
+    </ui:PhControl.Styles>
+
+    <Border
+        x:Name="PART_Root"
+        Margin="14,10,14,0"
+        Background="{x:Null}">
         <Grid
             x:Name="PART_RootGrid"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center">
 
-            <!--  Toolbar: Primary Items  -->
-            <StackPanel
-                x:Name="PART_PrimaryGroup"
+            <!--  Toolbar: Primary Items Island  -->
+            <Border
+                x:Name="PART_PrimaryIsland"
                 HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="{CompiledBinding ItemSpacing}" />
+                VerticalAlignment="Center"
+                Background="{DynamicResource IG_OverlayToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource IG_OverlayToolbarBorderBrush}"
+                BorderThickness="1"
+                BoxShadow="0 8 28 0 #38000000, 0 1 4 0 #18000000"
+                Classes="toolbar-island"
+                CornerRadius="16"
+                Padding="6,4">
+                <StackPanel
+                    x:Name="PART_PrimaryGroup"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="{CompiledBinding ItemSpacing}" />
+            </Border>
 
 
-            <!--  Toolbar: Right column  -->
-            <StackPanel
-                x:Name="PART_RightGroup"
+            <!--  Toolbar: Right column Island  -->
+            <Border
+                x:Name="PART_RightIsland"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Stretch"
-                Orientation="Horizontal"
-                Spacing="{CompiledBinding ItemSpacing}"
+                VerticalAlignment="Center"
+                Background="{DynamicResource IG_OverlayToolbarBackgroundBrush}"
+                BorderBrush="{DynamicResource IG_OverlayToolbarBorderBrush}"
+                BorderThickness="1"
+                BoxShadow="0 8 28 0 #38000000, 0 1 4 0 #18000000"
+                Classes="toolbar-island"
+                CornerRadius="16"
+                Padding="6,4"
                 ZIndex="90">
+                <StackPanel
+                    x:Name="PART_RightGroup"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Orientation="Horizontal"
+                    Spacing="{CompiledBinding ItemSpacing}">
 
                 <!--  Toolbar: Overflow button  -->
                 <ui:ToolbarButton
@@ -578,6 +618,7 @@
                 </Panel>
 
             </StackPanel>
+            </Border>
 
         </Grid>
     </Border>

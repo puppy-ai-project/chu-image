@@ -21,7 +21,7 @@
         <ui:ToolbarControl
             x:Name="PART_Toolbar"
             Grid.Row="0"
-            Background="{DynamicResource IG_OverlayToolbarBackgroundBrush}"
+            Background="{x:Null}"
             DataContext="{CompiledBinding ToolbarVM}"
             IsContentVisible="{CompiledBinding ShowToolbar, Source={x:Static cm:Core.Config}}"
             ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"

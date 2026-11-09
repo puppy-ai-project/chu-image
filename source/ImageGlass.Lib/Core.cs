@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -703,7 +703,11 @@ public static class Core
         Resx.Set(ResxId.IG_ThemeBackgroundBrush, AppThemeColors.BgBrush);
         Resx.Set(ResxId.IG_ThemeForegroundBrush, AppThemeColors.TextColorBrush);
         Resx.Set(ResxId.IG_ThemeToolbarBackgroundBrush, AppThemeColors.ToolbarBgBrush);
-        Resx.Set(ResxId.IG_OverlayToolbarBackgroundBrush, AppThemeColors.BgBrush.Color.WithAlpha(190).ToBrush());
+        Resx.Set(ResxId.IG_OverlayToolbarBackgroundBrush, AppThemeColors.BgBrush.Color.WithAlpha(205).ToBrush());
+        Resx.Set(ResxId.IG_OverlayToolbarBorderBrush,
+            Core.Theme.Settings.IsDarkMode
+                ? Color.FromArgb(45, 255, 255, 255).ToBrush()
+                : Color.FromArgb(30, 0, 0, 0).ToBrush());
         Resx.Set(ResxId.IG_ThemeGalleryBackgroundBrush, AppThemeColors.GalleryBgBrush);
         Resx.Set(ResxId.IG_ThemeMenuBackgroundBrush, AppThemeColors.MenuBgBrush);
         UpdateViewerBackgroundBrushResource();

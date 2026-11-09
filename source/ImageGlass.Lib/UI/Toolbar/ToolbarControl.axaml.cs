@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -478,7 +478,9 @@ public partial class ToolbarControl : PhControl
 
         var spacing = ToolbarControlModel.ItemSpacing;
         var iconSize = ToolbarItemModel.IconSize;
-        var padding = PART_Root.Padding.Left + PART_Root.Padding.Right;
+        var padding = PART_PrimaryIsland.Padding.Left + PART_PrimaryIsland.Padding.Right
+            + PART_RightIsland.Padding.Left + PART_RightIsland.Padding.Right
+            + PART_Root.Margin.Left + PART_Root.Margin.Right;
 
         // sticky overflow-button slot (width + spacing). Captured while visible so toggling its
         // visibility below never feeds back into the width math.
@@ -534,9 +536,12 @@ public partial class ToolbarControl : PhControl
         // 3. center only when nothing overflows AND the centered group clears the right group;
         // otherwise left-align for maximum space
         var centeredGap = rootWidth / 2 - primaryNaturalWidth / 2 - rightWidth - iconSize;
-        PART_PrimaryGroup.HorizontalAlignment = (!hasOverflow && centeredGap > 0)
+        var align = (!hasOverflow && centeredGap > 0)
             ? Avalonia.Layout.HorizontalAlignment.Center
             : Avalonia.Layout.HorizontalAlignment.Left;
+        PART_PrimaryIsland.HorizontalAlignment = align;
+        PART_PrimaryGroup.HorizontalAlignment = align;
+        PART_PrimaryIsland.IsVisible = primaryCount > 0;
     }
 
 

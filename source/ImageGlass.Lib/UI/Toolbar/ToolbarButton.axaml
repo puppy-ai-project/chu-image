@@ -10,10 +10,32 @@
     d:DesignWidth="800"
     x:DataType="ui:ToolbarItemModel"
     Padding="{CompiledBinding ItemPadding}"
-    BorderThickness="1"
+    BorderThickness="0"
+    CornerRadius="8"
     IsChecked="{CompiledBinding IsChecked}"
     IsVisible="{CompiledBinding IsNotOverflow}"
     ToolTip.Tip="{CompiledBinding Tooltip}">
+
+    <ui:PhToolButton.Styles>
+        <Style Selector="ui|ToolbarButton">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.08" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.06" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ui|ToolbarButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundHover}" />
+        </Style>
+        <Style Selector="ui|ToolbarButton:pressed">
+            <Setter Property="RenderTransform" Value="scale(0.92)" />
+        </Style>
+        <Style Selector="ui|ToolbarButton:checked">
+            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundChecked}" />
+        </Style>
+    </ui:PhToolButton.Styles>
     <StackPanel
         IsHitTestVisible="False"
         Orientation="Horizontal"

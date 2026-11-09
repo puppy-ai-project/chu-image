@@ -12,7 +12,31 @@
     d:DesignWidth="800"
     x:DataType="photo:Photo"
     Padding="3"
-    BorderThickness="1">
+    BorderThickness="1"
+    CornerRadius="8">
+
+    <ui:PhToolButton.Styles>
+        <Style Selector="ui|GalleryItem">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ui|GalleryItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundHover}" />
+        </Style>
+        <Style Selector="ui|GalleryItem:checked">
+            <Setter Property="BorderBrush" Value="{DynamicResource PhAccentFill}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Background" Value="{DynamicResource IG_ToolButtonBackgroundChecked}" />
+            <Setter Property="RenderTransform" Value="scale(1.04)" />
+        </Style>
+    </ui:PhToolButton.Styles>
+
     <Grid
         RowDefinitions="*, Auto"
         VerticalAlignment="Stretch"
@@ -46,11 +70,15 @@
 
 
         <!--  Gallery Item: Thumbnail Image  -->
-        <Image
+        <Border
             Grid.Row="0"
-            RenderOptions.BitmapInterpolationMode="LowQuality"
-            Source="{CompiledBinding GalleryThumbnail}"
-            Stretch="Uniform" />
+            CornerRadius="5"
+            ClipToBounds="True">
+            <Image
+                RenderOptions.BitmapInterpolationMode="LowQuality"
+                Source="{CompiledBinding GalleryThumbnail}"
+                Stretch="Uniform" />
+        </Border>
 
 
         <!--  Gallery Item: File name  -->

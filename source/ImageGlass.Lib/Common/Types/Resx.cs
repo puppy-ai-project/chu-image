@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -286,6 +286,7 @@ public enum ResxId
     IG_ThemeForegroundBrush,
     IG_ThemeToolbarBackgroundBrush,
     IG_OverlayToolbarBackgroundBrush,
+    IG_OverlayToolbarBorderBrush,
     IG_ThemeGalleryBackgroundBrush,
     IG_ThemeMenuBackgroundBrush,
 
