@@ -689,7 +689,8 @@ public partial class App : Application
     public async Task ApplyThemePackAsync(bool isSystemDarkMode, Color? systemAccentColor = null)
     {
         // load theme pack
-        var hasThemeChanged = await Core.Config.LoadCurrentThemeAsync(isSystemDarkMode,
+        // Use the configured light theme regardless of the OS appearance.
+        var hasThemeChanged = await Core.Config.LoadCurrentThemeAsync(false,
                 useFallBackTheme: true,
                 throwIfThemeInvalid: true,
                 forceUpdateBackground: false);

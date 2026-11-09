@@ -393,7 +393,8 @@ public partial class ToolbarControl : PhControl
             vm.SourceIndex = srcIndex;
 
             // Keep these tools hidden even when they are present in a saved layout.
-            if (vm.Id is "Btn_Delete" or "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker") continue;
+            if (vm.Id is "Btn_Delete" or "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker"
+                or "Btn_ZoomIn" or "Btn_ZoomOut" or "Btn_ActualSize") continue;
 
 
             // create toolbar item element
@@ -459,24 +460,6 @@ public partial class ToolbarControl : PhControl
             }
         }
 
-
-        // Put the standard actual-size icon third, without duplicating a configured button.
-        var actualSize = primaryList.Concat(secondaryList).OfType<ToolbarButton>()
-            .FirstOrDefault(b => b.VM.Id == "Btn_ActualSize");
-        if (actualSize is null)
-        {
-            var model = Config.BuiltInToolbarItems.First(i => i.Id == "Btn_ActualSize");
-            actualSize = new ToolbarButton { DataContext = model, Focusable = false };
-            actualSize.Click += ToolbarButton_Click;
-            actualSize.PropertyChanged += ToolbarItem_PropertyChanged;
-            _itemElements.Add(actualSize);
-        }
-        else
-        {
-            primaryList.Remove(actualSize);
-            secondaryList.Remove(actualSize);
-        }
-        primaryList.Insert(Math.Min(2, primaryList.Count), actualSize);
 
         var cropIndex = ItemsSource.ToList().FindIndex(item => item.Id == "Btn_Crop");
         var afterCrop = cropIndex >= 0;

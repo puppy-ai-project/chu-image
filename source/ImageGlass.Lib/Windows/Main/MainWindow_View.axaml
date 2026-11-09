@@ -124,7 +124,7 @@
         </Style>
     </ui:PhControl.Styles>
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
         <!--  Custom Title Bar  -->
         <Border
             x:Name="PART_CustomTitleBarBorder"
@@ -356,13 +356,32 @@
                 ResizeDirection="Columns" />
         </Grid>
 
+        <Border Grid.Row="2" Background="{DynamicResource IG_ThemeBackgroundBrush}"
+                BorderBrush="{DynamicResource IG_BorderNeutralBrush}" BorderThickness="0,1,0,0"
+                Padding="8,3">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="6">
+                <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="28" Height="28">
+                    <TextBlock Text="−" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </ui:PhToolButton>
+                <Slider x:Name="PART_ZoomSlider" Width="140" Minimum="0" Maximum="1000"
+                        VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged" />
+                <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="28" Height="28">
+                    <TextBlock Text="+" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </ui:PhToolButton>
+                <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" Width="40" Height="28">
+                    <TextBlock Text="1:1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </ui:PhToolButton>
+                <TextBlock x:Name="PART_ZoomPercentage" Width="58" VerticalAlignment="Center" TextAlignment="Right" />
+            </StackPanel>
+        </Border>
+
         <!--  ======================================================  -->
         <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层)               -->
         <!--  ======================================================  -->
         <Grid
             x:Name="PART_ImageInfoModal"
             Grid.Row="0"
-            Grid.RowSpan="2"
+            Grid.RowSpan="3"
             IsVisible="False"
             ZIndex="1000">
 

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -51,6 +52,39 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindowView : PhControl
 {
+    private bool _updatingZoomSlider;
+
+    private void UpdateZoomSlider()
+    {
+        var min = Math.Max(0.001, PART_Viewer.MinZoom);
+        var max = Math.Max(min * 1.001, PART_Viewer.MaxZoom);
+        var zoom = Math.Clamp(PART_Viewer.ZoomFactor, min, max);
+        _updatingZoomSlider = true;
+        PART_ZoomSlider.Value = 1000 * Math.Log(zoom / min) / Math.Log(max / min);
+        PART_ZoomPercentage.Text = $"{PART_Viewer.ZoomFactor * 100:0.#}%";
+        _updatingZoomSlider = false;
+    }
+
+    private void ZoomSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        if (!IsLoaded || _updatingZoomSlider || FeatureManager.IsZoomLocked()) return;
+        if (PART_Viewer.BitmapSize.Width <= 0 || PART_Viewer.BitmapSize.Height <= 0) return;
+        var min = Math.Max(0.001, PART_Viewer.MinZoom);
+        var max = Math.Max(min * 1.001, PART_Viewer.MaxZoom);
+        var factor = min * Math.Pow(max / min, e.NewValue / 1000);
+        PART_Viewer.ZoomToPoint((float)factor, PART_Viewer.DrawingArea.Center);
+        UpdateZoomSlider();
+    }
+
+    private async void ZoomOutButton_Click(object? sender, RoutedEventArgs e)
+        => await Core.API.RunApiAsync(API.IG_ZoomOut);
+
+    private async void ZoomInButton_Click(object? sender, RoutedEventArgs e)
+        => await Core.API.RunApiAsync(API.IG_ZoomIn);
+
+    private async void ZoomActualSizeButton_Click(object? sender, RoutedEventArgs e)
+        => await Core.API.RunApiAsync(API.IG_SetZoom, "1");
+
     private void CloseWindow_Click(object? sender, RoutedEventArgs e) => App.MainWindow.Close();
 
     private void MinimizeWindow_Click(object? sender, RoutedEventArgs e) =>
@@ -360,6 +394,7 @@ public partial class MainWindowView : PhControl
         Core.Photos.FileWatcherChanged += Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading += PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged += PART_Viewer_ZoomChanged;
+        UpdateZoomSlider();
         PART_Viewer.NavButtonClicked += PART_Viewer_NavButtonClicked;
         PART_Viewer.ViewerPointerClicked += PART_Viewer_ViewerPointerClicked;
         PART_Viewer.ViewerMouseWheel += PART_Viewer_ViewerMouseWheel;
@@ -705,6 +740,7 @@ public partial class MainWindowView : PhControl
 
     private void PART_Viewer_ZoomChanged(ViewerControl sender, ViewerZoomEventArgs e)
     {
+        UpdateZoomSlider();
         // update window fit
         if (Core.Config.EnableWindowFit
             && e.ChangeSource != ZoomChangeSource.SizeChanged
