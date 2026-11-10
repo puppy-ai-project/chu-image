@@ -1,0 +1,1707 @@
+<UserControl
+    x:Class="ImageGlass.Common.Windows.SettingsOverlayControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:windows="using:ImageGlass.Common.Windows"
+    mc:Ignorable="d"
+    d:DesignHeight="640"
+    d:DesignWidth="920"
+    x:Name="Root">
+
+    <UserControl.Resources>
+        <!--  弹窗光学顶高光玻璃描边  -->
+        <LinearGradientBrush x:Key="SettingsGlassBorderBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#36FFFFFF" Offset="0.0" />
+            <GradientStop Color="#16FFFFFF" Offset="0.45" />
+            <GradientStop Color="#0BFFFFFF" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!--  设计蓝主动作渐变  -->
+        <LinearGradientBrush x:Key="SettingsAccentBtnGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#356BBF" Offset="0.0" />
+            <GradientStop Color="#2B59A1" Offset="1.0" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="SettingsAccentBtnHoverGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#407AD2" Offset="0.0" />
+            <GradientStop Color="#3368B8" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!--  彻底隔离浅色主题 TextControl / Button 默认刷子  -->
+        <SolidColorBrush x:Key="PhButtonBackground" Color="Transparent" />
+        <SolidColorBrush x:Key="PhButtonBackgroundPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="PhButtonBorderBrush" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+        <SolidColorBrush x:Key="TextControlForeground" Color="#F3F4F6" />
+        <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6F7685" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#848C9C" />
+        <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#6F7685" />
+        <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#553B82F6" />
+
+        <!--  干净按钮模板：彻底屏蔽全局 ButtonStyle 浅色干扰  -->
+        <ControlTemplate x:Key="OverlayCleanButtonTemplate" TargetType="Button">
+            <Border
+                x:Name="PART_OverlayBtnBorder"
+                Padding="{TemplateBinding Padding}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+                <ContentPresenter
+                    x:Name="PART_OverlayBtnContent"
+                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Content="{TemplateBinding Content}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                    Foreground="{TemplateBinding Foreground}" />
+            </Border>
+        </ControlTemplate>
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <!--  左侧导航项按钮  -->
+        <Style Selector="Button.settings-nav-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#9CA3AF" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Margin" Value="10,2" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn:pointerover">
+            <Setter Property="Background" Value="#0CFFFFFF" />
+            <Setter Property="Foreground" Value="#E5E7EB" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn.active">
+            <Setter Property="Background" Value="#1E3B82F6" />
+            <Setter Property="BorderBrush" Value="#3260A5FA" />
+            <Setter Property="Foreground" Value="#F3F4F6" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn Path.nav-icon">
+            <Setter Property="Fill" Value="#7A8291" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn:pointerover Path.nav-icon">
+            <Setter Property="Fill" Value="#D1D5DB" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn.active Path.nav-icon">
+            <Setter Property="Fill" Value="#60A5FA" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn Border.nav-indicator">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+        <Style Selector="Button.settings-nav-btn.active Border.nav-indicator">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
+        <!--  输入凹槽外框  -->
+        <Style Selector="Border.overlay-input-box">
+            <Setter Property="Background" Value="#15171C" />
+            <Setter Property="BorderBrush" Value="#1CFFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.overlay-input-box:pointerover">
+            <Setter Property="BorderBrush" Value="#2EFFFFFF" />
+        </Style>
+        <Style Selector="Border.overlay-input-box:focus-within">
+            <Setter Property="BorderBrush" Value="#3B82F6" />
+        </Style>
+        <Style Selector="Border.overlay-input-box.invalid">
+            <Setter Property="BorderBrush" Value="#EF4444" />
+        </Style>
+
+        <!--  内部输入框透明化，防止出现白色边框/聚焦高亮黑字  -->
+        <Style Selector="TextBox.overlay-textbox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#F3F4F6" />
+            <Setter Property="CaretBrush" Value="#60A5FA" />
+            <Setter Property="SelectionBrush" Value="#553B82F6" />
+            <Setter Property="SelectionForegroundBrush" Value="#FFFFFF" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBox.overlay-textbox /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="TextBox.overlay-textbox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="TextBox.overlay-textbox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <!--  右上角微关闭钮 & 图标小按钮  -->
+        <Style Selector="Button.overlay-icon-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-icon-btn:pointerover">
+            <Setter Property="Background" Value="#14FFFFFF" />
+        </Style>
+        <Style Selector="Button.overlay-icon-btn:pressed">
+            <Setter Property="Background" Value="#22FFFFFF" />
+        </Style>
+
+        <!--  次要深灰胶囊按钮  -->
+        <Style Selector="Button.overlay-secondary-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="#282B33" />
+            <Setter Property="BorderBrush" Value="#16FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#D1D5DB" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-secondary-btn:pointerover">
+            <Setter Property="Background" Value="#323640" />
+            <Setter Property="BorderBrush" Value="#24FFFFFF" />
+            <Setter Property="Foreground" Value="#F3F4F6" />
+        </Style>
+        <Style Selector="Button.overlay-secondary-btn:pressed">
+            <Setter Property="Background" Value="#22252C" />
+            <Setter Property="BorderBrush" Value="#12FFFFFF" />
+        </Style>
+        <Style Selector="Button.overlay-secondary-btn:disabled">
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+
+        <!--  微强调冷蓝胶囊按钮  -->
+        <Style Selector="Button.overlay-soft-accent-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="#1E3B82F6" />
+            <Setter Property="BorderBrush" Value="#4860A5FA" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#93C5FD" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-soft-accent-btn:pointerover">
+            <Setter Property="Background" Value="#2D3B82F6" />
+            <Setter Property="BorderBrush" Value="#6860A5FA" />
+            <Setter Property="Foreground" Value="#BFDBFE" />
+        </Style>
+        <Style Selector="Button.overlay-soft-accent-btn:pressed">
+            <Setter Property="Background" Value="#183B82F6" />
+        </Style>
+        <Style Selector="Button.overlay-soft-accent-btn:disabled">
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+
+        <!--  主蓝确认保存按钮  -->
+        <Style Selector="Button.overlay-primary-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="{StaticResource SettingsAccentBtnGradient}" />
+            <Setter Property="BorderBrush" Value="#26FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F9FAFB" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="MinWidth" Value="82" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-primary-btn:pointerover">
+            <Setter Property="Background" Value="{StaticResource SettingsAccentBtnHoverGradient}" />
+            <Setter Property="BorderBrush" Value="#38FFFFFF" />
+        </Style>
+        <Style Selector="Button.overlay-primary-btn:pressed">
+            <Setter Property="Background" Value="#224987" />
+            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+        </Style>
+        <Style Selector="Button.overlay-primary-btn:disabled">
+            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+
+        <!--  分段过滤药丸按钮  -->
+        <Style Selector="Button.overlay-filter-pill">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#8E95A2" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-filter-pill:pointerover">
+            <Setter Property="Background" Value="#12FFFFFF" />
+            <Setter Property="Foreground" Value="#E5E7EB" />
+        </Style>
+        <Style Selector="Button.overlay-filter-pill.active">
+            <Setter Property="Background" Value="#263B82F6" />
+            <Setter Property="BorderBrush" Value="#4060A5FA" />
+            <Setter Property="Foreground" Value="#93C5FD" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <!--  预设背景色块按钮  -->
+        <Style Selector="Button.bg-swatch-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#24FFFFFF" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="Button.bg-swatch-btn:pointerover">
+            <Setter Property="BorderBrush" Value="#66FFFFFF" />
+        </Style>
+        <Style Selector="Button.bg-swatch-btn.selected">
+            <Setter Property="BorderBrush" Value="#60A5FA" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <!--  主题卡内深色/浅色切换钮  -->
+        <Style Selector="Button.theme-mode-pill">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="#242730" />
+            <Setter Property="BorderBrush" Value="#14FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#9CA3AF" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Height" Value="27" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.theme-mode-pill:pointerover">
+            <Setter Property="Background" Value="#2E323D" />
+            <Setter Property="BorderBrush" Value="#28FFFFFF" />
+            <Setter Property="Foreground" Value="#E5E7EB" />
+        </Style>
+        <Style Selector="Button.theme-mode-pill.selected">
+            <Setter Property="Background" Value="#263B82F6" />
+            <Setter Property="BorderBrush" Value="#5C60A5FA" />
+            <Setter Property="Foreground" Value="#93C5FD" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.theme-mode-pill Path">
+            <Setter Property="Fill" Value="#7A8291" />
+        </Style>
+        <Style Selector="Button.theme-mode-pill:pointerover Path">
+            <Setter Property="Fill" Value="#D1D5DB" />
+        </Style>
+        <Style Selector="Button.theme-mode-pill.selected Path">
+            <Setter Property="Fill" Value="#60A5FA" />
+        </Style>
+
+        <!--  行内删除动作按钮  -->
+        <Style Selector="Button.format-delete-btn">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#6F7785" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.format-delete-btn Path">
+            <Setter Property="Fill" Value="#6F7785" />
+        </Style>
+        <Style Selector="Button.format-delete-btn:pointerover">
+            <Setter Property="Background" Value="#24EF4444" />
+            <Setter Property="Foreground" Value="#F87171" />
+        </Style>
+        <Style Selector="Button.format-delete-btn:pointerover Path">
+            <Setter Property="Fill" Value="#F87171" />
+        </Style>
+        <Style Selector="Button.format-delete-btn:pressed">
+            <Setter Property="Background" Value="#36EF4444" />
+        </Style>
+
+        <!--  紧凑微链接按钮  -->
+        <Style Selector="Button.overlay-micro-link">
+            <Setter Property="Template" Value="{StaticResource OverlayCleanButtonTemplate}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#7AB0FA" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Padding" Value="7,3" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.overlay-micro-link:pointerover">
+            <Setter Property="Background" Value="#143B82F6" />
+            <Setter Property="Foreground" Value="#A8CCFC" />
+        </Style>
+
+        <!--  主题包卡片悬浮质感  -->
+        <Style Selector="Border.theme-pack-card">
+            <Setter Property="Background" Value="#191B20" />
+            <Setter Property="BorderBrush" Value="#12FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.theme-pack-card:pointerover">
+            <Setter Property="BorderBrush" Value="#3860A5FA" />
+        </Style>
+
+        <!--  格式列表行悬浮质感  -->
+        <Style Selector="Border.format-row">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#0AFFFFFF" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="14,7" />
+        </Style>
+        <Style Selector="Border.format-row:pointerover">
+            <Setter Property="Background" Value="#0CFFFFFF" />
+        </Style>
+        <Style Selector="Border.format-row.highlighted">
+            <Setter Property="Background" Value="#1E3B82F6" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <!--  全屏柔暗压光遮罩 (点击卡片外区域取消关闭)  -->
+        <Border Background="#7A000000" PointerPressed="Backdrop_PointerPressed" />
+
+        <!--  内部暗黑作用域，保障 ScrollBar、ToolTip 及文本菜单均为深色分支  -->
+        <ThemeVariantScope RequestedThemeVariant="Dark">
+            <!--  居中双栏现代工作室设置卡片  -->
+            <Border
+                Margin="24,18"
+                MinWidth="480"
+                MaxWidth="860"
+                MinHeight="340"
+                MaxHeight="610"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                BorderBrush="{StaticResource SettingsGlassBorderBrush}"
+                BorderThickness="1"
+                BoxShadow="0 24 64 0 #B3000000"
+                ClipToBounds="True"
+                CornerRadius="14">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#292C33" Offset="0.0" />
+                        <GradientStop Color="#23252B" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+
+                <Panel>
+                    <Grid RowDefinitions="*,Auto">
+
+                        <!--  ======================================================  -->
+                        <!--  MAIN TWO-COLUMN WORKBENCH (左纤细导航 | 右内容工作区)  -->
+                        <!--  ======================================================  -->
+                        <Grid Grid.Row="0" ColumnDefinitions="188,*">
+
+                            <!--  左栏：可扩展偏好导航区  -->
+                            <Border
+                                Grid.Column="0"
+                                Background="#1B1D22"
+                                BorderBrush="#10FFFFFF"
+                                BorderThickness="0,0,1,0">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <!--  设置品牌标识头  -->
+                                    <StackPanel Grid.Row="0" Margin="16,16,14,10" Spacing="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="9">
+                                            <Border
+                                                Width="26"
+                                                Height="26"
+                                                VerticalAlignment="Center"
+                                                Background="#1E3B82F6"
+                                                BorderBrush="#3A3B82F6"
+                                                BorderThickness="1"
+                                                CornerRadius="7">
+                                                <Path
+                                                    Width="13"
+                                                    Height="13"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Data="{StaticResource IconSettings}"
+                                                    Fill="#60A5FA"
+                                                    Stretch="Uniform" />
+                                            </Border>
+                                            <TextBlock
+                                                x:Name="PART_SidebarTitle"
+                                                VerticalAlignment="Center"
+                                                FontSize="14.5"
+                                                FontWeight="SemiBold"
+                                                Foreground="#F3F4F6"
+                                                Text="设置" />
+                                        </StackPanel>
+
+                                        <TextBlock
+                                            x:Name="PART_SidebarGroupLabel"
+                                            Margin="2,4,0,0"
+                                            FontSize="10.5"
+                                            FontWeight="SemiBold"
+                                            Foreground="#636B78"
+                                            Text="偏好配置" />
+                                    </StackPanel>
+
+                                    <!--  导航条目列表 (支持后续平滑追加新设置项)  -->
+                                    <StackPanel Grid.Row="1" Spacing="2">
+                                        <!--  1. 主题  -->
+                                        <Button
+                                            x:Name="PART_NavTheme"
+                                            Classes="link settings-nav-btn active"
+                                            Click="NavTab_Click"
+                                            Tag="theme">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                                    <Border
+                                                        Classes="nav-indicator"
+                                                        Width="3"
+                                                        Height="14"
+                                                        Margin="-6,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="#60A5FA"
+                                                        CornerRadius="1.5" />
+                                                    <Path
+                                                        Classes="nav-icon"
+                                                        Width="14"
+                                                        Height="14"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconWeatherMoon}"
+                                                        Stretch="Uniform" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    x:Name="PART_TxtNavTheme"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12.5"
+                                                    Text="主题" />
+                                                <Ellipse
+                                                    x:Name="PART_NavThemeDirtyDot"
+                                                    Grid.Column="2"
+                                                    Width="6"
+                                                    Height="6"
+                                                    VerticalAlignment="Center"
+                                                    Fill="#FBBF24"
+                                                    IsVisible="False" />
+                                            </Grid>
+                                        </Button>
+
+                                        <!--  2. 关联格式  -->
+                                        <Button
+                                            x:Name="PART_NavAssociations"
+                                            Classes="link settings-nav-btn"
+                                            Click="NavTab_Click"
+                                            Tag="associations">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                                    <Border
+                                                        Classes="nav-indicator"
+                                                        Width="3"
+                                                        Height="14"
+                                                        Margin="-6,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="#60A5FA"
+                                                        CornerRadius="1.5" />
+                                                    <Path
+                                                        Classes="nav-icon"
+                                                        Width="14"
+                                                        Height="14"
+                                                        VerticalAlignment="Center"
+                                                        Data="M4 5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm9-.5V8h3.5L13 4.5ZM7.5 11.5h9a.75.75 0 0 1 0 1.5h-9a.75.75 0 0 1 0-1.5Zm0 3.5h6a.75.75 0 0 1 0 1.5h-6a.75.75 0 0 1 0-1.5Z"
+                                                        Stretch="Uniform" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    x:Name="PART_TxtNavAssociations"
+                                                    Grid.Column="1"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12.5"
+                                                    Text="关联格式" />
+                                                <Ellipse
+                                                    x:Name="PART_NavAssocDirtyDot"
+                                                    Grid.Column="2"
+                                                    Width="6"
+                                                    Height="6"
+                                                    VerticalAlignment="Center"
+                                                    Fill="#FBBF24"
+                                                    IsVisible="False" />
+                                            </Grid>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!--  底部轻提示  -->
+                                    <Border
+                                        Grid.Row="2"
+                                        Margin="12,0,12,12"
+                                        Padding="9,6"
+                                        Background="#10FFFFFF"
+                                        BorderBrush="#0AFFFFFF"
+                                        BorderThickness="1"
+                                        CornerRadius="7">
+                                        <TextBlock
+                                            x:Name="PART_SidebarTip"
+                                            FontSize="10.5"
+                                            Foreground="#6F7785"
+                                            Text="按 Esc 关闭弹窗"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!--  右栏：动态标题头 + 分页画布  -->
+                            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+
+                                <!--  右侧共享顶部页头  -->
+                                <Border
+                                    Grid.Row="0"
+                                    Padding="22,14,18,13"
+                                    BorderBrush="#10FFFFFF"
+                                    BorderThickness="0,0,0,1">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                            <TextBlock
+                                                x:Name="PART_SectionTitle"
+                                                FontSize="15.5"
+                                                FontWeight="SemiBold"
+                                                Foreground="#F3F4F6" />
+                                            <TextBlock
+                                                x:Name="PART_SectionSubtitle"
+                                                FontSize="11.5"
+                                                Foreground="#8B92A0"
+                                                TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <!--  页头右侧状态/操作插槽（按页显隐）  -->
+                                        <StackPanel
+                                            x:Name="PART_ThemeHeaderActions"
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="6">
+                                            <Button
+                                                x:Name="PART_BtnInstallTheme"
+                                                Classes="link overlay-soft-accent-btn"
+                                                Height="28"
+                                                Padding="11,0"
+                                                Click="InstallTheme_Click">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Path
+                                                        Width="10.5"
+                                                        Height="10.5"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconAdd}"
+                                                        Fill="#93C5FD"
+                                                        Stretch="Uniform" />
+                                                    <TextBlock x:Name="PART_TxtInstallTheme" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <Button
+                                                x:Name="PART_BtnRefreshThemes"
+                                                Classes="link overlay-icon-btn"
+                                                Click="RefreshThemes_Click">
+                                                <Path
+                                                    Width="13"
+                                                    Height="13"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Data="{StaticResource IconReset}"
+                                                    Fill="#9CA3AF"
+                                                    Stretch="Uniform" />
+                                            </Button>
+
+                                            <Button
+                                                x:Name="PART_BtnOpenThemeFolder"
+                                                Classes="link overlay-icon-btn"
+                                                Click="OpenThemeFolder_Click">
+                                                <Path
+                                                    Width="13"
+                                                    Height="13"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Data="{StaticResource IconFolderOpen}"
+                                                    Fill="#9CA3AF"
+                                                    Stretch="Uniform" />
+                                            </Button>
+                                        </StackPanel>
+
+                                        <Border
+                                            x:Name="PART_AssocHeaderBadge"
+                                            Grid.Column="1"
+                                            Padding="10,4"
+                                            VerticalAlignment="Center"
+                                            Background="#191B20"
+                                            BorderBrush="#14FFFFFF"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            IsVisible="False">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Ellipse
+                                                    x:Name="PART_AssocCountDot"
+                                                    Width="6"
+                                                    Height="6"
+                                                    VerticalAlignment="Center"
+                                                    Fill="#60A5FA" />
+                                                <TextBlock
+                                                    x:Name="PART_TotalFormatsText"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11.5"
+                                                    FontWeight="Medium"
+                                                    Foreground="#D1D5DB" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  右上角关闭钮  -->
+                                        <Button
+                                            x:Name="PART_BtnClose"
+                                            Classes="link overlay-icon-btn"
+                                            Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Click="Cancel_Click">
+                                            <Path
+                                                Width="9.5"
+                                                Height="9.5"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Data="{StaticResource IconClose}"
+                                                Fill="#8E95A2"
+                                                Stretch="Uniform" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+
+                                <!--  右侧内容分页区  -->
+                                <Panel Grid.Row="1">
+
+                                    <!--  ================================================  -->
+                                    <!--  PAGE 1: 主题与外观 (PART_PageTheme)               -->
+                                    <!--  ================================================  -->
+                                    <ScrollViewer
+                                        x:Name="PART_PageTheme"
+                                        HorizontalScrollBarVisibility="Disabled"
+                                        VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="22,16,20,20" Spacing="14">
+
+                                            <!--  管理员锁定提示  -->
+                                            <Border
+                                                x:Name="PART_ThemeLockWarning"
+                                                Padding="11,8"
+                                                Background="#1CF59E0B"
+                                                BorderBrush="#36F59E0B"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                IsVisible="False">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <Path
+                                                        Width="13"
+                                                        Height="13"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconInfo}"
+                                                        Fill="#FBBF24"
+                                                        Stretch="Uniform" />
+                                                    <TextBlock
+                                                        x:Name="PART_ThemeLockWarningText"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="11.5"
+                                                        Foreground="#FCD34D"
+                                                        TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!--  1.1 当前主题槽位双栏概览卡  -->
+                                            <Border
+                                                Padding="14,12"
+                                                Background="#181A20"
+                                                BorderBrush="#12FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="10">
+                                                <Grid ColumnDefinitions="*,Auto,*">
+                                                    <!--  深色模式槽  -->
+                                                    <StackPanel Grid.Column="0" Spacing="4">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <Path
+                                                                Width="11.5"
+                                                                Height="11.5"
+                                                                VerticalAlignment="Center"
+                                                                Data="{StaticResource IconWeatherMoon}"
+                                                                Fill="#8B92A0"
+                                                                Stretch="Uniform" />
+                                                            <TextBlock
+                                                                x:Name="PART_LblDarkSlotTitle"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="#8B92A0" />
+                                                        </StackPanel>
+                                                        <TextBlock
+                                                            x:Name="PART_DarkSlotValue"
+                                                            FontSize="13.5"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#F3F4F6"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+
+                                                    <Border
+                                                        Grid.Column="1"
+                                                        Width="1"
+                                                        Margin="18,2"
+                                                        Background="#14FFFFFF" />
+
+                                                    <!--  浅色模式槽 (当前主生效槽位)  -->
+                                                    <StackPanel Grid.Column="2" Spacing="4">
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                VerticalAlignment="Center"
+                                                                Data="{StaticResource IconWeatherSunny}"
+                                                                Fill="#FBBF24"
+                                                                Stretch="Uniform" />
+                                                            <TextBlock
+                                                                x:Name="PART_LblLightSlotTitle"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="11"
+                                                                Foreground="#8B92A0" />
+                                                            <Border
+                                                                x:Name="PART_LightSlotActiveBadge"
+                                                                Padding="5,1"
+                                                                VerticalAlignment="Center"
+                                                                Background="#1C10B981"
+                                                                BorderBrush="#3610B981"
+                                                                BorderThickness="1"
+                                                                CornerRadius="4">
+                                                                <TextBlock
+                                                                    x:Name="PART_TxtActiveSlot"
+                                                                    FontSize="9.5"
+                                                                    FontWeight="SemiBold"
+                                                                    Foreground="#34D399" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock
+                                                            x:Name="PART_LightSlotValue"
+                                                            FontSize="13.5"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#F3F4F6"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  1.2 查看器背景色 (实时预览画布色彩 + HEX 精确控制)  -->
+                                            <Border
+                                                Padding="14,12"
+                                                Background="#181A20"
+                                                BorderBrush="#12FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="10">
+                                                <StackPanel Spacing="10">
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <StackPanel Grid.Column="0" Spacing="1">
+                                                            <TextBlock
+                                                                x:Name="PART_LblBgColorTitle"
+                                                                FontSize="12.5"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="#E5E7EB" />
+                                                            <TextBlock
+                                                                x:Name="PART_LblBgColorDesc"
+                                                                FontSize="11"
+                                                                Foreground="#7C8391" />
+                                                        </StackPanel>
+
+                                                        <Button
+                                                            x:Name="PART_BtnBgReset"
+                                                            Classes="link overlay-micro-link"
+                                                            Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Click="ResetBgColor_Click" />
+                                                    </Grid>
+
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                                        <!--  预设色块矩阵  -->
+                                                        <StackPanel
+                                                            Grid.Column="0"
+                                                            VerticalAlignment="Center"
+                                                            Orientation="Horizontal"
+                                                            Spacing="6">
+                                                            <Button
+                                                                x:Name="PART_SwatchDefault"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#00000000">
+                                                                <Border CornerRadius="4" ClipToBounds="True">
+                                                                    <Border.Background>
+                                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                                            <GradientStop Color="#2C2E34" Offset="0.0" />
+                                                                            <GradientStop Color="#191B20" Offset="1.0" />
+                                                                        </LinearGradientBrush>
+                                                                    </Border.Background>
+                                                                    <Path
+                                                                        Width="12"
+                                                                        Height="12"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"
+                                                                        Data="M 1,11 L 11,1"
+                                                                        Stroke="#60A5FA"
+                                                                        StrokeThickness="1.4" />
+                                                                </Border>
+                                                            </Button>
+                                                            <Button
+                                                                x:Name="PART_SwatchBlack"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#FF0B0D10">
+                                                                <Border Background="#0B0D10" CornerRadius="4" />
+                                                            </Button>
+                                                            <Button
+                                                                x:Name="PART_SwatchSlate"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#FF1E2026">
+                                                                <Border Background="#1E2026" CornerRadius="4" />
+                                                            </Button>
+                                                            <Button
+                                                                x:Name="PART_SwatchNeutral"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#FF4A4F59">
+                                                                <Border Background="#4A4F59" CornerRadius="4" />
+                                                            </Button>
+                                                            <Button
+                                                                x:Name="PART_SwatchLightGray"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#FFE5E7EB">
+                                                                <Border Background="#E5E7EB" CornerRadius="4" />
+                                                            </Button>
+                                                            <Button
+                                                                x:Name="PART_SwatchWhite"
+                                                                Classes="link bg-swatch-btn"
+                                                                Click="PresetBgSwatch_Click"
+                                                                Tag="#FFFFFFFF">
+                                                                <Border Background="#FFFFFF" CornerRadius="4" />
+                                                            </Button>
+                                                        </StackPanel>
+
+                                                        <!--  实时预览 + HEX 色码输入凹槽  -->
+                                                        <Border
+                                                            x:Name="PART_BgHexBox"
+                                                            Classes="overlay-input-box"
+                                                            Grid.Column="2"
+                                                            Width="148"
+                                                            Height="30">
+                                                            <Grid ColumnDefinitions="Auto,*">
+                                                                <Border
+                                                                    x:Name="PART_BgPreviewDot"
+                                                                    Grid.Column="0"
+                                                                    Width="16"
+                                                                    Height="16"
+                                                                    Margin="8,0,2,0"
+                                                                    VerticalAlignment="Center"
+                                                                    BorderBrush="#2CFFFFFF"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="4" />
+                                                                <TextBox
+                                                                    x:Name="PART_BgHexInput"
+                                                                    Classes="overlay-textbox"
+                                                                    Grid.Column="1"
+                                                                    FontFamily="Consolas, SF Mono, Menlo, monospace"
+                                                                    FontSize="12"
+                                                                    Padding="4,0,8,0"
+                                                                    TextChanged="BgHexInput_TextChanged" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!--  1.3 窗口背景材质 (Windows 11+ 专属，macOS 自动隐藏)  -->
+                                            <Border
+                                                x:Name="PART_BackdropGroup"
+                                                Padding="14,11"
+                                                Background="#181A20"
+                                                BorderBrush="#12FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                IsVisible="False">
+                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                                    <TextBlock
+                                                        x:Name="PART_LblBackdropTitle"
+                                                        Grid.Column="0"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#E5E7EB" />
+                                                    <Border
+                                                        Grid.Column="1"
+                                                        Padding="3"
+                                                        Background="#15171C"
+                                                        BorderBrush="#14FFFFFF"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8">
+                                                        <StackPanel Orientation="Horizontal" Spacing="2">
+                                                            <Button x:Name="PART_BackdropMica" Classes="link overlay-filter-pill" Click="BackdropPill_Click" Content="Mica" Tag="Mica" />
+                                                            <Button x:Name="PART_BackdropMicaAlt" Classes="link overlay-filter-pill" Click="BackdropPill_Click" Content="Mica Alt" Tag="MicaAlt" />
+                                                            <Button x:Name="PART_BackdropAcrylic" Classes="link overlay-filter-pill" Click="BackdropPill_Click" Content="Acrylic" Tag="Acrylic" />
+                                                            <Button x:Name="PART_BackdropNone" Classes="link overlay-filter-pill" Click="BackdropPill_Click" Content="None" Tag="None" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  1.4 已安装主题包列表头 + 卡片集合  -->
+                                            <Grid ColumnDefinitions="*,Auto" Margin="2,2,0,0">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        x:Name="PART_LblThemePacksTitle"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#E5E7EB" />
+                                                    <Border
+                                                        Padding="7,1.5"
+                                                        VerticalAlignment="Center"
+                                                        Background="#12FFFFFF"
+                                                        CornerRadius="8">
+                                                        <TextBlock
+                                                            x:Name="PART_ThemePacksCount"
+                                                            FontSize="10.5"
+                                                            Foreground="#9CA3AF" />
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <Button
+                                                    x:Name="PART_BtnGetMoreThemes"
+                                                    Classes="link overlay-micro-link"
+                                                    Grid.Column="1"
+                                                    Click="GetMoreThemes_Click" />
+                                            </Grid>
+
+                                            <StackPanel
+                                                x:Name="PART_ThemeCardsList"
+                                                Spacing="8" />
+
+                                            <TextBlock
+                                                x:Name="PART_ThemeEmptyText"
+                                                Margin="0,14"
+                                                HorizontalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="#6B7280"
+                                                IsVisible="False" />
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <!--  ================================================  -->
+                                    <!--  PAGE 2: 关联格式 (PART_PageAssociations)          -->
+                                    <!--  ================================================  -->
+                                    <Grid
+                                        x:Name="PART_PageAssociations"
+                                        Margin="22,14,20,14"
+                                        IsVisible="False"
+                                        RowDefinitions="Auto,Auto,Auto,Auto,*">
+
+                                        <!--  2.0 管理员锁定警告条  -->
+                                        <Border
+                                            x:Name="PART_LockWarning"
+                                            Grid.Row="0"
+                                            Margin="0,0,0,10"
+                                            Padding="11,8"
+                                            Background="#1CF59E0B"
+                                            BorderBrush="#36F59E0B"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            IsVisible="False">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Path
+                                                    Width="13"
+                                                    Height="13"
+                                                    VerticalAlignment="Center"
+                                                    Data="{StaticResource IconInfo}"
+                                                    Fill="#FBBF24"
+                                                    Stretch="Uniform" />
+                                                <TextBlock
+                                                    x:Name="PART_LockWarningText"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="11.5"
+                                                    Foreground="#FCD34D"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  2.1 平台系统集成紧凑卡片 (Windows / Linux AppImage，macOS 自动隐藏)  -->
+                                        <Border
+                                            x:Name="PART_SysIntegrationBar"
+                                            Grid.Row="1"
+                                            Margin="0,0,0,10"
+                                            Padding="12,9"
+                                            Background="#181A20"
+                                            BorderBrush="#12FFFFFF"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            IsVisible="False">
+                                            <StackPanel Spacing="8">
+                                                <Grid
+                                                    x:Name="PART_WinIntegrationRow"
+                                                    ColumnDefinitions="*,Auto"
+                                                    ColumnSpacing="12"
+                                                    IsVisible="False">
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
+                                                        <TextBlock
+                                                            x:Name="PART_WinDefaultTitle"
+                                                            FontSize="12.5"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#E5E7EB" />
+                                                        <TextBlock
+                                                            x:Name="PART_WinDefaultScope"
+                                                            FontSize="11"
+                                                            Foreground="#8B92A0"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+
+                                                    <WrapPanel
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center">
+                                                        <Button
+                                                            x:Name="PART_BtnWinRegister"
+                                                            Classes="link overlay-secondary-btn"
+                                                            Height="26"
+                                                            Margin="0,2,6,2"
+                                                            Padding="10,0"
+                                                            Click="WinRegister_Click" />
+                                                        <Button
+                                                            x:Name="PART_BtnWinUnregister"
+                                                            Classes="link overlay-secondary-btn"
+                                                            Height="26"
+                                                            Margin="0,2,6,2"
+                                                            Padding="10,0"
+                                                            Click="WinUnregister_Click" />
+                                                        <Button
+                                                            x:Name="PART_BtnWinDefaultApps"
+                                                            Classes="link overlay-micro-link"
+                                                            Margin="0,2,2,2"
+                                                            Click="WinOpenDefaultApps_Click" />
+                                                        <Button
+                                                            x:Name="PART_BtnWinExtIcons"
+                                                            Classes="link overlay-micro-link"
+                                                            Margin="0,2,0,2"
+                                                            Click="WinOpenExtIcons_Click" />
+                                                    </WrapPanel>
+                                                </Grid>
+
+                                                <Grid
+                                                    x:Name="PART_LinuxAppMenuRow"
+                                                    ColumnDefinitions="*,Auto"
+                                                    ColumnSpacing="12"
+                                                    IsVisible="False">
+                                                    <TextBlock
+                                                        x:Name="PART_LinuxAppMenuTitle"
+                                                        Grid.Column="0"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="12.5"
+                                                        FontWeight="SemiBold"
+                                                        Foreground="#E5E7EB" />
+                                                    <StackPanel
+                                                        Grid.Column="1"
+                                                        Orientation="Horizontal"
+                                                        Spacing="6">
+                                                        <Button
+                                                            x:Name="PART_BtnLinuxRegister"
+                                                            Classes="link overlay-secondary-btn"
+                                                            Height="26"
+                                                            Padding="10,0"
+                                                            Click="LinuxRegister_Click" />
+                                                        <Button
+                                                            x:Name="PART_BtnLinuxUnregister"
+                                                            Classes="link overlay-secondary-btn"
+                                                            Height="26"
+                                                            Padding="10,0"
+                                                            Click="LinuxUnregister_Click" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  2.2 搜索过滤 + 分段筛选 + 新增格式工具条  -->
+                                        <Grid
+                                            Grid.Row="2"
+                                            Margin="0,0,0,10"
+                                            ColumnDefinitions="*,Auto,Auto"
+                                            ColumnSpacing="8">
+                                            <Border Classes="overlay-input-box" Grid.Column="0" Height="32">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <Path
+                                                        Grid.Column="0"
+                                                        Width="12.5"
+                                                        Height="12.5"
+                                                        Margin="10,0,2,0"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconSearch}"
+                                                        Fill="#78808F"
+                                                        Stretch="Uniform" />
+                                                    <TextBox
+                                                        x:Name="PART_SearchBox"
+                                                        Classes="overlay-textbox"
+                                                        Grid.Column="1"
+                                                        KeyDown="SearchBox_KeyDown"
+                                                        TextChanged="SearchBox_TextChanged" />
+                                                    <Button
+                                                        x:Name="PART_BtnClearSearch"
+                                                        Classes="link overlay-icon-btn"
+                                                        Grid.Column="2"
+                                                        Width="22"
+                                                        Height="22"
+                                                        Margin="0,0,4,0"
+                                                        Click="ClearSearch_Click"
+                                                        IsVisible="False">
+                                                        <Path
+                                                            Width="8.5"
+                                                            Height="8.5"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Data="{StaticResource IconClose}"
+                                                            Fill="#8E95A2"
+                                                            Stretch="Uniform" />
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border
+                                                Grid.Column="1"
+                                                Padding="3"
+                                                VerticalAlignment="Center"
+                                                Background="#15171C"
+                                                BorderBrush="#14FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <StackPanel Orientation="Horizontal" Spacing="2">
+                                                    <Button
+                                                        x:Name="PART_FilterAll"
+                                                        Classes="link overlay-filter-pill active"
+                                                        Click="FilterPill_Click"
+                                                        Tag="all" />
+                                                    <Button
+                                                        x:Name="PART_FilterCustom"
+                                                        Classes="link overlay-filter-pill"
+                                                        Click="FilterPill_Click"
+                                                        Tag="custom" />
+                                                    <Button
+                                                        x:Name="PART_FilterPlugin"
+                                                        Classes="link overlay-filter-pill"
+                                                        Click="FilterPill_Click"
+                                                        IsVisible="False"
+                                                        Tag="plugin" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Button
+                                                x:Name="PART_BtnToggleAdd"
+                                                Classes="link overlay-soft-accent-btn"
+                                                Grid.Column="2"
+                                                Height="32"
+                                                Click="ToggleAddBar_Click">
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                                    <Path
+                                                        Width="10.5"
+                                                        Height="10.5"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconAdd}"
+                                                        Fill="#93C5FD"
+                                                        Stretch="Uniform" />
+                                                    <TextBlock
+                                                        x:Name="PART_TxtAddFormat"
+                                                        VerticalAlignment="Center"
+                                                        Text="添加格式" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+
+                                        <!--  2.3 可折叠内联添加新格式输入栏  -->
+                                        <Border
+                                            x:Name="PART_AddBar"
+                                            Grid.Row="3"
+                                            Margin="0,0,0,10"
+                                            Padding="11,9"
+                                            Background="#191D25"
+                                            BorderBrush="#3D3B82F6"
+                                            BorderThickness="1"
+                                            CornerRadius="9"
+                                            IsVisible="False">
+                                            <StackPanel Spacing="6">
+                                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                                    <Border
+                                                        x:Name="PART_AddInputBox"
+                                                        Classes="overlay-input-box"
+                                                        Grid.Column="0"
+                                                        Height="30">
+                                                        <Grid ColumnDefinitions="Auto,*">
+                                                            <TextBlock
+                                                                Grid.Column="0"
+                                                                Margin="10,0,0,0"
+                                                                VerticalAlignment="Center"
+                                                                FontFamily="Consolas, SF Mono, Menlo, monospace"
+                                                                FontSize="12"
+                                                                Foreground="#60A5FA"
+                                                                Text="." />
+                                                            <TextBox
+                                                                x:Name="PART_AddInput"
+                                                                Classes="overlay-textbox"
+                                                                Grid.Column="1"
+                                                                Padding="3,0,8,0"
+                                                                KeyDown="AddInput_KeyDown"
+                                                                TextChanged="AddInput_TextChanged" />
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <Button
+                                                        x:Name="PART_BtnConfirmAdd"
+                                                        Classes="link overlay-primary-btn"
+                                                        Grid.Column="1"
+                                                        MinWidth="66"
+                                                        Height="30"
+                                                        Padding="14,0"
+                                                        Click="ConfirmAdd_Click"
+                                                        Content="加入" />
+
+                                                    <Button
+                                                        x:Name="PART_BtnCancelAdd"
+                                                        Classes="link overlay-secondary-btn"
+                                                        Grid.Column="2"
+                                                        Height="30"
+                                                        Padding="11,0"
+                                                        Click="CancelAdd_Click"
+                                                        Content="取消" />
+                                                </Grid>
+
+                                                <TextBlock
+                                                    x:Name="PART_AddHintText"
+                                                    Margin="2,0,0,0"
+                                                    FontSize="11"
+                                                    Foreground="#8B92A0" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!--  2.4 格式清单主体容器  -->
+                                        <Border
+                                            Grid.Row="4"
+                                            MinHeight="160"
+                                            Background="#17191E"
+                                            BorderBrush="#12FFFFFF"
+                                            BorderThickness="1"
+                                            ClipToBounds="True"
+                                            CornerRadius="10">
+                                            <Grid RowDefinitions="Auto,*">
+                                                <Border
+                                                    Grid.Row="0"
+                                                    Padding="14,8"
+                                                    Background="#1D2027"
+                                                    BorderBrush="#10FFFFFF"
+                                                    BorderThickness="0,0,0,1">
+                                                    <Grid ColumnDefinitions="36, 130, *, *, 40">
+                                                        <TextBlock
+                                                            Grid.Column="0"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#747B89"
+                                                            Text="#" />
+                                                        <TextBlock
+                                                            x:Name="PART_ColExtHeader"
+                                                            Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#747B89" />
+                                                        <TextBlock
+                                                            x:Name="PART_ColDecoderHeader"
+                                                            Grid.Column="2"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#747B89" />
+                                                        <TextBlock
+                                                            x:Name="PART_ColEncoderHeader"
+                                                            Grid.Column="3"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#747B89" />
+                                                        <TextBlock
+                                                            x:Name="PART_ColActionHeader"
+                                                            Grid.Column="4"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="11"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="#747B89" />
+                                                    </Grid>
+                                                </Border>
+
+                                                <ScrollViewer
+                                                    x:Name="PART_FormatsScroll"
+                                                    Grid.Row="1"
+                                                    HorizontalScrollBarVisibility="Disabled"
+                                                    VerticalScrollBarVisibility="Auto">
+                                                    <Panel>
+                                                        <ItemsControl x:Name="PART_FormatsList">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="windows:SettingsFormatRowModel">
+                                                                    <Border
+                                                                        Classes="format-row"
+                                                                        Classes.highlighted="{CompiledBinding IsHighlighted}">
+                                                                        <Grid ColumnDefinitions="36, 130, *, *, 40">
+                                                                            <TextBlock
+                                                                                Grid.Column="0"
+                                                                                VerticalAlignment="Center"
+                                                                                FontFamily="Consolas, SF Mono, Menlo, monospace"
+                                                                                FontSize="11"
+                                                                                Foreground="#636B78"
+                                                                                Text="{CompiledBinding IndexText}" />
+
+                                                                            <StackPanel
+                                                                                Grid.Column="1"
+                                                                                Margin="0,0,8,0"
+                                                                                VerticalAlignment="Center"
+                                                                                Orientation="Horizontal"
+                                                                                Spacing="5">
+                                                                                <Border
+                                                                                    Padding="6,2"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Background="#232731"
+                                                                                    BorderBrush="#14FFFFFF"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="5">
+                                                                                    <TextBlock
+                                                                                        FontFamily="Consolas, SF Mono, Menlo, monospace"
+                                                                                        FontSize="11.5"
+                                                                                        FontWeight="SemiBold"
+                                                                                        Foreground="#F3F4F6"
+                                                                                        Text="{CompiledBinding Extension}" />
+                                                                                </Border>
+                                                                                <Border
+                                                                                    Padding="5,1"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Background="#1E3B82F6"
+                                                                                    BorderBrush="#363B82F6"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="4"
+                                                                                    IsVisible="{CompiledBinding IsCustom}">
+                                                                                    <TextBlock
+                                                                                        FontSize="9.5"
+                                                                                        FontWeight="SemiBold"
+                                                                                        Foreground="#93C5FD"
+                                                                                        Text="{CompiledBinding BadgeText}" />
+                                                                                </Border>
+                                                                                <Border
+                                                                                    Padding="5,1"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Background="#248B5CF6"
+                                                                                    BorderBrush="#408B5CF6"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="4"
+                                                                                    IsVisible="{CompiledBinding IsPlugin}">
+                                                                                    <TextBlock
+                                                                                        FontSize="9.5"
+                                                                                        FontWeight="SemiBold"
+                                                                                        Foreground="#C4B5FD"
+                                                                                        Text="{CompiledBinding BadgeText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+
+                                                                            <TextBlock
+                                                                                Grid.Column="2"
+                                                                                Margin="0,0,8,0"
+                                                                                VerticalAlignment="Center"
+                                                                                FontSize="12"
+                                                                                Foreground="{CompiledBinding DecoderForeground}"
+                                                                                Text="{CompiledBinding DecoderText}"
+                                                                                TextTrimming="CharacterEllipsis"
+                                                                                ToolTip.Tip="{CompiledBinding DecoderText}" />
+
+                                                                            <TextBlock
+                                                                                Grid.Column="3"
+                                                                                Margin="0,0,8,0"
+                                                                                VerticalAlignment="Center"
+                                                                                FontSize="12"
+                                                                                Foreground="{CompiledBinding EncoderForeground}"
+                                                                                Text="{CompiledBinding EncoderText}"
+                                                                                TextTrimming="CharacterEllipsis"
+                                                                                ToolTip.Tip="{CompiledBinding EncoderText}" />
+
+                                                                            <Panel Grid.Column="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                                <Button
+                                                                                    Classes="link format-delete-btn"
+                                                                                    Click="DeleteFormatRow_Click"
+                                                                                    IsVisible="{CompiledBinding CanDelete}"
+                                                                                    Tag="{CompiledBinding Extension}"
+                                                                                    ToolTip.Tip="{CompiledBinding DeleteTooltip}">
+                                                                                    <Path
+                                                                                        Width="11.5"
+                                                                                        Height="11.5"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Data="M6.442 2.5a2 2 0 0 1 2-2h3.046a2 2 0 0 1 2 2v.314c0 .036-.003.07-.01.105h4.952a.5.5 0 1 1 0 1h-.764l-1.558 13.507a2.5 2.5 0 0 1-2.484 2.214H6.306a2.5 2.5 0 0 1-2.484-2.214L2.264 3.92H1.5a.5.5 0 0 1 0-1h4.953a.502.502 0 0 1-.011-.105V2.5Zm.989.419h5.068a.501.501 0 0 1-.01-.105V2.5a1 1 0 0 0-1-1H8.441a1 1 0 0 0-1 1v.314c0 .036-.004.07-.011.105Zm-4.16 1L4.815 17.31a1.5 1.5 0 0 0 1.49 1.329h7.318a1.5 1.5 0 0 0 1.49-1.329L16.66 3.92H3.27Zm5.38 3.337a.5.5 0 1 0-1 0v7.256a.5.5 0 0 0 1 0V7.256Zm3.128-.5a.5.5 0 0 1 .5.5v7.256a.5.5 0 0 1-1 0V7.256a.5.5 0 0 1 .5-.5Z"
+                                                                                        Stretch="Uniform" />
+                                                                                </Button>
+
+                                                                                <Border
+                                                                                    Width="24"
+                                                                                    Height="24"
+                                                                                    Background="Transparent"
+                                                                                    IsVisible="{CompiledBinding IsReadOnlyIndicatorVisible}"
+                                                                                    ToolTip.Tip="{CompiledBinding ReadOnlyTooltip}">
+                                                                                    <Path
+                                                                                        Width="11"
+                                                                                        Height="11"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Data="M12 2a4 4 0 0 0-4 4v2H6.5A1.5 1.5 0 0 0 5 9.5v8A1.5 1.5 0 0 0 6.5 19h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 17.5 8H16V6a4 4 0 0 0-4-4Zm-2.5 4a2.5 2.5 0 0 1 5 0v2h-5V6Z"
+                                                                                        Fill="#525866"
+                                                                                        Stretch="Uniform" />
+                                                                                </Border>
+                                                                            </Panel>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <StackPanel
+                                                            x:Name="PART_EmptyState"
+                                                            Margin="20,36"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            IsVisible="False"
+                                                            Spacing="6">
+                                                            <TextBlock
+                                                                x:Name="PART_EmptyTitle"
+                                                                HorizontalAlignment="Center"
+                                                                FontSize="13"
+                                                                FontWeight="Medium"
+                                                                Foreground="#9CA3AF" />
+                                                            <TextBlock
+                                                                x:Name="PART_EmptyDesc"
+                                                                HorizontalAlignment="Center"
+                                                                FontSize="11.5"
+                                                                Foreground="#6B7280" />
+                                                        </StackPanel>
+                                                    </Panel>
+                                                </ScrollViewer>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                </Panel>
+                            </Grid>
+                        </Grid>
+
+                        <!--  ======================================================  -->
+                        <!--  UNIFIED FOOTER (通栏沉稳底座：重置当前页 | 未保存提示 | 取消/保存)  -->
+                        <!--  ======================================================  -->
+                        <Border
+                            Grid.Row="1"
+                            Padding="20,11"
+                            Background="#1C1E23"
+                            BorderBrush="#10FFFFFF"
+                            BorderThickness="0,1,0,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel
+                                    Grid.Column="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="12">
+                                    <Button
+                                        x:Name="PART_BtnResetDefaults"
+                                        Classes="link overlay-secondary-btn"
+                                        Click="ResetCurrentPageDefaults_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Path
+                                                Width="11.5"
+                                                Height="11.5"
+                                                VerticalAlignment="Center"
+                                                Data="{StaticResource IconReset}"
+                                                Fill="#D1D5DB"
+                                                Stretch="Uniform" />
+                                            <TextBlock x:Name="PART_TxtResetDefaults" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <StackPanel
+                                        x:Name="PART_DirtyBanner"
+                                        VerticalAlignment="Center"
+                                        IsVisible="False"
+                                        Orientation="Horizontal"
+                                        Spacing="6">
+                                        <Ellipse
+                                            Width="6"
+                                            Height="6"
+                                            VerticalAlignment="Center"
+                                            Fill="#FBBF24" />
+                                        <TextBlock
+                                            x:Name="PART_DirtyText"
+                                            VerticalAlignment="Center"
+                                            FontSize="11.5"
+                                            Foreground="#FCD34D" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <Button
+                                        x:Name="PART_BtnCancel"
+                                        Classes="link overlay-secondary-btn"
+                                        MinWidth="74"
+                                        Click="Cancel_Click" />
+                                    <Button
+                                        x:Name="PART_BtnSave"
+                                        Classes="link overlay-primary-btn"
+                                        Click="Save_Click" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+
+                    <!--  ======================================================  -->
+                    <!--  INTERNAL THEME PREVIEW OVERLAY (点击卡片缩略图全卡放大预览)  -->
+                    <!--  ======================================================  -->
+                    <Grid
+                        x:Name="PART_ThemePreviewOverlay"
+                        Background="#CC101216"
+                        Cursor="Hand"
+                        IsVisible="False"
+                        PointerPressed="CloseThemePreview_PointerPressed"
+                        ZIndex="50">
+                        <Border
+                            Margin="28"
+                            Padding="12"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#242730"
+                            BorderBrush="#2CFFFFFF"
+                            BorderThickness="1"
+                            BoxShadow="0 20 56 0 #D0000000"
+                            CornerRadius="12">
+                            <Grid RowDefinitions="Auto,*">
+                                <Grid Grid.Row="0" Margin="4,0,4,10" ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <TextBlock
+                                            x:Name="PART_PreviewThemeTitle"
+                                            FontSize="13.5"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F3F4F6" />
+                                        <TextBlock
+                                            x:Name="PART_PreviewThemeTip"
+                                            VerticalAlignment="Center"
+                                            FontSize="11"
+                                            Foreground="#8B92A0" />
+                                    </StackPanel>
+                                    <Button
+                                        Classes="link overlay-icon-btn"
+                                        Grid.Column="1"
+                                        Width="24"
+                                        Height="24"
+                                        Click="CloseThemePreview_Click">
+                                        <Path
+                                            Width="9"
+                                            Height="9"
+                                            Data="{StaticResource IconClose}"
+                                            Fill="#D1D5DB"
+                                            Stretch="Uniform" />
+                                    </Button>
+                                </Grid>
+                                <Border
+                                    Grid.Row="1"
+                                    ClipToBounds="True"
+                                    CornerRadius="8">
+                                    <Image
+                                        x:Name="PART_PreviewLargeImage"
+                                        MaxWidth="720"
+                                        MaxHeight="440"
+                                        Stretch="Uniform" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                </Panel>
+            </Border>
+        </ThemeVariantScope>
+    </Grid>
+</UserControl>

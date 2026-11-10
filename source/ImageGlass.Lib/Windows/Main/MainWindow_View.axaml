@@ -9,6 +9,7 @@
     xmlns:ui="using:ImageGlass.UI"
     xmlns:viewer="using:ImageGlass.UI.Viewer"
     xmlns:vm="using:ImageGlass.ViewModels"
+    xmlns:windows="using:ImageGlass.Common.Windows"
     mc:Ignorable="d"
     d:DesignHeight="600"
     d:DesignWidth="900"
@@ -104,6 +105,49 @@
                     Foreground="{TemplateBinding Foreground}"
                     VerticalAlignment="Center" />
             </Grid>
+        </ControlTemplate>
+        <!--  右键菜单项专用干净模板：统一图标对齐 + 精致胶囊悬浮质感 + 彻底隔离浅色资源  -->
+        <ControlTemplate x:Key="ViewerContextMenuItemTemplate" TargetType="MenuItem">
+            <Border
+                x:Name="PART_MenuRoot"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                MinHeight="31"
+                Padding="9,0">
+                <Grid ColumnDefinitions="22,*,Auto" VerticalAlignment="Center">
+                    <ContentPresenter
+                        x:Name="PART_MenuIconPresenter"
+                        Grid.Column="0"
+                        Content="{TemplateBinding Icon}"
+                        Width="15"
+                        Height="15"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center" />
+                    <ContentPresenter
+                        x:Name="PART_MenuHeaderPresenter"
+                        Grid.Column="1"
+                        Margin="4,0,16,0"
+                        Content="{TemplateBinding Header}"
+                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                        Foreground="{TemplateBinding Foreground}"
+                        FontSize="12.5"
+                        FontWeight="Normal"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        x:Name="PART_InputGestureText"
+                        Grid.Column="2"
+                        Foreground="#747B89"
+                        FontSize="11"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Right" />
+                    <Path
+                        x:Name="PART_ChevronPath"
+                        IsVisible="False" />
+                </Grid>
+            </Border>
         </ControlTemplate>
     </ui:PhControl.Resources>
 
@@ -395,7 +439,7 @@
                 Grid.Row="1"
                 RowDefinitions="*, Auto">
                 <Border Background="{StaticResource WindowBarGradient}">
-                    <Border Background="Transparent">
+                    <Border x:Name="PART_ViewerBgLayer" Background="Transparent">
                         <viewer:ViewerControl
                         x:Name="PART_Viewer"
                         Grid.Row="0"
@@ -413,6 +457,84 @@
                         ZoomLevels="{CompiledBinding ZoomLevels, Source={x:Static cm:Core.Config}}"
                         ZoomMode="{CompiledBinding ZoomMode, Source={x:Static cm:Core.Config}}"
                         ZoomSpeed="{CompiledBinding ZoomSpeed, Source={x:Static cm:Core.Config}}">
+                        <viewer:ViewerControl.ContextMenu>
+                            <ContextMenu
+                                x:Name="PART_ViewerContextMenu"
+                                Background="#F424262C"
+                                BorderBrush="{StaticResource ModalGlassBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="5,6"
+                                MinWidth="220">
+                                <ContextMenu.Resources>
+                                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F424262C" />
+                                    <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="ModalGlassBorderBrush" />
+                                    <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
+                                    <CornerRadius x:Key="OverlayCornerRadius">10</CornerRadius>
+                                    <Thickness x:Key="MenuFlyoutPresenterThemePadding">5,6</Thickness>
+                                    <BoxShadows x:Key="MenuShadow">0 18 48 0 #B3000000</BoxShadows>
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#E5E7EB" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="#FFFFFF" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" Color="#747B89" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" Color="#A1A8B8" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" Color="#A1A8B8" />
+                                </ContextMenu.Resources>
+                                <ContextMenu.Styles>
+                                    <Style Selector="MenuItem">
+                                        <Setter Property="Template" Value="{StaticResource ViewerContextMenuItemTemplate}" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="CornerRadius" Value="7" />
+                                        <Setter Property="Margin" Value="0,1" />
+                                        <Setter Property="Foreground" Value="#E5E7EB" />
+                                        <Setter Property="Cursor" Value="Hand" />
+                                    </Style>
+                                    <Style Selector="MenuItem:not(:disabled):pointerover, MenuItem:not(:disabled):selected">
+                                        <Setter Property="Background" Value="#16FFFFFF" />
+                                        <Setter Property="BorderBrush" Value="#14FFFFFF" />
+                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                    </Style>
+                                    <Style Selector="MenuItem:not(:disabled):pointerover /template/ ContentPresenter#PART_MenuHeaderPresenter, MenuItem:not(:disabled):selected /template/ ContentPresenter#PART_MenuHeaderPresenter">
+                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                    </Style>
+                                    <Style Selector="MenuItem:not(:disabled):pointerover /template/ TextBlock#PART_InputGestureText, MenuItem:not(:disabled):selected /template/ TextBlock#PART_InputGestureText">
+                                        <Setter Property="Foreground" Value="#A1A8B8" />
+                                    </Style>
+                                    <Style Selector="MenuItem:not(:disabled):pressed">
+                                        <Setter Property="Background" Value="#22FFFFFF" />
+                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                    </Style>
+                                    <Style Selector="MenuItem.danger">
+                                        <Setter Property="Foreground" Value="#F3A0A0" />
+                                    </Style>
+                                    <Style Selector="MenuItem.danger:not(:disabled):pointerover, MenuItem.danger:not(:disabled):selected">
+                                        <Setter Property="Background" Value="#24EF4444" />
+                                        <Setter Property="BorderBrush" Value="#36EF4444" />
+                                        <Setter Property="Foreground" Value="#FECACA" />
+                                    </Style>
+                                    <Style Selector="MenuItem.danger:not(:disabled):pointerover /template/ ContentPresenter#PART_MenuHeaderPresenter, MenuItem.danger:not(:disabled):selected /template/ ContentPresenter#PART_MenuHeaderPresenter">
+                                        <Setter Property="Foreground" Value="#FECACA" />
+                                    </Style>
+                                    <Style Selector="MenuItem.danger:not(:disabled):pressed">
+                                        <Setter Property="Background" Value="#33EF4444" />
+                                        <Setter Property="Foreground" Value="#FECACA" />
+                                    </Style>
+                                    <Style Selector="MenuItem:disabled">
+                                        <Setter Property="Opacity" Value="0.35" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                    </Style>
+                                    <Style Selector="Separator">
+                                        <Setter Property="Background" Value="#14FFFFFF" />
+                                        <Setter Property="Height" Value="1" />
+                                        <Setter Property="Margin" Value="8,4" />
+                                        <Setter Property="Focusable" Value="False" />
+                                    </Style>
+                                </ContextMenu.Styles>
+                            </ContextMenu>
+                        </viewer:ViewerControl.ContextMenu>
                         <Panel>
                             <ui:ImageInfoOverlayControl x:Name="PART_ImageInfoOverlay" />
                             <viewer:SlideshowCountdownOverlay x:Name="PART_SlideshowCountdown" IsHitTestVisible="False" />
@@ -765,6 +887,340 @@
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
                             <Button x:Name="PART_DeleteCancel" Classes="link" Click="DeleteCancel_Click" />
                             <Button x:Name="PART_DeleteConfirm" Classes="link" Click="DeleteConfirm_Click" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!--  ======================================================  -->
+        <!--  RENAME MODAL OVERLAY (重命名遮盖层 - 与删除弹窗高度统一)  -->
+        <!--  ======================================================  -->
+        <Grid x:Name="PART_RenameModal" Grid.Row="0" Grid.RowSpan="3" IsVisible="False" ZIndex="1150">
+            <Grid.Resources>
+                <!--  彻底屏蔽 FluentTheme / TextBoxStyle 浅色背景与黑色聚焦字  -->
+                <SolidColorBrush x:Key="PhButtonBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="PhButtonBackgroundPointerOver" Color="Transparent" />
+                <SolidColorBrush x:Key="PhButtonBorderBrush" Color="Transparent" />
+                <SolidColorBrush x:Key="PhTextBoxBackgroundFocused" Color="Transparent" />
+                <SolidColorBrush x:Key="PhTextBoxBorderBrushFocused" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                <SolidColorBrush x:Key="TextControlForeground" Color="#F3F4F6" />
+                <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFFFFF" />
+                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
+                <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#553B82F6" />
+            </Grid.Resources>
+            <Grid.Styles>
+                <!--  右上角关闭钮  -->
+                <Style Selector="Button#PART_BtnCloseRenameModal">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Width" Value="24" />
+                    <Setter Property="Height" Value="24" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseRenameModal:pointerover">
+                    <Setter Property="Background" Value="#14FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseRenameModal:pressed">
+                    <Setter Property="Background" Value="#20FFFFFF" />
+                </Style>
+
+                <!--  外层输入凹槽动态边界  -->
+                <Style Selector="Border.rename-input-box">
+                    <Setter Property="Background" Value="#15171C" />
+                    <Setter Property="BorderBrush" Value="#1CFFFFFF" />
+                    <Setter Property="BorderThickness" Value="1.2" />
+                    <Setter Property="CornerRadius" Value="8" />
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Border.rename-input-box:pointerover">
+                    <Setter Property="BorderBrush" Value="#2EFFFFFF" />
+                </Style>
+                <Style Selector="Border.rename-input-box:focus-within">
+                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                </Style>
+                <Style Selector="Border.rename-input-box.invalid">
+                    <Setter Property="BorderBrush" Value="#EF4444" />
+                </Style>
+
+                <!--  穿透 TextBox 内部透明，防止自带白色边框干扰  -->
+                <Style Selector="TextBox#PART_RenameInput">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Foreground" Value="#F3F4F6" />
+                    <Setter Property="CaretBrush" Value="#60A5FA" />
+                    <Setter Property="SelectionBrush" Value="#553B82F6" />
+                    <Setter Property="SelectionForegroundBrush" Value="#FFFFFF" />
+                    <Setter Property="FontSize" Value="13" />
+                    <Setter Property="Padding" Value="11,8" />
+                    <Setter Property="MinHeight" Value="34" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="TextBox#PART_RenameInput /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+                <Style Selector="TextBox#PART_RenameInput:pointerover /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+                <Style Selector="TextBox#PART_RenameInput:focus /template/ Border#PART_BorderElement">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+
+                <!--  次要按钮：取消 (承接主深灰同色系)  -->
+                <Style Selector="Button#PART_RenameCancel">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="#282B33" />
+                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="FontSize" Value="12.5" />
+                    <Setter Property="FontWeight" Value="Medium" />
+                    <Setter Property="MinWidth" Value="74" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="CornerRadius" Value="7" />
+                    <Setter Property="Padding" Value="14,0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_RenameCancel:pointerover">
+                    <Setter Property="Background" Value="#323640" />
+                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                    <Setter Property="Foreground" Value="#F3F4F6" />
+                </Style>
+                <Style Selector="Button#PART_RenameCancel:pressed">
+                    <Setter Property="Background" Value="#22252C" />
+                    <Setter Property="BorderBrush" Value="#12FFFFFF" />
+                </Style>
+
+                <!--  主确认按钮：确定 (温和沉稳设计蓝渐变)  -->
+                <Style Selector="Button#PART_RenameConfirm">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="{StaticResource ModalAccentBtnGradient}" />
+                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="FontSize" Value="12.5" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="MinWidth" Value="82" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="CornerRadius" Value="7" />
+                    <Setter Property="Padding" Value="16,0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_RenameConfirm:pointerover">
+                    <Setter Property="Background" Value="{StaticResource ModalAccentBtnHoverGradient}" />
+                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_RenameConfirm:pressed">
+                    <Setter Property="Background" Value="#224987" />
+                    <Setter Property="BorderBrush" Value="#18FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_RenameConfirm:disabled">
+                    <Setter Property="Opacity" Value="0.4" />
+                    <Setter Property="Cursor" Value="Arrow" />
+                </Style>
+            </Grid.Styles>
+
+            <!--  全屏柔暗压光遮罩 (点击外部取消)  -->
+            <Border Background="#7A000000" PointerPressed="RenameBackdrop_PointerPressed" />
+
+            <!--  精巧立体弹窗卡片 (400px 宽，顶光学高光描边 + 分层底座)  -->
+            <Border
+                Width="400"
+                MaxWidth="430"
+                Margin="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BorderBrush="{StaticResource ModalGlassBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                ClipToBounds="True"
+                BoxShadow="0 24 64 0 #B3000000">
+                <Grid RowDefinitions="*,Auto">
+                    <!--  上部内容主体  -->
+                    <Border Grid.Row="0" Padding="20,20,20,16">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#292C33" Offset="0.0" />
+                                <GradientStop Color="#23252B" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <StackPanel Spacing="14">
+                            <!--  头部：圆角 Squircle 蓝铅笔徽章 + 标题与描述 + 关闭钮  -->
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="34"
+                                    Height="34"
+                                    CornerRadius="9"
+                                    Background="#1E3B82F6"
+                                    BorderBrush="#353B82F6"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Top">
+                                    <Path
+                                        Width="15"
+                                        Height="15"
+                                        Data="{StaticResource IconEdit}"
+                                        Fill="#60A5FA"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" Margin="12,0,6,0" Spacing="3" VerticalAlignment="Center">
+                                    <TextBlock
+                                        x:Name="PART_RenameTitle"
+                                        Foreground="#F3F4F6"
+                                        FontSize="14.5"
+                                        FontWeight="SemiBold"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        x:Name="PART_RenameHeading"
+                                        Foreground="#9CA3AF"
+                                        FontSize="12.5"
+                                        LineHeight="17.5"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <Button
+                                    x:Name="PART_BtnCloseRenameModal"
+                                    Classes="link"
+                                    Grid.Column="2"
+                                    VerticalAlignment="Top"
+                                    Click="RenameCancel_Click">
+                                    <Path
+                                        Width="9.5"
+                                        Height="9.5"
+                                        Data="{StaticResource IconClose}"
+                                        Fill="#8E95A2"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+
+                            <!--  内嵌缩略图与原文件信息胶囊槽  -->
+                            <Border
+                                Background="#191B20"
+                                BorderBrush="#10FFFFFF"
+                                BorderThickness="1"
+                                CornerRadius="9"
+                                Padding="11,10">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border
+                                        Grid.Column="0"
+                                        Width="36"
+                                        Height="36"
+                                        CornerRadius="7"
+                                        Background="#242730"
+                                        BorderBrush="#14FFFFFF"
+                                        BorderThickness="1"
+                                        ClipToBounds="True"
+                                        VerticalAlignment="Center">
+                                        <Panel>
+                                            <Path
+                                                x:Name="PART_RenamePlaceholderIcon"
+                                                Width="15"
+                                                Height="15"
+                                                Data="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm14 0H6v10.586l3.293-3.293a1 1 0 0 1 1.414 0L14 15.586l1.293-1.293a1 1 0 0 1 1.414 0L18 15.586V5Zm0 13.414-2-2-1.293 1.293a1 1 0 0 1-1.414 0L10 14.414l-4 4V19h12v-.586ZM15.5 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                                                Fill="#60A5FA"
+                                                Stretch="Uniform"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                                            <Image
+                                                x:Name="PART_RenameThumbnail"
+                                                Stretch="UniformToFill" />
+                                        </Panel>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="2.5" VerticalAlignment="Center">
+                                        <TextBlock
+                                            x:Name="PART_RenameOldName"
+                                            Foreground="#F3F4F6"
+                                            FontSize="12.5"
+                                            FontWeight="Medium"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            x:Name="PART_RenamePath"
+                                            Foreground="#8B92A0"
+                                            FontSize="11"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  高质感暗色凹槽输入框 + 后缀标签  -->
+                            <StackPanel Spacing="6">
+                                <Border x:Name="PART_RenameInputBox" Classes="rename-input-box">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBox
+                                            x:Name="PART_RenameInput"
+                                            Grid.Column="0"
+                                            TextChanged="RenameInput_TextChanged"
+                                            KeyDown="RenameInput_KeyDown" />
+                                        <Border
+                                            x:Name="PART_RenameExtBadge"
+                                            Grid.Column="1"
+                                            Margin="0,0,8,0"
+                                            Padding="7,2.5"
+                                            CornerRadius="5"
+                                            Background="#14FFFFFF"
+                                            BorderBrush="#12FFFFFF"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Center">
+                                            <TextBlock
+                                                x:Name="PART_RenameExtText"
+                                                Foreground="#9CA3AF"
+                                                FontSize="11.5"
+                                                FontWeight="SemiBold" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                                <TextBlock
+                                    x:Name="PART_RenameError"
+                                    IsVisible="False"
+                                    Foreground="#F87171"
+                                    FontSize="11.5"
+                                    Margin="2,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!--  下部独立沉稳动作底座  -->
+                    <Border
+                        Grid.Row="1"
+                        Background="#1C1E23"
+                        BorderBrush="#10FFFFFF"
+                        BorderThickness="0,1,0,0"
+                        Padding="20,12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button x:Name="PART_RenameCancel" Classes="link" Click="RenameCancel_Click" />
+                            <Button x:Name="PART_RenameConfirm" Classes="link" Click="RenameConfirm_Click" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -1140,6 +1596,16 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!--  ======================================================  -->
+        <!--  SETTINGS MODAL OVERLAY (设置遮盖层 - 仅关联格式)  -->
+        <!--  ======================================================  -->
+        <windows:SettingsOverlayControl
+            x:Name="PART_SettingsModal"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            IsVisible="False"
+            ZIndex="1120" />
     </Grid>
 
 </ui:PhControl>

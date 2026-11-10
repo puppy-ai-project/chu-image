@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -136,35 +136,25 @@ public partial class AppAPIProvider
 
 
     /// <summary>
-    /// Opens the app settings window.
+    /// Opens the in-window settings overlay.
     /// </summary>
-    public static async Task IG_OpenSettingsAsync(string? configId = null)
+    public static Task IG_OpenSettingsAsync(string? configId = null)
     {
-        // no explicit target -> restore the last opened settings page
-        if (string.IsNullOrWhiteSpace(configId)) configId = Core.Config.LastOpenedSetting;
-
-        // reuse the existing window if it is already open
-        if (App.SettingsWindow is not null)
+        if (App.MainWindow is { } mainWin)
         {
-            if (!string.IsNullOrWhiteSpace(configId))
+            if (mainWin.WindowState == WindowState.Minimized)
             {
-                App.SettingsWindow.NavigateToConfig(configId);
+                mainWin.RestoreAndActivate();
+            }
+            else
+            {
+                mainWin.Activate();
             }
 
-            App.SettingsWindow.RestoreAndActivate();
-            return;
+            mainWin.OpenSettingsOverlay(configId);
         }
 
-        App.SettingsWindow = new SettingsWindow(configId);
-
-        try
-        {
-            await App.SettingsWindow.ShowAsync(null);
-        }
-        finally
-        {
-            App.SettingsWindow = null;
-        }
+        return Task.CompletedTask;
     }
 
 
@@ -767,29 +757,21 @@ public partial class AppAPIProvider
 
         var currentFolder = Path.GetDirectoryName(oldFilePath) ?? string.Empty;
         var ext = Path.GetExtension(oldFilePath);
-        var newName = Path.GetFileNameWithoutExtension(oldFilePath);
         var title = Core.Lang[LangId.Menu_MnuRename];
 
-        // 2. show popup
-        var result = await ModalWindow.ShowInputAsync(App.MainWindow, new ModalWindowOptions
-        {
-            Title = title,
-            Description = $"""
-            {oldFilePath}
+        // 2. show in-window rename overlay modal
+        var newStemName = await App.MainWindow.PromptRenameAsync(
+            title,
+            Core.Lang[LangId.Menu_MnuRename_Description],
+            oldFilePath,
+            photo?.GalleryThumbnail);
 
-            {Core.Lang[LangId.Menu_MnuRename_Description]}
-            """,
-            InputValue = newName,
-            AcceptValue = TextBoxAcceptValue.FileNameValueOnly,
-            ThumbnailIcon = StockIconId.Rename,
-            Thumbnail = Core.Photos.Current?.GalleryThumbnail,
-        });
-
-        if (result.ExitCode != DialogExitCode.OK || string.IsNullOrWhiteSpace(result.InputValue)) return;
+        if (string.IsNullOrWhiteSpace(newStemName)) return;
 
         // 3. get new photo name
-        newName = $"{result.InputValue.Trim()}{ext}";
+        var newName = $"{newStemName.Trim()}{ext}";
         var newFilePath = Path.Combine(currentFolder, newName);
+        if (string.Equals(oldFilePath, newFilePath, StringComparison.Ordinal)) return;
 
 
         // 4. perform renaming

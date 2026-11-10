@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -557,7 +557,7 @@ public partial class DialogWindow : PhWindow
     /// <summary>
     /// Updates background according to theme color.
     /// </summary>
-    protected void ApplyTheme()
+    protected virtual void ApplyTheme()
     {
         var isDarkMode = Core.Theme.Settings.IsDarkMode;
         var bg = AppThemeColors.BgBrush.Color.NoAlpha();

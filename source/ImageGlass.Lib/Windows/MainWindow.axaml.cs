@@ -117,6 +117,9 @@ public partial class MainWindow : PhWindow
     public MainWindowModel VM => (MainWindowModel)DataContext!;
     public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
         => PART_MainView.ConfirmDeleteAsync(title, heading, path, size);
+    public Task<string?> PromptRenameAsync(string title, string heading, string filePath, Avalonia.Media.IImage? thumbnail)
+        => PART_MainView.PromptRenameAsync(title, heading, filePath, thumbnail);
+    public void OpenSettingsOverlay(string? section = null) => PART_MainView.OpenSettingsOverlay(section);
 
     private void ResizeHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -343,10 +346,22 @@ public partial class MainWindow : PhWindow
         base.OnKeyDown(e);
         if (e.Handled) return;
 
+        if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsRenameModalOpen)
+        {
+            e.Handled = true;
+            PART_MainView.CloseRenameModal();
+            return;
+        }
         if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsDeleteConfirmationOpen)
         {
             e.Handled = true;
             PART_MainView.CloseDeleteConfirmation();
+            return;
+        }
+        if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsSettingsOverlayOpen)
+        {
+            e.Handled = true;
+            PART_MainView.HandleSettingsEscapeKey();
             return;
         }
         // Escape closes the image info overlay before any other action
