@@ -12,6 +12,7 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:MainWindowModel"
+    Cursor="Hand"
     Title="{CompiledBinding Title}"
     BackdropStyle="{CompiledBinding Config.WindowBackdrop}"
     IsFrameless="{CompiledBinding Config.EnableFrameless}"

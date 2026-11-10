@@ -78,7 +78,7 @@ public partial class ViewerControl
             _selection.Enabled = value;
             if (!_selection.Enabled && Parent != null)
             {
-                Cursor = Avalonia.Input.Cursor.Default;
+                ClearValue(CursorProperty);
             }
         }
     }
@@ -438,7 +438,7 @@ public partial class ViewerControl
         // restore default cursor
         else
         {
-            Cursor = Avalonia.Input.Cursor.Default;
+            ClearValue(CursorProperty);
         }
 
 
