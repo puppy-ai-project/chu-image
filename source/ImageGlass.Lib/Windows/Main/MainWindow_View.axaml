@@ -17,6 +17,13 @@
     x:Name="Root">
 
     <ui:PhControl.Resources>
+        <ControlTemplate x:Key="CaptionButtonTemplate" TargetType="Button">
+            <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
+            </Border>
+        </ControlTemplate>
         <!--  顶部工作台渐变：轻盈温润石板灰  -->
         <LinearGradientBrush x:Key="WindowBarGradient" StartPoint="0,0" EndPoint="0,1">
             <GradientStop Color="#2C2E34" Offset="0.0" />
@@ -219,6 +226,7 @@
 
         <!--  Windows Caption Buttons  -->
         <Style Selector="Button.win-caption-btn">
+            <Setter Property="Template" Value="{StaticResource CaptionButtonTemplate}" />
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="NaN" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -236,6 +244,7 @@
             <Setter Property="Background" Value="#24FFFFFF" />
         </Style>
         <Style Selector="Button.win-caption-btn-close">
+            <Setter Property="Template" Value="{StaticResource CaptionButtonTemplate}" />
             <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="NaN" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -442,6 +451,7 @@
                     <Border x:Name="PART_ViewerBgLayer" Background="Transparent">
                         <viewer:ViewerControl
                         x:Name="PART_Viewer"
+                        Cursor="Hand"
                         Grid.Row="0"
                         CheckerboardMode="{CompiledBinding CheckerboardMode, Source={x:Static cm:Core.Config}}"
                         EnableDebug="{CompiledBinding EnableDebug, Source={x:Static cm:Core.Config}}"

@@ -76,7 +76,7 @@ public partial class MainWindow : PhWindow
 
     private static Cursor CreateDiagonalResizeCursor(bool mirror)
     {
-        const int size = 16;
+        const int size = 32;
         static bool IsArrow(int x, int y)
         {
             if (x < 2 || y < 2 || x > 13 || y > 13) return false;
@@ -91,12 +91,13 @@ public partial class MainWindow : PhWindow
             for (var y = 0; y < size; y++)
             for (var x = 0; x < size; x++)
             {
-                var sampleX = mirror ? size - 1 - x : x;
-                var inside = IsArrow(sampleX, y);
+                var sampleX = (mirror ? size - 1 - x : x) / 2;
+                var sampleY = y / 2;
+                var inside = IsArrow(sampleX, sampleY);
                 var outline = false;
                 for (var oy = -1; oy <= 1 && !outline; oy++)
                 for (var ox = -1; ox <= 1 && !outline; ox++)
-                    outline = IsArrow(sampleX + ox, y + oy);
+                    outline = IsArrow(sampleX + ox, sampleY + oy);
                 if (!outline) continue;
                 var index = y * frame.RowBytes + x * 4;
                 var color = inside ? (byte)0 : (byte)255;
