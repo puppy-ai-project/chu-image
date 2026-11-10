@@ -22,6 +22,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
@@ -44,11 +45,23 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindow : PhWindow
 {
+    protected override void UpdateBackground(bool isActive)
+    {
+        Background = Avalonia.Media.Brushes.Transparent;
+    }
+
+    protected override void OnIgBackdropStyleChanged(BackdropStyle style)
+    {
+        UpdateBackground(IsActive);
+    }
+
     protected override void OnIgFramelessModeChanged(bool enable)
     {
         // The main window provides its own title bar and caption buttons in every layout mode.
         // Remove the native caption buttons so the custom title bar remains the only one shown.
-        ExtendClientAreaToDecorationsHint = true;
+        // The window has no native decorations; enabling extended chrome also creates
+        // Avalonia's drawn title-bar layer, which can cover the transparent corners.
+        ExtendClientAreaToDecorationsHint = false;
         WindowDecorations = WindowDecorations.None;
     }
 
@@ -62,11 +75,11 @@ public partial class MainWindow : PhWindow
 
     private static Cursor CreateDiagonalResizeCursor(bool mirror)
     {
-        const int size = 24;
+        const int size = 16;
         static bool IsArrow(int x, int y)
         {
-            if (x < 2 || y < 2 || x > 21 || y > 21) return false;
-            return x + y <= 12 || x + y >= 34 || (Math.Abs(x - y) <= 1 && x >= 5 && x <= 18);
+            if (x < 2 || y < 2 || x > 13 || y > 13) return false;
+            return x + y <= 8 || x + y >= 22 || (Math.Abs(x - y) <= 1 && x >= 4 && x <= 11);
         }
 
         using var bitmap = new WriteableBitmap(new PixelSize(size, size), new Vector(96, 96),
@@ -85,7 +98,7 @@ public partial class MainWindow : PhWindow
                     outline = IsArrow(sampleX + ox, y + oy);
                 if (!outline) continue;
                 var index = y * frame.RowBytes + x * 4;
-                var color = inside ? (byte)255 : (byte)0;
+                var color = inside ? (byte)0 : (byte)255;
                 pixels[index] = pixels[index + 1] = pixels[index + 2] = color;
                 pixels[index + 3] = 255;
             }
@@ -159,6 +172,8 @@ public partial class MainWindow : PhWindow
     {
         StartupTrace.Mark("MainWindow:InitComponent:begin");
         InitializeComponent();
+        UseCustomBackdrop = true;
+        TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
         _diagonalResizeCursor = CreateDiagonalResizeCursor(false);
         _oppositeDiagonalResizeCursor = CreateDiagonalResizeCursor(true);
         PART_ResizeTopLeft.Cursor = PART_ResizeBottomRight.Cursor = _diagonalResizeCursor;
@@ -166,7 +181,10 @@ public partial class MainWindow : PhWindow
         PropertyChanged += (_, e) =>
         {
             if (e.Property == WindowStateProperty || e.Property == CanResizeProperty)
+            {
                 PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
+                PART_WindowSurface.CornerRadius = new CornerRadius(WindowState == WindowState.Normal ? 12 : 0);
+            }
         };
         PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
         StartupTrace.Mark("MainWindow:InitComponent:end");
@@ -203,6 +221,9 @@ public partial class MainWindow : PhWindow
     {
         StartupTrace.Mark("MainWindow:opened");
         base.OnOpened(e);
+        Console.WriteLine($"WINDOW DEBUG transparency={ActualTransparencyLevel} background={Background}");
+        foreach (var visual in this.GetVisualDescendants().Take(20))
+            Console.WriteLine($"WINDOW DEBUG {visual.GetType().FullName} name={(visual as Control)?.Name} background={(visual as Panel)?.Background} border={(visual as Border)?.Background}");
 
         // load full screen; it wins over window fit, which the backup brings back on leaving it
         if (Core.Config.EnableFullScreen)
