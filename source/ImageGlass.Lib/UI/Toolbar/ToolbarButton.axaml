@@ -7,11 +7,11 @@
     xmlns:ui="using:ImageGlass.UI"
     mc:Ignorable="d"
     x:DataType="ui:ToolbarItemModel"
-    Height="30"
-    MinWidth="30"
+    Height="26"
+    MinWidth="26"
     Padding="0"
     BorderThickness="0"
-    CornerRadius="6"
+    CornerRadius="5.5"
     HorizontalAlignment="Center"
     VerticalAlignment="Center"
     HorizontalContentAlignment="Center"
@@ -22,9 +22,9 @@
 
     <ui:PhToolButton.Styles>
         <Style Selector="ui|ToolbarButton">
-            <Setter Property="Height" Value="30" />
-            <Setter Property="MinWidth" Value="30" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="MinWidth" Value="26" />
+            <Setter Property="CornerRadius" Value="5.5" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -38,17 +38,17 @@
             </Setter>
         </Style>
         <Style Selector="ui|ToolbarButton:pointerover">
-            <Setter Property="Background" Value="#22FFFFFF" />
+            <Setter Property="Background" Value="#1CFFFFFF" />
         </Style>
         <Style Selector="ui|ToolbarButton:pressed">
-            <Setter Property="Background" Value="#35FFFFFF" />
+            <Setter Property="Background" Value="#2DFFFFFF" />
             <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
         <Style Selector="ui|ToolbarButton:checked">
-            <Setter Property="Background" Value="#2F80ED" />
+            <Setter Property="Background" Value="#2D7AF0" />
         </Style>
         <Style Selector="ui|ToolbarButton:disabled">
-            <Setter Property="Opacity" Value="0.4" />
+            <Setter Property="Opacity" Value="0.30" />
         </Style>
     </ui:PhToolButton.Styles>
     <StackPanel
@@ -59,8 +59,8 @@
 
         <Panel
             x:Name="PART_Icon"
-            Width="18"
-            Height="18"
+            Width="15.5"
+            Height="15.5"
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
             <Svg
@@ -68,7 +68,7 @@
                 Height="{Binding #PART_Icon.Height}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Opacity="0.95"
+                Opacity="0.92"
                 Path="{CompiledBinding ImagePath}" />
 
             <!--  placeholder for a button that runs something but has no icon  -->

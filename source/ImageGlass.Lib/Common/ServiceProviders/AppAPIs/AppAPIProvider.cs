@@ -859,27 +859,8 @@ public partial class AppAPIProvider
             var heading = moveToRecycleBin
                 ? Core.Lang[LangId.Menu_MnuMoveToRecycleBin_Description]
                 : Core.Lang[LangId.Menu_MnuDeleteFromHardDisk_Description];
-            var thumbnailIcon = moveToRecycleBin
-                ? StockIconId.RecycleBin
-                : StockIconId.Delete;
-
-            var modal = await ModalWindow.ShowWarningAsync(App.MainWindow, new ModalWindowOptions
-            {
-                Title = title,
-                Heading = heading,
-                Description = $"""
-                {filePath}
-                {Core.Photos.Current?.Metadata.FileSizeFormatted}
-                """,
-                IsRememberOptionVisible = true,
-                ThumbnailIcon = thumbnailIcon,
-                Thumbnail = Core.Photos.Current?.GalleryThumbnail,
-            }, ModalWindowButton.Yes_No);
-
-            // update remember confirm setting
-            Core.Config.EnableDeleteConfirmation = !modal.IsRememberOptionChecked;
-
-            canDelete = modal.ExitCode == DialogExitCode.OK;
+            canDelete = await App.MainWindow.ConfirmDeleteAsync(title, heading, filePath,
+                Core.Photos.Current?.Metadata.FileSizeFormatted);
         }
 
 

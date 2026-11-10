@@ -115,6 +115,8 @@ public partial class MainWindow : PhWindow
     private const double MIN_RESTORE_HEIGHT = 100;
 
     public MainWindowModel VM => (MainWindowModel)DataContext!;
+    public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
+        => PART_MainView.ConfirmDeleteAsync(title, heading, path, size);
 
     private void ResizeHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -140,8 +142,10 @@ public partial class MainWindow : PhWindow
 
         var pointer = this.PointToScreen(e.GetPosition(this));
         var scale = RenderScaling;
-        var dx = (pointer.X - _resizeStartPointer.X) / scale;
-        var dy = (pointer.Y - _resizeStartPointer.Y) / scale;
+        // A modest multiplier makes resizing cover more distance per drag.
+        const double resizeSensitivity = 1.5;
+        var dx = (pointer.X - _resizeStartPointer.X) / scale * resizeSensitivity;
+        var dy = (pointer.Y - _resizeStartPointer.Y) / scale * resizeSensitivity;
         var left = edge is WindowEdge.West or WindowEdge.NorthWest or WindowEdge.SouthWest;
         var right = edge is WindowEdge.East or WindowEdge.NorthEast or WindowEdge.SouthEast;
         var top = edge is WindowEdge.North or WindowEdge.NorthEast or WindowEdge.NorthWest;
@@ -339,6 +343,12 @@ public partial class MainWindow : PhWindow
         base.OnKeyDown(e);
         if (e.Handled) return;
 
+        if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsDeleteConfirmationOpen)
+        {
+            e.Handled = true;
+            PART_MainView.CloseDeleteConfirmation();
+            return;
+        }
         // Escape closes the image info overlay before any other action
         if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsImageInfoOverlayOpen)
         {
@@ -439,6 +449,7 @@ public partial class MainWindow : PhWindow
         PART_MainView.PART_CustomTitle.Text = VM.Title;
         PART_MainView.PART_ImageInfoOverlay.SetItems(items);
         PART_MainView.UpdateImageInfoOverlayIfOpen();
+        PART_MainView.UpdateBottomStatusBar();
     }
 
     internal void ToggleImageInfoWindow()

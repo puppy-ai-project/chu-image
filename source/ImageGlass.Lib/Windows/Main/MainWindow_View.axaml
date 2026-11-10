@@ -16,16 +16,95 @@
     x:Name="Root">
 
     <ui:PhControl.Resources>
-        <!--  Modern Studio Slate Gradient: 通透高质感工作台深灰垂直微渐变 (明快高雅，不沉闷死黑)  -->
+        <!--  顶部工作台渐变：轻盈温润石板灰  -->
         <LinearGradientBrush x:Key="WindowBarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#292929" Offset="0.0" />
-            <GradientStop Color="#222222" Offset="1.0" />
+            <GradientStop Color="#2C2E34" Offset="0.0" />
+            <GradientStop Color="#23252A" Offset="1.0" />
         </LinearGradientBrush>
-        <!--  Bottom Bar Gradient: 工作台深灰底部渐变  -->
+        <!--  底部控制栏渐变  -->
         <LinearGradientBrush x:Key="WindowBottomBarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#292929" Offset="0.0" />
-            <GradientStop Color="#222222" Offset="1.0" />
+            <GradientStop Color="#23252A" Offset="0.0" />
+            <GradientStop Color="#1D1F24" Offset="1.0" />
         </LinearGradientBrush>
+        <!--  弹窗光学顶高光玻璃描边 (顶部微光反射逐渐衰减)  -->
+        <LinearGradientBrush x:Key="ModalGlassBorderBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#36FFFFFF" Offset="0.0" />
+            <GradientStop Color="#16FFFFFF" Offset="0.45" />
+            <GradientStop Color="#0BFFFFFF" Offset="1.0" />
+        </LinearGradientBrush>
+        <!--  弹窗确认删除柔雅低饱和珊瑚红渐变 (与暗灰主调和谐融合)  -->
+        <LinearGradientBrush x:Key="DangerBtnGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#B83E3E" Offset="0.0" />
+            <GradientStop Color="#9E3232" Offset="1.0" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="DangerBtnHoverGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#C94B4B" Offset="0.0" />
+            <GradientStop Color="#AE3B3B" Offset="1.0" />
+        </LinearGradientBrush>
+        <!--  弹窗确认/完成温和沉稳蓝渐变  -->
+        <LinearGradientBrush x:Key="ModalAccentBtnGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#356BBF" Offset="0.0" />
+            <GradientStop Color="#2B59A1" Offset="1.0" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ModalAccentBtnHoverGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#407AD2" Offset="0.0" />
+            <GradientStop Color="#3368B8" Offset="1.0" />
+        </LinearGradientBrush>
+        <!--  弹窗专用干净按钮模板：彻底隔离全局 ButtonStyle.axaml 的浅色主题覆盖  -->
+        <ControlTemplate x:Key="ModalCleanButtonTemplate" TargetType="Button">
+            <Border
+                x:Name="PART_ModalBtnBorder"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+                <ContentPresenter
+                    x:Name="PART_ModalContentPresenter"
+                    Content="{TemplateBinding Content}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                    Foreground="{TemplateBinding Foreground}"
+                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+        </ControlTemplate>
+        <!--  弹窗专用干净复选框模板：彻底隔离 FluentTheme Light/Dark 对文字和底色在 hover/pressed 时发黑的干扰  -->
+        <ControlTemplate x:Key="ModalCleanCheckBoxTemplate" TargetType="CheckBox">
+            <Grid Background="Transparent" ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                <Border
+                    x:Name="PART_ModalCheckBox"
+                    Grid.Column="0"
+                    Width="15"
+                    Height="15"
+                    CornerRadius="4"
+                    BorderThickness="1.2"
+                    Background="#181A1F"
+                    BorderBrush="#4B505C"
+                    VerticalAlignment="Center">
+                    <Path
+                        x:Name="PART_ModalCheckMark"
+                        Width="9"
+                        Height="9"
+                        Data="M 1,4.5 L 3.5,7 L 8,1.5"
+                        Stroke="#FFFFFF"
+                        StrokeThickness="1.6"
+                        StrokeLineCap="Round"
+                        StrokeJoin="Round"
+                        Stretch="Uniform"
+                        Opacity="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center" />
+                </Border>
+                <ContentPresenter
+                    x:Name="PART_ModalCheckContent"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    Content="{TemplateBinding Content}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                    Foreground="{TemplateBinding Foreground}"
+                    VerticalAlignment="Center" />
+            </Grid>
+        </ControlTemplate>
     </ui:PhControl.Resources>
 
     <ui:PhControl.Styles>
@@ -36,11 +115,11 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <!--  macOS Traffic Light Window Buttons  -->
+        <!--  macOS Traffic Light Window Buttons (原生悬停淡入图标质感)  -->
         <Style Selector="Button.mac-win-btn">
-            <Setter Property="Width" Value="13" />
-            <Setter Property="Height" Value="13" />
-            <Setter Property="CornerRadius" Value="6.5" />
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="CornerRadius" Value="6" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -61,34 +140,34 @@
             <Setter Property="BorderBrush" Value="#E0443E" />
         </Style>
         <Style Selector="Button.mac-win-btn.close:pointerover">
-            <Setter Property="Background" Value="#FF7B73" />
+            <Setter Property="Background" Value="#FF736A" />
         </Style>
         <Style Selector="Button.mac-win-btn.minimize">
             <Setter Property="Background" Value="#FFBD2E" />
             <Setter Property="BorderBrush" Value="#DEA123" />
         </Style>
         <Style Selector="Button.mac-win-btn.minimize:pointerover">
-            <Setter Property="Background" Value="#FFCE54" />
+            <Setter Property="Background" Value="#FFCC4D" />
         </Style>
         <Style Selector="Button.mac-win-btn.maximize">
             <Setter Property="Background" Value="#27C93F" />
             <Setter Property="BorderBrush" Value="#1AAB29" />
         </Style>
         <Style Selector="Button.mac-win-btn.maximize:pointerover">
-            <Setter Property="Background" Value="#3DDA53" />
+            <Setter Property="Background" Value="#3BD852" />
         </Style>
 
-        <!-- macOS Traffic Light Icons -->
+        <!-- macOS Traffic Light Icons: 平时隐藏保持纯净圆点，悬停红绿灯组时同步淡入 -->
         <Style Selector="Button.mac-win-btn Path">
-            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Opacity" Value="0" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="StackPanel:pointerover Button.mac-win-btn Path">
-            <Setter Property="Opacity" Value="0.9" />
+        <Style Selector="StackPanel#PART_MacButtons:pointerover Button.mac-win-btn Path">
+            <Setter Property="Opacity" Value="0.82" />
         </Style>
         <Style Selector="Button.mac-win-btn:pointerover Path">
             <Setter Property="Opacity" Value="1.0" />
@@ -96,7 +175,7 @@
 
         <!--  Windows Caption Buttons  -->
         <Style Selector="Button.win-caption-btn">
-            <Setter Property="Width" Value="46" />
+            <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="NaN" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -107,13 +186,13 @@
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="Button.win-caption-btn:pointerover">
-            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralHoverBrush}" />
+            <Setter Property="Background" Value="#18FFFFFF" />
         </Style>
         <Style Selector="Button.win-caption-btn:pressed">
-            <Setter Property="Background" Value="{DynamicResource IG_BackgroundNeutralPressedBrush}" />
+            <Setter Property="Background" Value="#24FFFFFF" />
         </Style>
         <Style Selector="Button.win-caption-btn-close">
-            <Setter Property="Width" Value="46" />
+            <Setter Property="Width" Value="42" />
             <Setter Property="Height" Value="NaN" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -137,13 +216,15 @@
         </Style>
     </ui:PhControl.Styles>
 
-    <Grid RowDefinitions="Auto,*,Auto" Background="#202226">
-        <!--  Custom Title Bar  -->
+    <Grid RowDefinitions="Auto,*,Auto" Background="#1D1F24">
+        <!--  Custom Title Bar (纤巧精致的 38px 顶栏)  -->
         <Border
             x:Name="PART_CustomTitleBarBorder"
             Grid.Row="0"
-            Height="42"
-            Background="{StaticResource WindowBarGradient}">
+            Height="38"
+            Background="{StaticResource WindowBarGradient}"
+            BorderBrush="#12FFFFFF"
+            BorderThickness="0,0,0,1">
             <Grid
                 x:Name="PART_CustomTitleBar"
                 ColumnDefinitions="Auto,*,Auto"
@@ -161,35 +242,36 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8"
-                        Margin="14,0,12,0">
+                        Margin="14,0,10,0"
+                        Background="Transparent">
                         <Button Classes="mac-win-btn close" Background="#FF5F56" Click="CloseWindow_Click" ToolTip.Tip="关闭">
-                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#FF5F56">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#FF5F56">
                             <Path
-                                Width="7"
-                                Height="7"
-                                Data="M 1,1 L 6,6 M 6,1 L 1,6"
-                                Stroke="#400000"
+                                Width="6"
+                                Height="6"
+                                Data="M 1,1 L 5,5 M 5,1 L 1,5"
+                                Stroke="#4C0000"
                                 StrokeThickness="1.2"
                                 StrokeLineCap="Round"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
-                                                    </Border>
+                            </Border>
                         </Button>
                         <Button Classes="mac-win-btn minimize" Background="#FFBD2E" Click="MinimizeWindow_Click" ToolTip.Tip="最小化">
-                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#FFBD2E">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#FFBD2E">
                             <Path
-                                Width="7"
-                                Height="7"
-                                Data="M 0.5,3.5 L 6.5,3.5"
+                                Width="6"
+                                Height="6"
+                                Data="M 0.5,3 L 5.5,3"
                                 Stroke="#563D00"
                                 StrokeThickness="1.2"
                                 StrokeLineCap="Round"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
-                                                    </Border>
+                            </Border>
                         </Button>
                         <Button Classes="mac-win-btn maximize" Background="#27C93F" Click="MaximizeWindow_Click" ToolTip.Tip="最大化">
-                            <Border Width="13" Height="13" CornerRadius="6.5" Background="#27C93F">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#27C93F">
                             <Path
                                 Width="6"
                                 Height="6"
@@ -197,15 +279,15 @@
                                 Fill="#004D1A"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
-                                                    </Border>
+                            </Border>
                         </Button>
                     </StackPanel>
 
                     <!-- Windows App Icon -->
                     <Image
                         x:Name="PART_WinAppIcon"
-                        Width="16"
-                        Height="16"
+                        Width="15"
+                        Height="15"
                         Margin="12,0,8,0"
                         VerticalAlignment="Center"
                         Source="avares://ImageGlass.Lib/Assets/icon256.ico" />
@@ -216,9 +298,10 @@
                         x:Name="PART_CustomTitle"
                         VerticalAlignment="Center"
                         Margin="4,0,12,0"
-                        FontSize="12.5"
+                        FontSize="12"
                         FontWeight="Medium"
-                        Foreground="#F3F4F6"
+                        Foreground="#E5E7EB"
+                        Opacity="0.92"
                         TextTrimming="CharacterEllipsis"
                         MaxWidth="280"
                         IsHitTestVisible="False" />
@@ -369,33 +452,327 @@
                 ResizeDirection="Columns" />
         </Grid>
 
+        <!--  Bottom Bar: 左图像规格摘要 + 右精巧缩放组 (32px 高精密质感底栏)  -->
         <Border Grid.Row="2" Background="{StaticResource WindowBottomBarGradient}"
-                Padding="8,4" PointerPressed="BottomBar_PointerPressed">
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="6">
-                <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="28" Height="28" CornerRadius="6">
-                    <TextBlock Foreground="#F3F4F6" Text="−" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </ui:PhToolButton>
-                <Slider x:Name="PART_ZoomSlider" Width="260" Minimum="0" Maximum="1000"
-                        VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged">
-                    <Slider.Resources>
-                        <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
-                        <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />
-                        <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="#2563EB" />
-                    </Slider.Resources>
-                </Slider>
-                <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="28" Height="28" CornerRadius="6">
-                    <TextBlock Foreground="#F3F4F6" Text="+" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </ui:PhToolButton>
-                <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" Width="40" Height="28" CornerRadius="6">
-                    <TextBlock Foreground="#F3F4F6" Text="1:1" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </ui:PhToolButton>
-                <TextBlock Foreground="#F3F4F6" FontWeight="Medium" FontSize="12.5" x:Name="PART_ZoomPercentage" Width="58" VerticalAlignment="Center" TextAlignment="Right" />
-            </StackPanel>
+                BorderBrush="#12FFFFFF"
+                BorderThickness="0,1,0,0"
+                Height="32"
+                Padding="14,0" PointerPressed="BottomBar_PointerPressed">
+            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                <!-- 左侧图片摘要微信息条 -->
+                <StackPanel x:Name="PART_StatusGroup" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="False">
+                    <Border Background="#12FFFFFF" CornerRadius="4" Padding="6,1.5" VerticalAlignment="Center">
+                        <TextBlock x:Name="PART_StatusIndex" Foreground="#D1D5DB" FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                    <Border x:Name="PART_StatusFormatBadge" Background="#1E3B82F6" BorderBrush="#333B82F6" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                        <TextBlock x:Name="PART_StatusFormat" Foreground="#93C5FD" FontSize="10" FontWeight="Bold" />
+                    </Border>
+                    <TextBlock x:Name="PART_StatusSpecs" Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- 右侧缩放控制组 -->
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                    <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="24" Height="24" CornerRadius="5" Padding="0">
+                        <TextBlock Foreground="#D1D5DB" Text="−" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ui:PhToolButton>
+                    <Slider x:Name="PART_ZoomSlider" Width="180" Minimum="0" Maximum="1000"
+                            VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged">
+                        <Slider.Resources>
+                            <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="#2563EB" />
+                        </Slider.Resources>
+                    </Slider>
+                    <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="24" Height="24" CornerRadius="5" Padding="0">
+                        <TextBlock Foreground="#D1D5DB" Text="+" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ui:PhToolButton>
+                    <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" MinWidth="34" Height="22" Padding="6,0" CornerRadius="5" Background="#0DFFFFFF" BorderBrush="#18FFFFFF" BorderThickness="1">
+                        <TextBlock Foreground="#E5E7EB" Text="1:1" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ui:PhToolButton>
+                    <TextBlock Foreground="#D1D5DB" FontWeight="Medium" FontSize="11.5" x:Name="PART_ZoomPercentage" Width="46" VerticalAlignment="Center" TextAlignment="Right" />
+                </StackPanel>
+            </Grid>
         </Border>
 
 
         <!--  ======================================================  -->
-        <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层)               -->
+        <!--  DELETE CONFIRMATION MODAL OVERLAY (精巧分层式删除确认弹窗)  -->
+        <!--  ======================================================  -->
+        <Grid x:Name="PART_DeleteModal" Grid.Row="0" Grid.RowSpan="3" IsVisible="False" ZIndex="1100">
+            <Grid.Styles>
+                <!--  精巧 15x15 复选框样式 (使用纯净隔离模板，悬停高亮柔和不再变黑)  -->
+                <Style Selector="CheckBox#PART_DeleteRemember">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanCheckBoxTemplate}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#9CA3AF" />
+                    <Setter Property="FontSize" Value="12" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="MinHeight" Value="20" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:pointerover">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#E5E7EB" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:pressed">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked">
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked:pointerover">
+                    <Setter Property="Foreground" Value="#F3F4F6" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked:pressed">
+                    <Setter Property="Foreground" Value="#E5E7EB" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:unchecked /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#181A1F" />
+                    <Setter Property="BorderBrush" Value="#4B505C" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:unchecked:pointerover /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#242730" />
+                    <Setter Property="BorderBrush" Value="#7B8294" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:unchecked:pressed /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#1D1F26" />
+                    <Setter Property="BorderBrush" Value="#606778" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#356BBF" />
+                    <Setter Property="BorderBrush" Value="#4A85E0" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked:pointerover /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#407AD2" />
+                    <Setter Property="BorderBrush" Value="#669DF6" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked:pressed /template/ Border#PART_ModalCheckBox">
+                    <Setter Property="Background" Value="#2B59A1" />
+                    <Setter Property="BorderBrush" Value="#356BBF" />
+                </Style>
+                <Style Selector="CheckBox#PART_DeleteRemember:checked /template/ Path#PART_ModalCheckMark">
+                    <Setter Property="Opacity" Value="1" />
+                </Style>
+
+                <!--  右上角微型关闭钮 (干净透明模板，和谐隐融不突兀)  -->
+                <Style Selector="Button#PART_BtnCloseDeleteModal">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Width" Value="24" />
+                    <Setter Property="Height" Value="24" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseDeleteModal:pointerover">
+                    <Setter Property="Background" Value="#14FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseDeleteModal:pressed">
+                    <Setter Property="Background" Value="#20FFFFFF" />
+                </Style>
+
+                <!--  次要按钮：取消 (承接主深灰同色系，柔和统一)  -->
+                <Style Selector="Button#PART_DeleteCancel">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="#282B33" />
+                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="FontSize" Value="12.5" />
+                    <Setter Property="FontWeight" Value="Medium" />
+                    <Setter Property="MinWidth" Value="74" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="CornerRadius" Value="7" />
+                    <Setter Property="Padding" Value="14,0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_DeleteCancel:pointerover">
+                    <Setter Property="Background" Value="#323640" />
+                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                    <Setter Property="Foreground" Value="#F3F4F6" />
+                </Style>
+                <Style Selector="Button#PART_DeleteCancel:pressed">
+                    <Setter Property="Background" Value="#22252C" />
+                    <Setter Property="BorderBrush" Value="#12FFFFFF" />
+                </Style>
+
+                <!--  主危险按钮：是 (低饱和柔和暗珊瑚红，不再刺眼突兀)  -->
+                <Style Selector="Button#PART_DeleteConfirm">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="{StaticResource DangerBtnGradient}" />
+                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="FontSize" Value="12.5" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="MinWidth" Value="82" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="CornerRadius" Value="7" />
+                    <Setter Property="Padding" Value="16,0" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_DeleteConfirm:pointerover">
+                    <Setter Property="Background" Value="{StaticResource DangerBtnHoverGradient}" />
+                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_DeleteConfirm:pressed">
+                    <Setter Property="Background" Value="#8D2A2A" />
+                    <Setter Property="BorderBrush" Value="#18FFFFFF" />
+                </Style>
+            </Grid.Styles>
+
+            <!--  全屏柔暗压光遮罩  -->
+            <Border Background="#7A000000" PointerPressed="DeleteBackdrop_PointerPressed" />
+
+            <!--  精巧立体弹窗卡片 (396px 宽，顶光学高光描边 + 分层底座)  -->
+            <Border
+                Width="396"
+                MaxWidth="420"
+                Margin="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BorderBrush="{StaticResource ModalGlassBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                ClipToBounds="True"
+                BoxShadow="0 24 64 0 #B3000000">
+                <Grid RowDefinitions="*,Auto">
+                    <!--  上部内容主体  -->
+                    <Border Grid.Row="0" Padding="20,20,20,16">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#292C33" Offset="0.0" />
+                                <GradientStop Color="#23252B" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <StackPanel Spacing="14">
+                            <!--  头部：圆角 Squircle 警示微徽章 + 标题与描述 + 关闭钮  -->
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border
+                                    Grid.Column="0"
+                                    Width="34"
+                                    Height="34"
+                                    CornerRadius="9"
+                                    Background="#1EEF4444"
+                                    BorderBrush="#38EF4444"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Top">
+                                    <Path
+                                        Width="15"
+                                        Height="15"
+                                        Data="M6.442 2.5a2 2 0 0 1 2-2h3.046a2 2 0 0 1 2 2v.314c0 .036-.003.07-.01.105h4.952a.5.5 0 1 1 0 1h-.764l-1.558 13.507a2.5 2.5 0 0 1-2.484 2.214H6.306a2.5 2.5 0 0 1-2.484-2.214L2.264 3.92H1.5a.5.5 0 0 1 0-1h4.953a.502.502 0 0 1-.011-.105V2.5Zm.989.419h5.068a.501.501 0 0 1-.01-.105V2.5a1 1 0 0 0-1-1H8.441a1 1 0 0 0-1 1v.314c0 .036-.004.07-.011.105Zm-4.16 1L4.815 17.31a1.5 1.5 0 0 0 1.49 1.329h7.318a1.5 1.5 0 0 0 1.49-1.329L16.66 3.92H3.27Zm5.38 3.337a.5.5 0 1 0-1 0v7.256a.5.5 0 0 0 1 0V7.256Zm3.128-.5a.5.5 0 0 1 .5.5v7.256a.5.5 0 0 1-1 0V7.256a.5.5 0 0 1 .5-.5Z"
+                                        Fill="#F87171"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" Margin="12,0,6,0" Spacing="3" VerticalAlignment="Center">
+                                    <TextBlock
+                                        x:Name="PART_DeleteTitle"
+                                        Foreground="#F3F4F6"
+                                        FontSize="14.5"
+                                        FontWeight="SemiBold"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        x:Name="PART_DeleteHeading"
+                                        Foreground="#9CA3AF"
+                                        FontSize="12.5"
+                                        LineHeight="17.5"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <Button
+                                    x:Name="PART_BtnCloseDeleteModal"
+                                    Classes="link"
+                                    Grid.Column="2"
+                                    VerticalAlignment="Top"
+                                    Click="DeleteCancel_Click">
+                                    <Path
+                                        Width="9.5"
+                                        Height="9.5"
+                                        Data="{StaticResource IconClose}"
+                                        Fill="#8E95A2"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Button>
+                            </Grid>
+
+                            <!--  内嵌文件信息胶囊槽 (拆分高亮文件名与次要路径体积)  -->
+                            <Border
+                                Background="#191B20"
+                                BorderBrush="#10FFFFFF"
+                                BorderThickness="1"
+                                CornerRadius="9"
+                                Padding="11,10">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Border
+                                        Grid.Column="0"
+                                        Width="30"
+                                        Height="30"
+                                        CornerRadius="7"
+                                        Background="#242730"
+                                        BorderBrush="#0DFFFFFF"
+                                        BorderThickness="1"
+                                        VerticalAlignment="Center">
+                                        <Path
+                                            Width="14.5"
+                                            Height="14.5"
+                                            Data="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm14 0H6v10.586l3.293-3.293a1 1 0 0 1 1.414 0L14 15.586l1.293-1.293a1 1 0 0 1 1.414 0L18 15.586V5Zm0 13.414-2-2-1.293 1.293a1 1 0 0 1-1.414 0L10 14.414l-4 4V19h12v-.586ZM15.5 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                                            Fill="#60A5FA"
+                                            Stretch="Uniform"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2.5" VerticalAlignment="Center">
+                                        <TextBlock
+                                            x:Name="PART_DeleteFileName"
+                                            Foreground="#F3F4F6"
+                                            FontSize="12.5"
+                                            FontWeight="Medium"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            x:Name="PART_DeletePath"
+                                            Foreground="#8B92A0"
+                                            FontSize="11"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!--  不再提示选项  -->
+                            <CheckBox x:Name="PART_DeleteRemember" Margin="2,0,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!--  下部独立沉稳动作底座  -->
+                    <Border
+                        Grid.Row="1"
+                        Background="#1C1E23"
+                        BorderBrush="#10FFFFFF"
+                        BorderThickness="0,1,0,0"
+                        Padding="20,12">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button x:Name="PART_DeleteCancel" Classes="link" Click="DeleteCancel_Click" />
+                            <Button x:Name="PART_DeleteConfirm" Classes="link" Click="DeleteConfirm_Click" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!--  ======================================================  -->
+        <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层 - 精工统一暗色风格) -->
         <!--  ======================================================  -->
         <Grid
             x:Name="PART_ImageInfoModal"
@@ -403,45 +780,152 @@
             Grid.RowSpan="3"
             IsVisible="False"
             ZIndex="1000">
+            <Grid.Styles>
+                <!-- 复制按钮 -->
+                <Style Selector="Button#PART_BtnCopyImageInfo">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="#282B33" />
+                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Height" Value="26" />
+                    <Setter Property="Padding" Value="10,0" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnCopyImageInfo:pointerover">
+                    <Setter Property="Background" Value="#323640" />
+                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnCopyImageInfo:pressed">
+                    <Setter Property="Background" Value="#22252C" />
+                </Style>
+
+                <!-- 关闭按钮 -->
+                <Style Selector="Button#PART_BtnCloseImageInfo">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Width" Value="26" />
+                    <Setter Property="Height" Value="26" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseImageInfo:pointerover">
+                    <Setter Property="Background" Value="#14FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnCloseImageInfo:pressed">
+                    <Setter Property="Background" Value="#20FFFFFF" />
+                </Style>
+
+                <!-- 打开文件夹按钮 -->
+                <Style Selector="Button#PART_BtnOpenFolder">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="#282B33" />
+                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Height" Value="28" />
+                    <Setter Property="Padding" Value="10,0" />
+                    <Setter Property="CornerRadius" Value="6" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnOpenFolder:pointerover">
+                    <Setter Property="Background" Value="#323640" />
+                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnOpenFolder:pressed">
+                    <Setter Property="Background" Value="#22252C" />
+                </Style>
+
+                <!-- 完成按钮 -->
+                <Style Selector="Button#PART_BtnDoneImageInfo">
+                    <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
+                    <Setter Property="Background" Value="{StaticResource ModalAccentBtnGradient}" />
+                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="MinWidth" Value="76" />
+                    <Setter Property="Height" Value="28" />
+                    <Setter Property="Padding" Value="16,0" />
+                    <Setter Property="CornerRadius" Value="7" />
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Button#PART_BtnDoneImageInfo:pointerover">
+                    <Setter Property="Background" Value="{StaticResource ModalAccentBtnHoverGradient}" />
+                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                </Style>
+                <Style Selector="Button#PART_BtnDoneImageInfo:pressed">
+                    <Setter Property="Background" Value="#224987" />
+                </Style>
+            </Grid.Styles>
 
             <!--  Frosted Mask / Backdrop (点击背景关闭)  -->
             <Border
                 x:Name="PART_ImageInfoBackdrop"
-                Background="#66000000"
+                Background="#7A000000"
                 PointerPressed="ImageInfoBackdrop_PointerPressed" />
 
             <!--  Centered Floating Metadata Card  -->
             <Border
-                MaxWidth="500"
-                Margin="12"
-                MaxHeight="600"
-                HorizontalAlignment="Stretch"
+                Width="460"
+                MaxWidth="480"
+                Margin="16"
+                MaxHeight="580"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="{DynamicResource IG_ThemeBackgroundBrush}"
-                BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                BorderBrush="{StaticResource ModalGlassBorderBrush}"
                 BorderThickness="1"
-                BoxShadow="0 14 40 0 #50000000"
-                CornerRadius="16"
+                BoxShadow="0 24 64 0 #B3000000"
+                CornerRadius="14"
                 ClipToBounds="True">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#292C33" Offset="0.0" />
+                        <GradientStop Color="#23252B" Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
+
                 <Grid RowDefinitions="Auto,*,Auto">
 
                     <!--  Card Header  -->
                     <Border
                         Grid.Row="0"
-                        Padding="18,14"
-                        BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                        Padding="18,13"
+                        BorderBrush="#10FFFFFF"
                         BorderThickness="0,0,0,1">
                         <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <Path
-                                    Width="18"
-                                    Height="18"
-                                    Data="{StaticResource IconInfo}"
-                                    Fill="{DynamicResource PhAccentFill}"
-                                    Stretch="Uniform" />
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                <Border
+                                    Width="28"
+                                    Height="28"
+                                    CornerRadius="7"
+                                    Background="#1E3B82F6"
+                                    BorderBrush="#333B82F6"
+                                    BorderThickness="1">
+                                    <Path
+                                        Width="14"
+                                        Height="14"
+                                        Data="{StaticResource IconInfo}"
+                                        Fill="#60A5FA"
+                                        Stretch="Uniform"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                                </Border>
                                 <TextBlock
-                                    FontSize="15"
+                                    FontSize="14.5"
                                     FontWeight="SemiBold"
+                                    Foreground="#F3F4F6"
                                     VerticalAlignment="Center"
                                     Text="图片信息" />
                             </StackPanel>
@@ -450,42 +934,37 @@
                             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
                                 <Button
                                     x:Name="PART_BtnCopyImageInfo"
-                                    Padding="10,5"
+                                    Classes="link"
                                     Click="BtnCopyImageInfo_Click"
-                                    Background="Transparent"
-                                    BorderThickness="1"
-                                    BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
-                                    CornerRadius="6"
                                     ToolTip.Tip="复制全部图片信息">
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <Path
-                                            Width="12"
-                                            Height="12"
+                                            Width="11.5"
+                                            Height="11.5"
                                             VerticalAlignment="Center"
                                             Data="{StaticResource IconCopy}"
-                                            Fill="{DynamicResource TextControlForeground}"
+                                            Fill="#D1D5DB"
                                             Stretch="Uniform" />
                                         <TextBlock
                                             x:Name="PART_TxtCopyImageInfo"
-                                            FontSize="11"
+                                            FontSize="11.5"
+                                            Foreground="#D1D5DB"
                                             VerticalAlignment="Center"
                                             Text="复制" />
                                     </StackPanel>
                                 </Button>
 
                                 <Button
-                                    Padding="6"
-                                    Click="BtnCloseImageInfo_Click"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    CornerRadius="6">
+                                    x:Name="PART_BtnCloseImageInfo"
+                                    Classes="link"
+                                    Click="BtnCloseImageInfo_Click">
                                     <Path
-                                        Width="12"
-                                        Height="12"
+                                        Width="9.5"
+                                        Height="9.5"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Data="{StaticResource IconClose}"
-                                        Fill="{DynamicResource TextControlForeground}"
+                                        Fill="#8E95A2"
                                         Stretch="Uniform" />
                                 </Button>
                             </StackPanel>
@@ -494,66 +973,69 @@
 
                     <!--  Card Body (Scrollable)  -->
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="18,14" Spacing="14">
+                        <StackPanel Margin="18,14" Spacing="13">
 
                             <!-- Overview Card (文件名与徽标) -->
                             <Border
-                                Padding="14,12"
-                                Background="{DynamicResource IG_BackgroundNeutralBrush}"
-                                CornerRadius="10">
-                                <StackPanel Spacing="10">
+                                Padding="13,11"
+                                Background="#191B20"
+                                BorderBrush="#10FFFFFF"
+                                BorderThickness="1"
+                                CornerRadius="9">
+                                <StackPanel Spacing="9">
                                     <SelectableTextBlock
                                         x:Name="PART_InfoFileName"
-                                        FontSize="14"
+                                        FontSize="13.5"
                                         FontWeight="SemiBold"
+                                        Foreground="#F3F4F6"
                                         TextWrapping="Wrap" />
 
                                     <!-- Chips / Badges Row -->
                                     <WrapPanel Orientation="Horizontal">
                                         <!-- Format Chip -->
-                                        <Border x:Name="PART_ChipFormat" Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource PhAccentFill}" CornerRadius="6">
-                                            <TextBlock x:Name="PART_InfoFormatText" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentButtonForeground}" />
+                                        <Border x:Name="PART_ChipFormat" Margin="0,0,6,0" Padding="7,2.5" Background="#243B82F6" BorderBrush="#403B82F6" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoFormatText" FontSize="10.5" FontWeight="Bold" Foreground="#93C5FD" />
                                         </Border>
                                         <!-- Dimensions Chip -->
-                                        <Border Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
-                                            <TextBlock x:Name="PART_InfoDimensionsText" FontSize="11" FontWeight="Medium" />
+                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoDimensionsText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
                                         </Border>
                                         <!-- Megapixels Chip -->
-                                        <Border x:Name="PART_ChipMegapixels" Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
-                                            <TextBlock x:Name="PART_InfoMegapixelsText" FontSize="11" FontWeight="Medium" />
+                                        <Border x:Name="PART_ChipMegapixels" Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoMegapixelsText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
                                         </Border>
                                         <!-- File Size Chip -->
-                                        <Border Margin="0,0,6,6" Padding="8,3" Background="{DynamicResource IG_BorderNeutralBrush}" CornerRadius="6">
-                                            <TextBlock x:Name="PART_InfoFileSizeText" FontSize="11" FontWeight="Medium" />
+                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoFileSizeText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
                                         </Border>
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
 
                             <!-- EXIF / Shooting Parameters (拍照参数, if available) -->
-                            <StackPanel x:Name="PART_SectionExif" Spacing="8">
-                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="拍摄参数 (EXIF)" />
-                                <Border Padding="12" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
-                                    <StackPanel Spacing="8">
+                            <StackPanel x:Name="PART_SectionExif" Spacing="6">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="拍摄参数 (EXIF)" />
+                                <Border Padding="12,10" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                    <StackPanel Spacing="9">
                                         <!-- Camera Model -->
-                                        <TextBlock x:Name="PART_InfoCameraModel" FontSize="13" FontWeight="Medium" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="PART_InfoCameraModel" FontSize="12.5" FontWeight="Medium" Foreground="#E5E7EB" TextWrapping="Wrap" />
                                         <!-- Exposure 4-col Grid -->
-                                        <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
+                                        <Grid ColumnDefinitions="*,*,*,*" Margin="0,2,0,0">
                                             <StackPanel Grid.Column="0" Spacing="2">
-                                                <TextBlock FontSize="10" Opacity="0.6" Text="光圈" />
-                                                <TextBlock x:Name="PART_InfoAperture" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="光圈" />
+                                                <TextBlock x:Name="PART_InfoAperture" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Spacing="2">
-                                                <TextBlock FontSize="10" Opacity="0.6" Text="快门" />
-                                                <TextBlock x:Name="PART_InfoShutter" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="快门" />
+                                                <TextBlock x:Name="PART_InfoShutter" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Spacing="2">
-                                                <TextBlock FontSize="10" Opacity="0.6" Text="感光度" />
-                                                <TextBlock x:Name="PART_InfoIso" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="感光度" />
+                                                <TextBlock x:Name="PART_InfoIso" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="3" Spacing="2">
-                                                <TextBlock FontSize="10" Opacity="0.6" Text="焦距" />
-                                                <TextBlock x:Name="PART_InfoFocalLength" FontSize="13" FontWeight="SemiBold" />
+                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="焦距" />
+                                                <TextBlock x:Name="PART_InfoFocalLength" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
@@ -561,53 +1043,53 @@
                             </StackPanel>
 
                             <!-- Image Details (色彩、分辨率、帧数) -->
-                            <StackPanel Spacing="8">
-                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="图像规格" />
-                                <Border Padding="12,8" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
-                                    <StackPanel Spacing="8">
+                            <StackPanel Spacing="6">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="图像规格" />
+                                <Border Padding="12,9" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                    <StackPanel Spacing="7">
                                         <!-- Color Space -->
-                                        <Grid ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="色彩空间" />
-                                            <SelectableTextBlock x:Name="PART_InfoColorSpace" Grid.Column="1" FontSize="12" />
+                                        <Grid ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="色彩空间" />
+                                            <SelectableTextBlock x:Name="PART_InfoColorSpace" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                         <!-- DPI -->
-                                        <Grid ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="分辨率" />
-                                            <SelectableTextBlock x:Name="PART_InfoDpi" Grid.Column="1" FontSize="12" />
+                                        <Grid ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="分辨率" />
+                                            <SelectableTextBlock x:Name="PART_InfoDpi" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                         <!-- Frames -->
-                                        <Grid x:Name="PART_RowFrames" ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="帧数" />
-                                            <SelectableTextBlock x:Name="PART_InfoFrames" Grid.Column="1" FontSize="12" />
+                                        <Grid x:Name="PART_RowFrames" ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="帧数" />
+                                            <SelectableTextBlock x:Name="PART_InfoFrames" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                         <!-- HDR / Live -->
-                                        <Grid x:Name="PART_RowHdr" ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="特性" />
-                                            <SelectableTextBlock x:Name="PART_InfoFeatures" Grid.Column="1" FontSize="12" />
+                                        <Grid x:Name="PART_RowHdr" ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="特性" />
+                                            <SelectableTextBlock x:Name="PART_InfoFeatures" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
 
                             <!-- Storage & Dates (时间与路径) -->
-                            <StackPanel Spacing="8">
-                                <TextBlock FontSize="12" FontWeight="SemiBold" Opacity="0.6" Text="时间与存储" />
-                                <Border Padding="12,8" Background="{DynamicResource IG_BackgroundNeutralBrush}" CornerRadius="10">
-                                    <StackPanel Spacing="8">
+                            <StackPanel Spacing="6">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="时间与存储" />
+                                <Border Padding="12,9" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                    <StackPanel Spacing="7">
                                         <!-- Date Taken / Created -->
-                                        <Grid ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="拍摄/创建" />
-                                            <SelectableTextBlock x:Name="PART_InfoDateCreated" Grid.Column="1" FontSize="12" />
+                                        <Grid ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="拍摄/创建" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateCreated" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                         <!-- Date Modified -->
-                                        <Grid ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="修改时间" />
-                                            <SelectableTextBlock x:Name="PART_InfoDateModified" Grid.Column="1" FontSize="12" />
+                                        <Grid ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="修改时间" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateModified" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
                                         </Grid>
                                         <!-- File Path -->
-                                        <Grid ColumnDefinitions="100, *">
-                                            <TextBlock Grid.Column="0" FontSize="12" Opacity="0.6" Text="文件路径" />
-                                            <SelectableTextBlock x:Name="PART_InfoFilePath" Grid.Column="1" FontSize="11" TextWrapping="Wrap" />
+                                        <Grid ColumnDefinitions="92, *">
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="文件路径" />
+                                            <SelectableTextBlock x:Name="PART_InfoFilePath" Grid.Column="1" FontSize="11" Foreground="#D1D5DB" TextWrapping="Wrap" />
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -616,43 +1098,42 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <!--  Card Footer  -->
+                    <!--  Card Footer (沉稳独立底座)  -->
                     <Border
                         Grid.Row="2"
-                        Padding="18,10"
-                        BorderBrush="{DynamicResource IG_BorderNeutralBrush}"
+                        Background="#1C1E23"
+                        Padding="18,11"
+                        BorderBrush="#10FFFFFF"
                         BorderThickness="0,1,0,0">
                         <Grid ColumnDefinitions="*, Auto">
                             <Button
                                 x:Name="PART_BtnOpenFolder"
+                                Classes="link"
                                 Grid.Column="0"
-                                Padding="8,5"
-                                Click="BtnOpenFolder_Click"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                CornerRadius="6">
+                                HorizontalAlignment="Left"
+                                Click="BtnOpenFolder_Click">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path
-                                        Width="14"
-                                        Height="14"
+                                        Width="12.5"
+                                        Height="12.5"
                                         VerticalAlignment="Center"
                                         Data="{StaticResource IconFolderOpen}"
-                                        Fill="{DynamicResource TextControlForeground}"
+                                        Fill="#D1D5DB"
                                         Stretch="Uniform" />
                                     <TextBlock
                                         FontSize="12"
+                                        Foreground="#D1D5DB"
                                         VerticalAlignment="Center"
                                         Text="打开所在文件夹" />
                                 </StackPanel>
                             </Button>
 
                             <Button
+                                x:Name="PART_BtnDoneImageInfo"
+                                Classes="link"
                                 Grid.Column="1"
-                                Padding="16,6"
-                                Click="BtnCloseImageInfo_Click"
-                                Classes="accent"
-                                CornerRadius="6">
-                                <TextBlock FontSize="12" FontWeight="SemiBold" Text="完成" />
+                                Click="BtnCloseImageInfo_Click">
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#F9FAFB" Text="完成" />
                             </Button>
                         </Grid>
                     </Border>

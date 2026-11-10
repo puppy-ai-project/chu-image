@@ -387,13 +387,19 @@ public partial class ToolbarControl : PhControl
         int primaryIndex = -1;
         int secondaryIndex = -1;
 
-        foreach (var vm in ItemsSource)
+        var items = ItemsSource.ToList();
+        if (!items.Any(item => item.Id == "Btn_Delete"))
+        {
+            var delete = Config.BuiltInToolbarItems.First(item => item.Id == "Btn_Delete");
+            items.Add(delete);
+        }
+        foreach (var vm in items)
         {
             srcIndex++;
             vm.SourceIndex = srcIndex;
 
             // Keep these tools hidden even when they are present in a saved layout.
-            if (vm.Id is "Btn_Delete" or "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker"
+            if (vm.Id is "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker"
                 or "Btn_ZoomIn" or "Btn_ZoomOut" or "Btn_ActualSize") continue;
 
 

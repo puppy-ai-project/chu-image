@@ -53,6 +53,84 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindowView : PhControl
 {
+    private TaskCompletionSource<bool>? _deleteConfirmation;
+    public bool IsDeleteConfirmationOpen => _deleteConfirmation != null;
+    public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
+    {
+        if (_deleteConfirmation != null) return Task.FromResult(false);
+        _deleteConfirmation = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        PART_DeleteTitle.Text = title;
+        PART_DeleteHeading.Text = heading;
+
+        var fileName = Path.GetFileName(path);
+        var folder = Path.GetDirectoryName(path);
+        PART_DeleteFileName.Text = string.IsNullOrWhiteSpace(fileName) ? path : fileName;
+
+        var metaParts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(folder)) metaParts.Add(folder);
+        if (!string.IsNullOrWhiteSpace(size)) metaParts.Add(size);
+        PART_DeletePath.Text = string.Join("  ·  ", metaParts);
+
+        PART_DeleteRemember.IsChecked = false;
+        PART_DeleteRemember.Content = Core.Lang[LangId._DoNotShowThisMessageAgain];
+        PART_DeleteCancel.Content = Core.Lang[LangId._Cancel];
+        PART_DeleteConfirm.Content = Core.Lang[LangId._Yes];
+        PART_DeleteModal.IsVisible = true;
+        PART_DeleteCancel.Focus(NavigationMethod.Pointer);
+        return _deleteConfirmation.Task;
+    }
+
+    public void UpdateBottomStatusBar()
+    {
+        var count = Core.Photos.Count;
+        var index = Core.Photos.CurrentIndex;
+        if (count == 0)
+        {
+            PART_StatusGroup.IsVisible = false;
+            return;
+        }
+
+        PART_StatusGroup.IsVisible = true;
+        PART_StatusIndex.Text = $"{index + 1} / {count}";
+
+        var meta = Core.Photos.Current?.Metadata;
+        if (Core.ClipboardImage is { } clip)
+        {
+            PART_StatusFormatBadge.IsVisible = true;
+            PART_StatusFormat.Text = "CLIP";
+            PART_StatusSpecs.Text = $"{clip.Width} × {clip.Height}";
+        }
+        else if (meta is not null)
+        {
+            var ext = meta.FileExtension.TrimStart('.').ToUpperInvariant();
+            PART_StatusFormatBadge.IsVisible = !string.IsNullOrWhiteSpace(ext);
+            PART_StatusFormat.Text = ext;
+
+            var w = meta.Width > 0 ? meta.Width : meta.OriginalWidth;
+            var h = meta.Height > 0 ? meta.Height : meta.OriginalHeight;
+            var parts = new List<string>();
+            if (w > 0 && h > 0) parts.Add($"{w} × {h}");
+            if (!string.IsNullOrWhiteSpace(meta.FileSizeFormatted)) parts.Add(meta.FileSizeFormatted);
+            PART_StatusSpecs.Text = string.Join("  ·  ", parts);
+        }
+        else
+        {
+            PART_StatusFormatBadge.IsVisible = false;
+            PART_StatusSpecs.Text = string.Empty;
+        }
+    }
+    public void CloseDeleteConfirmation(bool confirmed = false)
+    {
+        var pending = _deleteConfirmation;
+        if (pending == null) return;
+        if (confirmed && PART_DeleteRemember.IsChecked == true) Core.Config.EnableDeleteConfirmation = false;
+        _deleteConfirmation = null;
+        PART_DeleteModal.IsVisible = false;
+        pending.TrySetResult(confirmed);
+    }
+    private void DeleteCancel_Click(object? sender, RoutedEventArgs e) => CloseDeleteConfirmation();
+    private void DeleteConfirm_Click(object? sender, RoutedEventArgs e) => CloseDeleteConfirmation(true);
+    private void DeleteBackdrop_PointerPressed(object? sender, PointerPressedEventArgs e) => CloseDeleteConfirmation();
     private bool _updatingZoomSlider;
 
     private void UpdateZoomSlider()
