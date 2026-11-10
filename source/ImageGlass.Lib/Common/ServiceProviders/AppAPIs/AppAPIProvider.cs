@@ -1906,17 +1906,7 @@ public partial class AppAPIProvider
 
         var degree = options == RotateOption.Left ? -90 : 90;
 
-        // the viewer composed the click onto its orientation, which Save applies as is
-        if (Viewer.RotateImage(degree))
-        {
-            Core.ImageTransform.Orientation = Viewer.PhotoOrientation;
-        }
-        else
-        {
-            _ = Message.ShowAsync(
-                Core.Lang[LangId._InvalidAction_Transformation],
-                Core.Lang[LangId._InvalidAction]);
-        }
+        Viewer.SetDisplayRotation(Viewer.DisplayRotation + degree);
     }
 
 

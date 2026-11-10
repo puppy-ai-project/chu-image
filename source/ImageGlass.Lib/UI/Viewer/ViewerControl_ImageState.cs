@@ -29,6 +29,19 @@ namespace ImageGlass.UI.Viewer;
 
 public partial class ViewerControl
 {
+    private double _displayRotation;
+    public double DisplayRotation => _displayRotation;
+    public event EventHandler? DisplayRotationChanged;
+    public void SetDisplayRotation(double angle)
+    {
+        var requestedAngle = angle;
+        angle = ((angle % 360) + 360) % 360;
+        if (angle == 0 && requestedAngle > 0) angle = 360;
+        if (Math.Abs(_displayRotation - angle) < 0.001) return;
+        _displayRotation = angle;
+        InvalidateVisual();
+        DisplayRotationChanged?.Invoke(this, EventArgs.Empty);
+    }
     /// <summary>
     /// Gets the orientation the photo is shown in, composed by <see cref="RotateImage"/> and <see cref="FlipImage"/>.
     /// </summary>

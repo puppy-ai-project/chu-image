@@ -53,6 +53,21 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindowView : PhControl
 {
+    private bool _updatingRotation;
+    private void RotationSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        if (_updatingRotation || !IsLoaded) return;
+        PART_Viewer.SetDisplayRotation(e.NewValue);
+        PART_RotationValue.Text = $"{e.NewValue:0}°";
+    }
+    private void RotationReset_Click(object? sender, RoutedEventArgs e) => PART_Viewer.SetDisplayRotation(0);
+    private void Viewer_DisplayRotationChanged(object? sender, EventArgs e)
+    {
+        _updatingRotation = true;
+        PART_RotationSlider.Value = PART_Viewer.DisplayRotation;
+        PART_RotationValue.Text = $"{PART_Viewer.DisplayRotation:0}°";
+        _updatingRotation = false;
+    }
     private TaskCompletionSource<bool>? _deleteConfirmation;
     public bool IsDeleteConfirmationOpen => _deleteConfirmation != null;
     public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
@@ -96,16 +111,10 @@ public partial class MainWindowView : PhControl
         var meta = Core.Photos.Current?.Metadata;
         if (Core.ClipboardImage is { } clip)
         {
-            PART_StatusFormatBadge.IsVisible = true;
-            PART_StatusFormat.Text = "CLIP";
             PART_StatusSpecs.Text = $"{clip.Width} × {clip.Height}";
         }
         else if (meta is not null)
         {
-            var ext = meta.FileExtension.TrimStart('.').ToUpperInvariant();
-            PART_StatusFormatBadge.IsVisible = !string.IsNullOrWhiteSpace(ext);
-            PART_StatusFormat.Text = ext;
-
             var w = meta.Width > 0 ? meta.Width : meta.OriginalWidth;
             var h = meta.Height > 0 ? meta.Height : meta.OriginalHeight;
             var parts = new List<string>();
@@ -115,7 +124,6 @@ public partial class MainWindowView : PhControl
         }
         else
         {
-            PART_StatusFormatBadge.IsVisible = false;
             PART_StatusSpecs.Text = string.Empty;
         }
     }
@@ -649,6 +657,7 @@ public partial class MainWindowView : PhControl
         Core.Photos.FileWatcherChanged += Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading += PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged += PART_Viewer_ZoomChanged;
+        PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
         UpdateZoomSlider();
         PART_Viewer.NavButtonClicked += PART_Viewer_NavButtonClicked;
         PART_Viewer.ViewerPointerClicked += PART_Viewer_ViewerPointerClicked;
@@ -702,6 +711,7 @@ public partial class MainWindowView : PhControl
         Core.Photos.FileWatcherChanged -= Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading -= PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged -= PART_Viewer_ZoomChanged;
+        PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
         PART_Viewer.NavButtonClicked -= PART_Viewer_NavButtonClicked;
         PART_Viewer.ViewerPointerClicked -= PART_Viewer_ViewerPointerClicked;
         PART_Viewer.ViewerMouseWheel -= PART_Viewer_ViewerMouseWheel;

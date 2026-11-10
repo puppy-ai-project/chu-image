@@ -769,6 +769,7 @@ public partial class ViewerControl : PhControl
     /// </summary>
     public async Task SetPhotoAsync(Photo? inputPhoto, PhotoLoadingOptions? options = null)
     {
+        if (!ReferenceEquals(Photo, inputPhoto)) SetDisplayRotation(0);
         PhotoTrace.Mark("viewer:set-photo", inputPhoto?.FilePath,
             $"cache={options?.UseCache ?? true}, state={inputPhoto?.State}, shouldLoadFull={ShouldLoadFullResolution}");
 

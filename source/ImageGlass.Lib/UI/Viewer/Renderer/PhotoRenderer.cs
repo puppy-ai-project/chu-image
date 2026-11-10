@@ -89,6 +89,7 @@ public partial class PhotoRenderer : ICustomDrawOperation
     private readonly ViewerControl _viewer;
     private readonly float _dpi;
     private readonly SKRect _drawingArea;
+    private readonly float _displayRotation;
 
     // a mirror draws the photo of _viewer through the viewport of another viewer
     private readonly bool _isMirror;
@@ -132,6 +133,17 @@ public partial class PhotoRenderer : ICustomDrawOperation
             _viewer = viewer;
             _dpi = (float)viewer.Dpi;
             _drawingArea = viewer.DrawingArea.ToSKRect();
+            _displayRotation = (float)(viewer.DisplayRotation % 360);
+            if (_displayRotation != 0 && _srcRect.Width > 0 && _srcRect.Height > 0)
+            {
+                var sx = _destRect.Width / _srcRect.Width;
+                var sy = _destRect.Height / _srcRect.Height;
+                var x = _destRect.Left - _srcRect.Left * sx;
+                var y = _destRect.Top - _srcRect.Top * sy;
+                _srcRect = new SKRect(0, 0, (float)viewer.BitmapSize.Width, (float)viewer.BitmapSize.Height);
+                _destRect = new SKRect(x, y, x + _srcRect.Width * sx, y + _srcRect.Height * sy);
+                _tileCache = null;
+            }
 
             // claim first-draw ownership atomically so concurrent paints cannot process it twice
             _isFirstDraw = processFirstDrawFn is not null && viewer._isFirstDraw;
@@ -275,6 +287,8 @@ public partial class PhotoRenderer : ICustomDrawOperation
     /// </summary>
     private void DrawContent(SKCanvas canvas, GRContext? grContext)
     {
+        canvas.Save();
+        if (_displayRotation != 0) canvas.RotateDegrees(_displayRotation, _destRect.MidX, _destRect.MidY);
         SKImageRef.ImageLease? imageLease = null;
         SKImageRef.ImageLease? srcLease = null;
 
@@ -351,6 +365,7 @@ public partial class PhotoRenderer : ICustomDrawOperation
         {
             imageLease?.Dispose();
             srcLease?.Dispose();
+            canvas.Restore();
         }
     }
 
