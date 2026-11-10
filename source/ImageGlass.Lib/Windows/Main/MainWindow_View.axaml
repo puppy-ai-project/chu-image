@@ -246,7 +246,7 @@
                     Grid.Column="2"
                     Orientation="Horizontal"
                     VerticalAlignment="Stretch"
-                    Background="{StaticResource WindowBarGradient}">
+                    Background="Transparent">
                     <Button
                         x:Name="PART_WinBtnMinimize"
                         Classes="win-caption-btn"
