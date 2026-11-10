@@ -393,16 +393,6 @@
             </StackPanel>
         </Border>
 
-        <!-- Bottom resize edge for the custom client area. -->
-        <Border
-            x:Name="PART_BottomResizeGrip"
-            Grid.Row="2"
-            Height="6"
-            VerticalAlignment="Bottom"
-            Background="Transparent"
-            Cursor="SizeNorthSouth"
-            PointerPressed="BottomResizeGrip_PointerPressed"
-            ZIndex="2000" />
 
         <!--  ======================================================  -->
         <!--  IMAGE INFO MODAL OVERLAY (图片信息遮盖层)               -->

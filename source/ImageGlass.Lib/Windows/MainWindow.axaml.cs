@@ -43,8 +43,10 @@ public partial class MainWindow : PhWindow
 {
     protected override void OnIgFramelessModeChanged(bool enable)
     {
-        // The main window provides its own title bar in either layout mode.
-        base.OnIgFramelessModeChanged(true);
+        // The main window provides its own title bar and caption buttons in every layout mode.
+        // Remove the native caption buttons so the custom title bar remains the only one shown.
+        ExtendClientAreaToDecorationsHint = true;
+        WindowDecorations = WindowDecorations.None;
     }
 
     private readonly AppStatusInfo _status;

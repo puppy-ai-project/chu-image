@@ -123,15 +123,6 @@ public partial class MainWindowView : PhControl
         e.Handled = true;
     }
 
-    private void BottomResizeGrip_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (App.MainWindow is null || App.MainWindow.WindowState != WindowState.Normal) return;
-        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
-
-        App.MainWindow.BeginResizeDrag(WindowEdge.Bottom, e);
-        e.Handled = true;
-    }
-
     private void InitTitleBarPlatform()
     {
         var isMac = BHelper.OS == OSType.Mac;
