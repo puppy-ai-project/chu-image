@@ -20,6 +20,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
@@ -34,6 +36,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace ImageGlass.Common.Windows;
@@ -50,6 +53,46 @@ public partial class MainWindow : PhWindow
     }
 
     private readonly AppStatusInfo _status;
+    private WindowEdge? _resizeEdge;
+    private PixelPoint _resizeStartPointer;
+    private PixelPoint _resizeStartPosition;
+    private Size _resizeStartSize;
+    private Cursor? _diagonalResizeCursor;
+    private Cursor? _oppositeDiagonalResizeCursor;
+
+    private static Cursor CreateDiagonalResizeCursor(bool mirror)
+    {
+        const int size = 24;
+        static bool IsArrow(int x, int y)
+        {
+            if (x < 2 || y < 2 || x > 21 || y > 21) return false;
+            return x + y <= 12 || x + y >= 34 || (Math.Abs(x - y) <= 1 && x >= 5 && x <= 18);
+        }
+
+        using var bitmap = new WriteableBitmap(new PixelSize(size, size), new Vector(96, 96),
+            PixelFormat.Bgra8888, AlphaFormat.Premul);
+        using (var frame = bitmap.Lock())
+        {
+            var pixels = new byte[frame.RowBytes * size];
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+            {
+                var sampleX = mirror ? size - 1 - x : x;
+                var inside = IsArrow(sampleX, y);
+                var outline = false;
+                for (var oy = -1; oy <= 1 && !outline; oy++)
+                for (var ox = -1; ox <= 1 && !outline; ox++)
+                    outline = IsArrow(sampleX + ox, y + oy);
+                if (!outline) continue;
+                var index = y * frame.RowBytes + x * 4;
+                var color = inside ? (byte)255 : (byte)0;
+                pixels[index] = pixels[index + 1] = pixels[index + 2] = color;
+                pixels[index + 3] = 255;
+            }
+            Marshal.Copy(pixels, 0, frame.Address, pixels.Length);
+        }
+        return new Cursor(bitmap, new PixelPoint(size / 2, size / 2));
+    }
     private bool _isClosingHandled; // to handle closing for saving configs
 
     private const double DEFAULT_WIDTH = 800;
@@ -59,11 +102,73 @@ public partial class MainWindow : PhWindow
 
     public MainWindowModel VM => (MainWindowModel)DataContext!;
 
+    private void ResizeHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (WindowState != WindowState.Normal || !CanResize || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        if (sender is not Control { Tag: string edgeName } || !Enum.TryParse<WindowEdge>(edgeName, out var edge)) return;
+        e.Handled = true;
+        if (!OperatingSystem.IsMacOS())
+        {
+            BeginResizeDrag(edge, e);
+            return;
+        }
+
+        _resizeEdge = edge;
+        _resizeStartPointer = this.PointToScreen(e.GetPosition(this));
+        _resizeStartPosition = Position;
+        _resizeStartSize = ClientSize;
+        e.Pointer.Capture((Control)sender);
+    }
+
+    private void ResizeHandle_PointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_resizeEdge is not { } edge || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+
+        var pointer = this.PointToScreen(e.GetPosition(this));
+        var scale = RenderScaling;
+        var dx = (pointer.X - _resizeStartPointer.X) / scale;
+        var dy = (pointer.Y - _resizeStartPointer.Y) / scale;
+        var left = edge is WindowEdge.West or WindowEdge.NorthWest or WindowEdge.SouthWest;
+        var right = edge is WindowEdge.East or WindowEdge.NorthEast or WindowEdge.SouthEast;
+        var top = edge is WindowEdge.North or WindowEdge.NorthEast or WindowEdge.NorthWest;
+        var bottom = edge is WindowEdge.South or WindowEdge.SouthEast or WindowEdge.SouthWest;
+        var width = Math.Clamp(_resizeStartSize.Width + (left ? -dx : right ? dx : 0), MinWidth, MaxWidth);
+        var height = Math.Clamp(_resizeStartSize.Height + (top ? -dy : bottom ? dy : 0), MinHeight, MaxHeight);
+        var x = _resizeStartPosition.X + (left ? (int)Math.Round((_resizeStartSize.Width - width) * scale) : 0);
+        var y = _resizeStartPosition.Y + (top ? (int)Math.Round((_resizeStartSize.Height - height) * scale) : 0);
+
+        Width = width;
+        Height = height;
+        if (left || top) Position = new PixelPoint(x, y);
+        e.Handled = true;
+    }
+
+    private void ResizeHandle_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_resizeEdge is null) return;
+        _resizeEdge = null;
+        e.Pointer.Capture(null);
+        e.Handled = true;
+    }
+
+    private void ResizeHandle_PointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+        => _resizeEdge = null;
+
 
     public MainWindow()
     {
         StartupTrace.Mark("MainWindow:InitComponent:begin");
         InitializeComponent();
+        _diagonalResizeCursor = CreateDiagonalResizeCursor(false);
+        _oppositeDiagonalResizeCursor = CreateDiagonalResizeCursor(true);
+        PART_ResizeTopLeft.Cursor = PART_ResizeBottomRight.Cursor = _diagonalResizeCursor;
+        PART_ResizeTopRight.Cursor = PART_ResizeBottomLeft.Cursor = _oppositeDiagonalResizeCursor;
+        PropertyChanged += (_, e) =>
+        {
+            if (e.Property == WindowStateProperty || e.Property == CanResizeProperty)
+                PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
+        };
+        PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
         StartupTrace.Mark("MainWindow:InitComponent:end");
         _status = new AppStatusInfo(PART_MainView.PART_Viewer);
 
@@ -200,6 +305,9 @@ public partial class MainWindow : PhWindow
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
+
+        _diagonalResizeCursor?.Dispose();
+        _oppositeDiagonalResizeCursor?.Dispose();
 
         // Dispose after the window (and its render loop) is fully closed
         Core.Dispose();
