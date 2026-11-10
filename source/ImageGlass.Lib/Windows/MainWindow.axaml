@@ -23,6 +23,8 @@
         <Border x:Name="PART_WindowSurface" CornerRadius="12" ClipToBounds="True">
             <wv:MainWindowView x:Name="PART_MainView" DataContext="{CompiledBinding .}" />
         </Border>
+        <Border x:Name="PART_WindowOutline" CornerRadius="12" BorderBrush="#707070"
+                BorderThickness="1" IsHitTestVisible="False" ZIndex="1999" />
         <Grid x:Name="PART_ResizeHandles" ZIndex="2000"
               PointerMoved="ResizeHandle_PointerMoved"
               PointerReleased="ResizeHandle_PointerReleased"

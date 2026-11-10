@@ -22,7 +22,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
@@ -52,6 +51,8 @@ public partial class MainWindow : PhWindow
 
     protected override void OnIgBackdropStyleChanged(BackdropStyle style)
     {
+        // Transparency is configured once in the constructor. Reapplying the same
+        // hint can reset Avalonia's macOS transparency mode to opaque.
         UpdateBackground(IsActive);
     }
 
@@ -184,6 +185,7 @@ public partial class MainWindow : PhWindow
             {
                 PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
                 PART_WindowSurface.CornerRadius = new CornerRadius(WindowState == WindowState.Normal ? 12 : 0);
+                PART_WindowOutline.IsVisible = WindowState == WindowState.Normal;
             }
         };
         PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
@@ -221,9 +223,6 @@ public partial class MainWindow : PhWindow
     {
         StartupTrace.Mark("MainWindow:opened");
         base.OnOpened(e);
-        Console.WriteLine($"WINDOW DEBUG transparency={ActualTransparencyLevel} background={Background}");
-        foreach (var visual in this.GetVisualDescendants().Take(20))
-            Console.WriteLine($"WINDOW DEBUG {visual.GetType().FullName} name={(visual as Control)?.Name} background={(visual as Panel)?.Background} border={(visual as Border)?.Background}");
 
         // load full screen; it wins over window fit, which the backup brings back on leaving it
         if (Core.Config.EnableFullScreen)
