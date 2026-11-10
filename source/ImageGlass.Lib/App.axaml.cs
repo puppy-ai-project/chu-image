@@ -173,7 +173,8 @@ public partial class App : Application
             if (!await ConfirmIncompatibleConfigResetAsync()) return;
 
             // force Quick Setup on first run; false = app is exiting/restarting
-            if (!await RunStartupQuickSetupAsync()) return;
+            // ChuImage starts directly with the configured defaults, without the setup wizard.
+            Core.Config.QuickSetupVersion = Const.QUICK_SETUP_VERSION;
 
             // show main window
             MainWindow.Show();

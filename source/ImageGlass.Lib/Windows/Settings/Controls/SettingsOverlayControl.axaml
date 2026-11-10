@@ -520,6 +520,7 @@
                                         <!--  1. 主题  -->
                                         <Button
                                             x:Name="PART_NavTheme"
+                                            IsVisible="False"
                                             Classes="link settings-nav-btn active"
                                             Click="NavTab_Click"
                                             Tag="theme">

@@ -551,6 +551,12 @@ public partial class PhWindow : Window
     /// </summary>
     protected async Task UpdateWindowIconAsync(string? customIconPath = null)
     {
+        if (string.IsNullOrWhiteSpace(customIconPath))
+        {
+            Icon = Resx.GetDefaultWindowIcon();
+            return;
+        }
+
         // 1. get full path of icon
         var iconPath = Core.Theme.GetIconPath(IgThemeIcon.AppLogo);
         var useDefaultIcon = !File.Exists(iconPath);

@@ -44,7 +44,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>icon256.ico</ApplicationIcon>
     <AssemblyName>ImageGlass</AssemblyName>
-    <AssemblyTitle>ImageGlass $(Version)</AssemblyTitle>
+    <AssemblyTitle>ChuImage $(Version)</AssemblyTitle>
+    <Product>ChuImage</Product>
     <PublishAot>True</PublishAot>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>

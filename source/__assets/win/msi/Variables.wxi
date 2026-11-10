@@ -22,8 +22,8 @@
 
   <!-- Version-qualified, so Apps & features and the wizard title name the exact build. The install
        folder deliberately stays unversioned: an upgrade must land on top of the previous one. -->
-  <?define IgProductName  = "ImageGlass $(var.ProductVersion)" ?>
-  <?define IgFolderName   = "ImageGlass" ?>
+  <?define IgProductName  = "ChuImage $(var.ProductVersion)" ?>
+  <?define IgFolderName   = "ChuImage" ?>
   <?define IgManufacturer = "DuongDieuPhap" ?>
 
   <!-- Vendor\Product on purpose: the app deletes all of Software\ImageGlass when unregistering. -->

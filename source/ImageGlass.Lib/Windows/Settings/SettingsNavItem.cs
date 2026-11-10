@@ -105,8 +105,6 @@ public sealed class SettingsNavItem
                 (vm, navId, label) => new PluginsSettingsView(vm, navId, label)),
             CreateNavItem(SettingsNavId.Language, LangId.Settings_Nav_Language, ICON_LANGUAGE, 0,
                 (vm, navId, label) => new LanguageSettingsView(vm, navId, label)),
-            CreateNavItem(SettingsNavId.Appearance, LangId.Settings_Nav_Appearance, ICON_APPEARANCE, 0,
-                (vm, navId, label) => new AppearanceSettingsView(vm, navId, label)),
         ];
     }
 

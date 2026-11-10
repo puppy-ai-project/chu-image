@@ -279,7 +279,7 @@ public partial class SettingsOverlayControl : UserControl
 
     private void SwitchSection(string section)
     {
-        _activeSection = section == "associations" ? "associations" : "theme";
+        _activeSection = "associations";
         var isTheme = _activeSection == "theme";
 
         PART_NavTheme.Classes.Set("active", isTheme);

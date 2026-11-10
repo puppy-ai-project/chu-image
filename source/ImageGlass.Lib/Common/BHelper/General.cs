@@ -31,12 +31,12 @@ public partial class BHelper
     /// <summary>
     /// Gets app name.
     /// </summary>
-    public static string AppName { get; } = "ImageGlass";
+    public static string AppName { get; } = "ChuImage";
 
     /// <summary>
     /// Gets app display name.
     /// </summary>
-    public static string AppDisplayName { get; } = "ImageGlass 10";
+    public static string AppDisplayName { get; } = "ChuImage";
 
 
     /// <summary>
