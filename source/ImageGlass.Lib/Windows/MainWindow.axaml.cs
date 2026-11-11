@@ -566,7 +566,25 @@ public partial class MainWindow : PhWindow
             }
         }
 
-        // Other app shortcuts are disabled; ordinary control and text input still work.
+        if (e.KeyModifiers != KeyModifiers.None
+            || PART_MainView.IsRenameModalOpen
+            || PART_MainView.IsDeleteConfirmationOpen
+            || PART_MainView.IsAboutOverlayOpen
+            || PART_MainView.IsSettingsOverlayOpen
+            || PART_MainView.IsImageInfoOverlayOpen) return;
+
+        API? action = e.Key switch
+        {
+            Key.Left => API.IG_ViewPrevious,
+            Key.Right => API.IG_ViewNext,
+            Key.Up => API.IG_ZoomIn,
+            Key.Down => API.IG_ZoomOut,
+            _ => null,
+        };
+        if (action is not { } command) return;
+
+        e.Handled = true;
+        await Core.API.RunApiAsync(command);
     }
 
 
