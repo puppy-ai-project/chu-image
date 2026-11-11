@@ -44,6 +44,7 @@ public partial class ToolbarControl : PhControl
     private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = App.MainWindow.CanFitWindowToImage;
     private void Viewer_RenderStateChanged(Viewer.ViewerControl sender, EventArgs e) => UpdateFitWindowButton();
     private void Viewer_DisplayRotationChanged(object? sender, EventArgs e) => UpdateFitWindowButton();
+    private void MainWindow_FitSizeChanged(object? sender, SizeChangedEventArgs e) => UpdateFitWindowButton();
     private void MainWindow_FitPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == Window.WindowStateProperty) UpdateFitWindowButton();
@@ -112,6 +113,7 @@ public partial class ToolbarControl : PhControl
         Core.Config.PropertyChanged += Config_PropertyChanged;
         App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged += Viewer_RenderStateChanged;
         App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
+        App.MainWindow.SizeChanged += MainWindow_FitSizeChanged;
         App.MainWindow.PropertyChanged += MainWindow_FitPropertyChanged;
         UpdateFitWindowButton();
 
@@ -126,6 +128,7 @@ public partial class ToolbarControl : PhControl
         Core.Config.PropertyChanged -= Config_PropertyChanged;
         App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged -= Viewer_RenderStateChanged;
         App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
+        App.MainWindow.SizeChanged -= MainWindow_FitSizeChanged;
         App.MainWindow.PropertyChanged -= MainWindow_FitPropertyChanged;
     }
 

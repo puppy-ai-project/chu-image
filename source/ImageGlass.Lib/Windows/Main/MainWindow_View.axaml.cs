@@ -303,7 +303,8 @@ public partial class MainWindowView : PhControl
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (e.Source is not Control source || source is Button) return;
+        if (e.Source is not Visual source) return;
+        if (source.GetSelfAndVisualAncestors().Any(v => v is Button or ToggleButton or Slider or Thumb or ScrollBar or TextBox)) return;
         if (!e.GetCurrentPoint(PART_CustomTitleBar).Properties.IsLeftButtonPressed) return;
         if (e.ClickCount == 2)
             MaximizeWindow_Click(sender, e);

@@ -128,72 +128,110 @@ public partial class MainWindow : PhWindow
 
     public MainWindowModel VM => (MainWindowModel)DataContext!;
 
-    private bool TryGetImageFitBounds(out Rect imageBounds, out Size windowSize)
+    private bool TryGetImageFitBounds(out Size windowSize, out PixelRect workArea, out double screenScale, out Size frameDelta)
     {
-        imageBounds = default;
         windowSize = default;
+        workArea = default;
+        screenScale = 1d;
+        frameDelta = default;
+
         var viewer = PART_MainView.PART_Viewer;
-        if (WindowState != WindowState.Normal || viewer.BitmapSize.IsEmpty || viewer.DestRect.IsEmpty || viewer.DrawingArea.IsEmpty) return false;
+        if (WindowState is WindowState.FullScreen or WindowState.Minimized
+            || viewer.SourceKind == UI.Viewer.PhotoSource.None
+            || viewer.BitmapSize.IsEmpty
+            || viewer.DestRect.IsEmpty
+            || viewer.DrawingArea.IsEmpty)
+        {
+            return false;
+        }
+
         var scale = viewer.ZoomFactor / viewer.Dpi;
         if (scale <= 0) return false;
+
         var w = viewer.BitmapSize.Width * scale;
         var h = viewer.BitmapSize.Height * scale;
-        var cx = viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * scale;
-        var cy = viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * scale;
         var radians = viewer.DisplayRotation * Math.PI / 180;
         var rotatedWidth = Math.Abs(w * Math.Cos(radians)) + Math.Abs(h * Math.Sin(radians));
         var rotatedHeight = Math.Abs(w * Math.Sin(radians)) + Math.Abs(h * Math.Cos(radians));
-        imageBounds = new Rect(cx - rotatedWidth / 2, cy - rotatedHeight / 2, rotatedWidth, rotatedHeight);
+        if (rotatedWidth <= 0 || rotatedHeight <= 0) return false;
+
         var area = viewer.DrawingArea;
-        const double tolerance = 0.5;
-        if (imageBounds.Left < area.Left - tolerance || imageBounds.Top < area.Top - tolerance
-            || imageBounds.Right > area.Right + tolerance || imageBounds.Bottom > area.Bottom + tolerance) return false;
-        windowSize = new Size(Math.Ceiling(ClientSize.Width - area.Width + rotatedWidth),
-                              Math.Ceiling(ClientSize.Height - area.Height + rotatedHeight));
-        var screen = Screens.ScreenFromWindow(this);
+        var chromeW = Math.Max(0, ClientSize.Width - area.Width);
+        var chromeH = Math.Max(0, ClientSize.Height - area.Height);
+
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
         if (screen is null) return false;
-        var workArea = screen.GetActualWorkingArea();
-        return windowSize.Width >= MinWidth && windowSize.Height >= MinHeight
-            && windowSize.Width <= MaxWidth && windowSize.Height <= MaxHeight
-            && windowSize.Width * RenderScaling <= workArea.Width
-            && windowSize.Height * RenderScaling <= workArea.Height;
+
+        // 屏幕坐标 (Position / WorkingArea) 使用 screen.Scaling；macOS Retina 下 screen.Scaling 为 1，而 RenderScaling 为 2
+        screenScale = screen.Scaling > 0 ? screen.Scaling : 1d;
+        workArea = screen.GetActualWorkingArea();
+        var currentFrame = FrameSize is { Width: > 0, Height: > 0 } frame ? frame : ClientSize;
+        frameDelta = new Size(
+            Math.Max(0, currentFrame.Width - ClientSize.Width),
+            Math.Max(0, currentFrame.Height - ClientSize.Height));
+
+        var maxWorkW = Math.Min(MaxWidth, Math.Max(1, Math.Floor(workArea.Width / screenScale) - frameDelta.Width));
+        var maxWorkH = Math.Min(MaxHeight, Math.Max(1, Math.Floor(workArea.Height / screenScale) - frameDelta.Height));
+        var minAllowedW = Math.Min(maxWorkW, Math.Max(MinWidth, 160));
+        var minAllowedH = Math.Min(maxWorkH, Math.Max(MinHeight, 120));
+        if (maxWorkW < 1 || maxWorkH < 1) return false;
+
+        const double fitMargin = 10;
+        var fitPadding = fitMargin * 2;
+        windowSize = new Size(
+            Math.Clamp(Math.Ceiling(chromeW + rotatedWidth + fitPadding), minAllowedW, maxWorkW),
+            Math.Clamp(Math.Ceiling(chromeH + rotatedHeight + fitPadding), minAllowedH, maxWorkH));
+        return true;
     }
 
-    public bool CanFitWindowToImage => TryGetImageFitBounds(out _, out _);
+    public bool CanFitWindowToImage => TryGetImageFitBounds(out _, out _, out _, out _);
 
     public void FitWindowToImage()
     {
-        if (!TryGetImageFitBounds(out var imageBounds, out var windowSize)) return;
+        if (!TryGetImageFitBounds(out var windowSize, out var workArea, out var screenScale, out var frameDelta)) return;
+
         var viewer = PART_MainView.PART_Viewer;
-        var centerOnScreen = viewer.PointToScreen(imageBounds.Center);
-        var viewerOrigin = viewer.TranslatePoint(new Point(), this);
-        if (viewerOrigin is null) return;
-        var drawingArea = viewer.DrawingArea;
-        var screen = Screens.ScreenFromWindow(this);
-        if (screen is null) return;
-        var workArea = screen.GetActualWorkingArea();
-        var scale = RenderScaling;
-        var x = centerOnScreen.X - (viewerOrigin.Value.X + drawingArea.Left + imageBounds.Width / 2) * scale;
-        var y = centerOnScreen.Y - (viewerOrigin.Value.Y + drawingArea.Top + imageBounds.Height / 2) * scale;
-        var maxX = workArea.Right - windowSize.Width * scale;
-        var maxY = workArea.Bottom - windowSize.Height * scale;
-        if (maxX < workArea.X || maxY < workArea.Y) return;
+        var currentFrame = FrameSize is { Width: > 0, Height: > 0 } frame ? frame : ClientSize;
+        var currentCenterX = Position.X + currentFrame.Width * screenScale / 2.0;
+        var currentCenterY = Position.Y + currentFrame.Height * screenScale / 2.0;
+
+        var targetFrameW = windowSize.Width + frameDelta.Width;
+        var targetFrameH = windowSize.Height + frameDelta.Height;
+        var maxX = Math.Max(workArea.X, workArea.Right - targetFrameW * screenScale);
+        var maxY = Math.Max(workArea.Y, workArea.Bottom - targetFrameH * screenScale);
+        var targetPos = new PixelPoint(
+            (int)Math.Round(Math.Clamp(currentCenterX - targetFrameW * screenScale / 2.0, workArea.X, maxX)),
+            (int)Math.Round(Math.Clamp(currentCenterY - targetFrameH * screenScale / 2.0, workArea.Y, maxY)));
+
         var zoom = viewer.ZoomFactor;
+        if (WindowState == WindowState.Maximized) WindowState = WindowState.Normal;
         Core.Config.EnableWindowFit = false;
         viewer.SetZoomFactor(zoom, true);
+
         Width = windowSize.Width;
         Height = windowSize.Height;
-        Position = new PixelPoint((int)Math.Round(Math.Clamp(x, workArea.X, maxX)),
-                                  (int)Math.Round(Math.Clamp(y, workArea.Y, maxY)));
+        Position = targetPos;
+
         Dispatcher.UIThread.Post(() =>
         {
             if (!IsVisible || viewer.BitmapSize.IsEmpty) return;
-            var factor = viewer.ZoomFactor / viewer.Dpi;
-            var current = new Point(viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * factor,
-                                    viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * factor);
-            var desired = viewer.DrawingArea.Center;
-            viewer.PanTo(current.X - desired.X, current.Y - desired.Y, null);
-            ScheduleWindowSizeSave();
+
+            if (WindowState == WindowState.Normal)
+            {
+                if (Math.Abs(Width - windowSize.Width) > 0.5) Width = windowSize.Width;
+                if (Math.Abs(Height - windowSize.Height) > 0.5) Height = windowSize.Height;
+                Position = targetPos;
+            }
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (!IsVisible || viewer.BitmapSize.IsEmpty) return;
+                var factor = viewer.ZoomFactor / viewer.Dpi;
+                var current = new Point(viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * factor,
+                                        viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * factor);
+                var desired = viewer.DrawingArea.Center;
+                viewer.PanTo(current.X - desired.X, current.Y - desired.Y, null);
+                ScheduleWindowSizeSave();
+            }, DispatcherPriority.Background);
         }, DispatcherPriority.Loaded);
     }
     public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
