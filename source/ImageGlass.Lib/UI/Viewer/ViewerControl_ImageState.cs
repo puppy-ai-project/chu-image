@@ -34,9 +34,7 @@ public partial class ViewerControl
     public event EventHandler? DisplayRotationChanged;
     public void SetDisplayRotation(double angle)
     {
-        var requestedAngle = angle;
-        angle = ((angle % 360) + 360) % 360;
-        if (angle == 0 && requestedAngle > 0) angle = 360;
+        if (angle is > 360 or < -360) angle %= 360;
         if (Math.Abs(_displayRotation - angle) < 0.001) return;
         _displayRotation = angle;
         InvalidateVisual();

@@ -601,7 +601,7 @@
 
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" Margin="0,0,18,0">
                     <TextBlock Text="旋转" Foreground="#D1D5DB" FontSize="11" VerticalAlignment="Center" />
-                    <Slider x:Name="PART_RotationSlider" Width="149.5" Minimum="0" Maximum="360" VerticalAlignment="Center" ValueChanged="RotationSlider_ValueChanged">
+                    <Slider x:Name="PART_RotationSlider" Width="149.5" Minimum="-360" Maximum="360" VerticalAlignment="Center" ValueChanged="RotationSlider_ValueChanged">
                         <Slider.Resources>
                             <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
                             <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />

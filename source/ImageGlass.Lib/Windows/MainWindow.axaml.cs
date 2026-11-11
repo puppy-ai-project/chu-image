@@ -76,11 +76,11 @@ public partial class MainWindow : PhWindow
 
     private static Cursor CreateDiagonalResizeCursor(bool mirror)
     {
-        const int size = 32;
-        static bool IsArrow(int x, int y)
+        var size = OperatingSystem.IsMacOS() ? 20 : 32;
+        static bool IsArrow(double x, double y)
         {
-            if (x < 2 || y < 2 || x > 13 || y > 13) return false;
-            return x + y <= 8 || x + y >= 22 || (Math.Abs(x - y) <= 1 && x >= 4 && x <= 11);
+            if (x < 2 || y < 2 || x > 14 || y > 14) return false;
+            return x + y <= 8 || x + y >= 24 || (Math.Abs(x - y) <= 0.8 && x >= 4 && x <= 12);
         }
 
         using var bitmap = new WriteableBitmap(new PixelSize(size, size), new Vector(96, 96),
@@ -91,18 +91,27 @@ public partial class MainWindow : PhWindow
             for (var y = 0; y < size; y++)
             for (var x = 0; x < size; x++)
             {
-                var sampleX = (mirror ? size - 1 - x : x) / 2;
-                var sampleY = y / 2;
-                var inside = IsArrow(sampleX, sampleY);
-                var outline = false;
-                for (var oy = -1; oy <= 1 && !outline; oy++)
-                for (var ox = -1; ox <= 1 && !outline; ox++)
-                    outline = IsArrow(sampleX + ox, sampleY + oy);
-                if (!outline) continue;
+                const int samples = 4;
+                var black = 0;
+                var white = 0;
+                for (var sy = 0; sy < samples; sy++)
+                for (var sx = 0; sx < samples; sx++)
+                {
+                    var px = (x + (sx + 0.5) / samples) * 16 / size;
+                    var py = (y + (sy + 0.5) / samples) * 16 / size;
+                    if (mirror) px = 16 - px;
+                    if (IsArrow(px, py)) { black++; continue; }
+                    var outlined = false;
+                    for (var oy = -1; oy <= 1 && !outlined; oy++)
+                    for (var ox = -1; ox <= 1 && !outlined; ox++)
+                        outlined = IsArrow(px + ox * 0.8, py + oy * 0.8);
+                    if (outlined) white++;
+                }
+                if (black + white == 0) continue;
                 var index = y * frame.RowBytes + x * 4;
-                var color = inside ? (byte)0 : (byte)255;
+                var color = (byte)(255 * white / (samples * samples));
                 pixels[index] = pixels[index + 1] = pixels[index + 2] = color;
-                pixels[index + 3] = 255;
+                pixels[index + 3] = (byte)(255 * (black + white) / (samples * samples));
             }
             Marshal.Copy(pixels, 0, frame.Address, pixels.Length);
         }
