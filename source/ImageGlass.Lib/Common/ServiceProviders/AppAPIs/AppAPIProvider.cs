@@ -3259,12 +3259,27 @@ public partial class AppAPIProvider
     #region Help APIs
 
     /// <summary>
-    /// Open About window.
+    /// Open About overlay inside main window, or fall back to AboutWindow when no main window exists.
     /// </summary>
     public static async Task IG_OpenAboutWindowAsync()
     {
+        if (App.MainWindow is { } mainWin)
+        {
+            if (mainWin.WindowState == WindowState.Minimized)
+            {
+                mainWin.RestoreAndActivate();
+            }
+            else
+            {
+                mainWin.Activate();
+            }
+
+            mainWin.OpenAboutOverlay();
+            return;
+        }
+
         var dialog = new AboutWindow();
-        _ = await dialog.ShowAsync(App.MainWindow);
+        _ = await dialog.ShowAsync(null);
     }
 
 

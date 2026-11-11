@@ -127,11 +127,81 @@ public partial class MainWindow : PhWindow
     private const double MIN_RESTORE_HEIGHT = 100;
 
     public MainWindowModel VM => (MainWindowModel)DataContext!;
+
+    private bool TryGetImageFitBounds(out Rect imageBounds, out Size windowSize)
+    {
+        imageBounds = default;
+        windowSize = default;
+        var viewer = PART_MainView.PART_Viewer;
+        if (WindowState != WindowState.Normal || viewer.BitmapSize.IsEmpty || viewer.DestRect.IsEmpty || viewer.DrawingArea.IsEmpty) return false;
+        var scale = viewer.ZoomFactor / viewer.Dpi;
+        if (scale <= 0) return false;
+        var w = viewer.BitmapSize.Width * scale;
+        var h = viewer.BitmapSize.Height * scale;
+        var cx = viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * scale;
+        var cy = viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * scale;
+        var radians = viewer.DisplayRotation * Math.PI / 180;
+        var rotatedWidth = Math.Abs(w * Math.Cos(radians)) + Math.Abs(h * Math.Sin(radians));
+        var rotatedHeight = Math.Abs(w * Math.Sin(radians)) + Math.Abs(h * Math.Cos(radians));
+        imageBounds = new Rect(cx - rotatedWidth / 2, cy - rotatedHeight / 2, rotatedWidth, rotatedHeight);
+        var area = viewer.DrawingArea;
+        const double tolerance = 0.5;
+        if (imageBounds.Left < area.Left - tolerance || imageBounds.Top < area.Top - tolerance
+            || imageBounds.Right > area.Right + tolerance || imageBounds.Bottom > area.Bottom + tolerance) return false;
+        windowSize = new Size(Math.Ceiling(ClientSize.Width - area.Width + rotatedWidth),
+                              Math.Ceiling(ClientSize.Height - area.Height + rotatedHeight));
+        var screen = Screens.ScreenFromWindow(this);
+        if (screen is null) return false;
+        var workArea = screen.GetActualWorkingArea();
+        return windowSize.Width >= MinWidth && windowSize.Height >= MinHeight
+            && windowSize.Width <= MaxWidth && windowSize.Height <= MaxHeight
+            && windowSize.Width * RenderScaling <= workArea.Width
+            && windowSize.Height * RenderScaling <= workArea.Height;
+    }
+
+    public bool CanFitWindowToImage => TryGetImageFitBounds(out _, out _);
+
+    public void FitWindowToImage()
+    {
+        if (!TryGetImageFitBounds(out var imageBounds, out var windowSize)) return;
+        var viewer = PART_MainView.PART_Viewer;
+        var centerOnScreen = viewer.PointToScreen(imageBounds.Center);
+        var viewerOrigin = viewer.TranslatePoint(new Point(), this);
+        if (viewerOrigin is null) return;
+        var drawingArea = viewer.DrawingArea;
+        var screen = Screens.ScreenFromWindow(this);
+        if (screen is null) return;
+        var workArea = screen.GetActualWorkingArea();
+        var scale = RenderScaling;
+        var x = centerOnScreen.X - (viewerOrigin.Value.X + drawingArea.Left + imageBounds.Width / 2) * scale;
+        var y = centerOnScreen.Y - (viewerOrigin.Value.Y + drawingArea.Top + imageBounds.Height / 2) * scale;
+        var maxX = workArea.Right - windowSize.Width * scale;
+        var maxY = workArea.Bottom - windowSize.Height * scale;
+        if (maxX < workArea.X || maxY < workArea.Y) return;
+        var zoom = viewer.ZoomFactor;
+        Core.Config.EnableWindowFit = false;
+        viewer.SetZoomFactor(zoom, true);
+        Width = windowSize.Width;
+        Height = windowSize.Height;
+        Position = new PixelPoint((int)Math.Round(Math.Clamp(x, workArea.X, maxX)),
+                                  (int)Math.Round(Math.Clamp(y, workArea.Y, maxY)));
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (!IsVisible || viewer.BitmapSize.IsEmpty) return;
+            var factor = viewer.ZoomFactor / viewer.Dpi;
+            var current = new Point(viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * factor,
+                                    viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * factor);
+            var desired = viewer.DrawingArea.Center;
+            viewer.PanTo(current.X - desired.X, current.Y - desired.Y, null);
+            ScheduleWindowSizeSave();
+        }, DispatcherPriority.Loaded);
+    }
     public Task<bool> ConfirmDeleteAsync(string title, string heading, string path, string? size)
         => PART_MainView.ConfirmDeleteAsync(title, heading, path, size);
     public Task<string?> PromptRenameAsync(string title, string heading, string filePath, Avalonia.Media.IImage? thumbnail)
         => PART_MainView.PromptRenameAsync(title, heading, filePath, thumbnail);
     public void OpenSettingsOverlay(string? section = null) => PART_MainView.OpenSettingsOverlay(section);
+    public void OpenAboutOverlay() => PART_MainView.OpenAboutOverlay();
 
     private void ResizeHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -394,6 +464,12 @@ public partial class MainWindow : PhWindow
         {
             e.Handled = true;
             PART_MainView.CloseDeleteConfirmation();
+            return;
+        }
+        if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsAboutOverlayOpen)
+        {
+            e.Handled = true;
+            PART_MainView.CloseAboutOverlay();
             return;
         }
         if (new Hotkey(e).IsSame(Key.Escape) && PART_MainView.IsSettingsOverlayOpen)

@@ -40,6 +40,14 @@ public partial class ToolbarControl : PhControl
     private async void SettingsButton_Click(object? sender, RoutedEventArgs e) =>
         await Core.API.RunApiAsync(API.IG_OpenSettings);
     private void ImageInfo_Click(object? sender, RoutedEventArgs e) => App.MainWindow.ToggleImageInfoWindow();
+    private void FitWindow_Click(object? sender, RoutedEventArgs e) => App.MainWindow.FitWindowToImage();
+    private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = App.MainWindow.CanFitWindowToImage;
+    private void Viewer_RenderStateChanged(Viewer.ViewerControl sender, EventArgs e) => UpdateFitWindowButton();
+    private void Viewer_DisplayRotationChanged(object? sender, EventArgs e) => UpdateFitWindowButton();
+    private void MainWindow_FitPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == Window.WindowStateProperty) UpdateFitWindowButton();
+    }
 
     public ToolbarControlModel VM => (ToolbarControlModel)DataContext!;
 
@@ -102,6 +110,10 @@ public partial class ToolbarControl : PhControl
         base.OnLoaded(e);
 
         Core.Config.PropertyChanged += Config_PropertyChanged;
+        App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged += Viewer_RenderStateChanged;
+        App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
+        App.MainWindow.PropertyChanged += MainWindow_FitPropertyChanged;
+        UpdateFitWindowButton();
 
         RefreshPendingUpdateState();
         ScheduleOverflowUpdate();
@@ -112,6 +124,9 @@ public partial class ToolbarControl : PhControl
     {
         base.OnUnloaded(e);
         Core.Config.PropertyChanged -= Config_PropertyChanged;
+        App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged -= Viewer_RenderStateChanged;
+        App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
+        App.MainWindow.PropertyChanged -= MainWindow_FitPropertyChanged;
     }
 
 

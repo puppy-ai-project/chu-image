@@ -408,6 +408,7 @@ public partial class MainWindowView : PhControl
 
     public void OpenSettingsOverlay(string? section = null)
     {
+        CloseAboutOverlay();
         PART_SettingsModal.Open(section, hex => UpdateViewerCustomBackground(hex));
     }
 
@@ -420,6 +421,26 @@ public partial class MainWindowView : PhControl
     {
         PART_SettingsModal.HandleEscapeKey();
     }
+
+    #endregion // Settings Overlay
+
+
+    #region About Overlay
+
+    public bool IsAboutOverlayOpen => PART_AboutModal.IsVisible;
+
+    public void OpenAboutOverlay()
+    {
+        CloseImageInfoOverlay();
+        PART_AboutModal.Open();
+    }
+
+    public void CloseAboutOverlay()
+    {
+        PART_AboutModal.Close();
+    }
+
+    #endregion // About Overlay
 
     public void UpdateViewerCustomBackground(string? overrideHex = null)
     {
@@ -446,8 +467,6 @@ public partial class MainWindowView : PhControl
             PART_ViewerBgLayer.Background = new Avalonia.Media.SolidColorBrush(color);
         }
     }
-
-    #endregion // Settings Overlay
 
     private async void BtnCopyImageInfo_Click(object? sender, RoutedEventArgs e)
     {

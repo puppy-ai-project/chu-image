@@ -108,6 +108,12 @@
                         Orientation="Horizontal"
                         Spacing="2">
 
+                        <ui:PhToolButton x:Name="PART_BtnFitWindow" Click="FitWindow_Click"
+                            ToolTip.Tip="窗口适应图片" Width="26" Height="26" Padding="0" BorderThickness="0"
+                            CornerRadius="5.5" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsEnabled="False">
+                            <Path Width="15" Height="15" Stretch="Uniform" Fill="{DynamicResource IgIconCyanBrush}"
+                                  Data="M2 6V2h4v1.5H3.5V6H2z M10 2h4v4h-1.5V3.5H10V2z M2 10h1.5v2.5H6V14H2v-4z M12.5 10H14v4h-4v-1.5h2.5V10z M5 7h6v2H5z" />
+                        </ui:PhToolButton>
                         <!--  Image Information Button  -->
                         <ui:PhToolButton
                             x:Name="PART_BtnImageInfo"

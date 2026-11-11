@@ -1623,7 +1623,7 @@
         </Grid>
 
         <!--  ======================================================  -->
-        <!--  SETTINGS MODAL OVERLAY (设置遮盖层 - 仅关联格式)  -->
+        <!--  SETTINGS MODAL OVERLAY (设置遮盖层)                       -->
         <!--  ======================================================  -->
         <windows:SettingsOverlayControl
             x:Name="PART_SettingsModal"
@@ -1631,6 +1631,16 @@
             Grid.RowSpan="3"
             IsVisible="False"
             ZIndex="1120" />
+
+        <!--  ======================================================  -->
+        <!--  ABOUT MODAL OVERLAY (关于应用遮盖层 - 亮暗双主题适配)       -->
+        <!--  ======================================================  -->
+        <windows:AboutOverlayControl
+            x:Name="PART_AboutModal"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            IsVisible="False"
+            ZIndex="1140" />
     </Grid>
 
 </ui:PhControl>

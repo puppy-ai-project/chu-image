@@ -39,6 +39,10 @@ public partial class AboutWindow : DialogWindow
 
 
     private const string _creditContent = """
+        ◍ ImageGlass                                   GPL-3.0 license
+          https://github.com/d2phap/ImageGlass
+          Copyright (c) 2010-2026 Dương Diệu Pháp
+
         ◍ Avalonia                                         MIT licence 
           https://github.com/AvaloniaUI/Avalonia
           Copyright (c) AvaloniaUI OÜ All Rights Reserved
