@@ -28,7 +28,7 @@
     start at all, because Program Files is not writable and the app refuses to fall back to
     %LocalAppData% behind the user's back.
 
-    Output: __artifacts/bundle/ImageGlass_<label>_win-x64.msi
+    Output: __artifacts/bundle/ChuImage_<label>_win-x64.msi
 
 .PARAMETER Platform
     Target architecture. Only x64 is supported today; the parameter exists so the publish
@@ -438,11 +438,11 @@ $stagingDir  = Join-Path $DistDir "$rid-msi"
 $payloadDir  = Join-Path $stagingDir 'ImageGlass'
 $objDir      = Join-Path $stagingDir 'obj'
 $wixPdb      = Join-Path $stagingDir 'ImageGlass.wixpdb'
-$stagedMsi   = Join-Path $stagingDir "ImageGlass_${relLabel}_${rid}.msi"
+$stagedMsi   = Join-Path $stagingDir "ChuImage_${relLabel}_${rid}.msi"
 # Inspected/validated in place of the real thing; see step 5. Lives outside the staging dir so a
 # lingering msiexec handle cannot block the cleanup.
 $checkMsi    = Join-Path ([System.IO.Path]::GetTempPath()) "ig-msi-check-$PID.msi"
-$outMsi      = Join-Path $DistDir "ImageGlass_${relLabel}_${rid}.msi"
+$outMsi      = Join-Path $DistDir "ChuImage_${relLabel}_${rid}.msi"
 
 $script:doSign = [bool]$Sign
 if ($script:doSign -and -not (Test-SigningCert)) {
