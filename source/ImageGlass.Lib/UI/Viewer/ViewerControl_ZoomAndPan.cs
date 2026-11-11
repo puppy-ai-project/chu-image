@@ -319,7 +319,7 @@ public partial class ViewerControl
 
             if (CanUseFreePan || _mousePanPositionEnabled)
             {
-                if (isZoomingToPoint && CanUseFreePan)
+                if (isZoomingToPoint)
                 {
                     // Zoom anchor: map cursor to an image coordinate, then position
                     // the image so that coordinate stays under the cursor.
@@ -394,7 +394,7 @@ public partial class ViewerControl
 
             if (CanUseFreePan || _mousePanPositionEnabled)
             {
-                if (isZoomingToPoint && CanUseFreePan)
+                if (isZoomingToPoint)
                 {
                     var screenZoomY = zoomY + DrawingArea.Top;
                     var imgY = SrcRect.Y + (screenZoomY - DestRect.Y) / oldZoomFactor;
@@ -457,7 +457,7 @@ public partial class ViewerControl
         // always stay inside the viewport, so the clamp keeps running while zooming.
         var panMargin = IsWindowFitMode ? 0 : PanMargin;
         var panMarginSrc = DpiScale(panMargin) / currentZoomFactor;
-        var skipClampWhileZooming = isZoomingToPoint && CanUseFreePan;
+        var skipClampWhileZooming = isZoomingToPoint && (CanUseFreePan || _mousePanPositionEnabled);
 
         // An axis that just grew past the viewport has no over-pan gap to preserve, so it
         // lands flush against the edge instead of inheriting the previous centering gap.
@@ -917,6 +917,9 @@ public partial class ViewerControl
 
         var newZoomFactor = Math.Clamp((double)factor, MinZoom, MaxZoom);
         if (newZoomFactor == _zooming.Factor) return false;
+
+        // Preserve the cursor anchor even while the image fits inside the viewport.
+        if (point.HasValue) _mousePanPositionEnabled = true;
 
         // Use the provided point, or fall back to the last tracked cursor position.
         // If neither is valid, use the center of the drawing area.
