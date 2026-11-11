@@ -226,33 +226,8 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid>
-        <!--  全屏柔暗压光遮罩 (点击卡片外区域关闭)  -->
-        <Border Background="{DynamicResource IgDarkBrush7A000000}" PointerPressed="Backdrop_PointerPressed" />
-
-        <!--  随当前主题明暗自动切换的内嵌作用域  -->
-        <ThemeVariantScope>
-            <Border
-                Margin="22,16"
-                MinWidth="440"
-                MaxWidth="590"
-                MinHeight="320"
-                MaxHeight="580"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                BorderBrush="{StaticResource AboutGlassBorderBrush}"
-                BorderThickness="1"
-                BoxShadow="0 24 64 0 #B3000000"
-                ClipToBounds="True"
-                CornerRadius="14">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="{DynamicResource IgDarkColor292C33}" Offset="0.0" />
-                        <GradientStop Color="{DynamicResource IgDarkColor23252B}" Offset="1.0" />
-                    </LinearGradientBrush>
-                </Border.Background>
-
-                <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
 
                     <!--  ======================================================  -->
                     <!--  1. HERO BRAND BANNER (全新图标 + 标题 + 版本徽章 + 粒子星芒)  -->
@@ -297,10 +272,11 @@
                                             FontSize="20.5"
                                             FontWeight="Bold"
                                             Foreground="{DynamicResource IgDarkBrushF3F4F6}"
-                                            Text="ImageGlass 10" />
+                                            Text="ChuImage" />
 
                                         <Button
                                             x:Name="PART_BtnEdition"
+                                            IsVisible="False"
                                             Classes="link about-edition-pill"
                                             VerticalAlignment="Center"
                                             Click="Edition_Click">
@@ -338,7 +314,7 @@
 
                                 <!--  右上角关闭按钮  -->
                                 <Button
-                                    x:Name="PART_BtnClose"
+                                    x:Name="PART_BtnClose" IsVisible="False"
                                     Classes="link about-icon-btn"
                                     Grid.Column="2"
                                     VerticalAlignment="Top"
@@ -459,10 +435,7 @@
                     <Panel Grid.Row="2">
 
                         <!--  PAGE 1: 版本信息卡片 + 快捷入口链接  -->
-                        <ScrollViewer
-                            x:Name="PART_OverviewPanel"
-                            HorizontalScrollBarVisibility="Disabled"
-                            VerticalScrollBarVisibility="Auto">
+                        <Border x:Name="PART_OverviewPanel">
                             <StackPanel Margin="22,16,22,18" Spacing="14">
 
                                 <!--  3.1 三列环境信息卡片  -->
@@ -699,14 +672,10 @@
                                 </StackPanel>
 
                             </StackPanel>
-                        </ScrollViewer>
+                        </Border>
 
                         <!--  PAGE 2: 开源致谢与组件清单  -->
-                        <ScrollViewer
-                            x:Name="PART_CreditsPanel"
-                            HorizontalScrollBarVisibility="Disabled"
-                            IsVisible="False"
-                            VerticalScrollBarVisibility="Auto">
+                        <Border x:Name="PART_CreditsPanel" IsVisible="False">
                             <StackPanel Margin="22,14,22,18" Spacing="8">
                                 <ItemsControl x:Name="PART_CreditsList">
                                     <ItemsControl.ItemsPanel>
@@ -764,7 +733,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </StackPanel>
-                        </ScrollViewer>
+                        </Border>
 
                     </Panel>
 
@@ -814,15 +783,13 @@
                             </StackPanel>
 
                             <Button
-                                x:Name="PART_BtnDone"
+                                x:Name="PART_BtnDone" IsVisible="False"
                                 Classes="link about-primary-btn"
                                 Grid.Column="1"
                                 Click="Close_Click" />
                         </Grid>
                     </Border>
 
-                </Grid>
-            </Border>
-        </ThemeVariantScope>
     </Grid>
+    </ScrollViewer>
 </UserControl>

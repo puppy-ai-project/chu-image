@@ -274,6 +274,7 @@ public partial class SettingsOverlayControl : UserControl
 
     private static string ResolveSection(string? section)
     {
+        if (string.Equals(section, "about", StringComparison.OrdinalIgnoreCase)) return "about";
         if (string.IsNullOrWhiteSpace(section)) return "theme";
 
         if (section.Contains("Assoc", StringComparison.OrdinalIgnoreCase)
@@ -290,20 +291,28 @@ public partial class SettingsOverlayControl : UserControl
 
     private void SwitchSection(string section)
     {
-        _activeSection = section == "theme" ? "theme" : "associations";
+        _activeSection = section is "theme" or "about" ? section : "associations";
         var isTheme = _activeSection == "theme";
+        var isAbout = _activeSection == "about";
 
         PART_NavTheme.Classes.Set("active", isTheme);
-        PART_NavAssociations.Classes.Set("active", !isTheme);
+        PART_NavAssociations.Classes.Set("active", !isTheme && !isAbout);
+        PART_NavAbout.Classes.Set("active", isAbout);
 
         PART_PageTheme.IsVisible = false;
         PART_AppearancePage.IsVisible = isTheme;
-        PART_PageAssociations.IsVisible = !isTheme;
+        PART_PageAssociations.IsVisible = !isTheme && !isAbout;
+        if (isAbout) PART_AboutPage.Open(); else PART_AboutPage.Close();
 
         PART_ThemeHeaderActions.IsVisible = false;
-        PART_AssocHeaderBadge.IsVisible = !isTheme;
+        PART_AssocHeaderBadge.IsVisible = !isTheme && !isAbout;
 
-        if (isTheme)
+        if (isAbout)
+        {
+            PART_SectionTitle.Text = Core.Lang[LangId.Menu_MnuAbout];
+            PART_SectionSubtitle.Text = string.Empty;
+        }
+        else if (isTheme)
         {
             PART_SectionTitle.Text = Core.Lang[LangId.Settings_Theme];
             PART_SectionSubtitle.Text = T(
@@ -328,6 +337,7 @@ public partial class SettingsOverlayControl : UserControl
         PART_SidebarGroupLabel.Text = T("偏好配置", "PREFERENCES");
         PART_TxtNavTheme.Text = Core.Lang[LangId.Settings_Theme];
         PART_TxtNavAssociations.Text = Core.Lang[LangId.Settings_Nav_FileTypeAssociations];
+        PART_TxtNavAbout.Text = Core.Lang[LangId.Menu_MnuAbout];
         PART_SidebarTip.Text = T("按 Esc 取消并关闭", "Press Esc to close");
 
         // 主题页文案

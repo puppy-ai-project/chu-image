@@ -684,6 +684,17 @@
                                                     IsVisible="False" />
                                             </Grid>
                                         </Button>
+                                        <Button x:Name="PART_NavAbout" Classes="link settings-nav-btn" Click="NavTab_Click" Tag="about">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                                    <Border Classes="nav-indicator" Width="3" Height="14" Margin="-6,0,2,0" VerticalAlignment="Center" Background="{DynamicResource IgIconCyanBrush}" CornerRadius="1.5" />
+                                                    <Border Width="22" Height="22" VerticalAlignment="Center" Background="{DynamicResource IgIconCyanSoftBrush}" CornerRadius="6">
+                                                        <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconInfo}" Fill="{DynamicResource IgIconCyanBrush}" Stretch="Uniform" />
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock x:Name="PART_TxtNavAbout" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" FontSize="12.5" Text="关于" />
+                                            </Grid>
+                                        </Button>
                                     </StackPanel>
 
                                     <!--  底部轻提示  -->
@@ -829,6 +840,7 @@
 
                                 <!--  右侧内容分页区  -->
                                 <Panel Grid.Row="1">
+                                    <windows:AboutOverlayControl x:Name="PART_AboutPage" IsVisible="False" />
 
                                     <!--  ================================================  -->
                                     <!--  PAGE 1: 主题与外观 (PART_PageTheme)               -->

@@ -149,7 +149,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void RefreshVersionCards()
     {
-        var appVer = Core.BuildInfo.FullVersion;
+        var appVer = Core.BuildInfo.Version;
         var magickFull = MagickNET.Version;
         var magickCompact = ExtractCompactMagickVersion(magickFull);
         var runtime = RuntimeInformation.FrameworkDescription;

@@ -433,7 +433,7 @@ public partial class MainWindowView : PhControl
     public void OpenAboutOverlay()
     {
         CloseImageInfoOverlay();
-        PART_AboutModal.Open();
+        OpenSettingsOverlay("about");
     }
 
     public void CloseAboutOverlay()
