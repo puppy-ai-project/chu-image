@@ -258,18 +258,13 @@ public partial class SettingsOverlayControl : UserControl
 
     private void CancelAndClose()
     {
-        // 若用户改动过背景色但点取消，恢复主窗口原有的背景预览
-        if (!string.Equals(_bgColor, _initialBgColor, StringComparison.OrdinalIgnoreCase))
-        {
-            _previewBgCallback?.Invoke(_initialBgColor);
-        }
-
         HideOverlayAndDisposePreviews();
     }
 
 
     private void HideOverlayAndDisposePreviews()
     {
+        _previewBgCallback?.Invoke(null);
         CloseLargeThemePreview();
         HideAddBar(clearText: true);
         DisposeThemeCardBitmaps();
@@ -1411,7 +1406,7 @@ public partial class SettingsOverlayControl : UserControl
                 await app.ApplyThemePackAsync(Core.IsSystemDarkMode);
 
                 // 确保用户刚才挑选或保持的自定义查看器背景色不被 LoadCurrentThemeAsync 覆盖
-                if (bgChanged || !string.Equals(Core.Config.BackgroundColor, _bgColor, StringComparison.OrdinalIgnoreCase))
+                if (bgChanged)
                 {
                     Core.Config.Set(ConfigId.BackgroundColor, _bgColor);
                 }

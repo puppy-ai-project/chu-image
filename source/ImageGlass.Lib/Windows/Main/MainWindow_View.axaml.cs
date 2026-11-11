@@ -443,6 +443,12 @@ public partial class MainWindowView : PhControl
 
     #endregion // About Overlay
 
+    protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
+    {
+        base.OnIgThemeChanged(e);
+        UpdateViewerCustomBackground();
+    }
+
     public void UpdateViewerCustomBackground(string? overrideHex = null)
     {
         var bgText = overrideHex ?? (Core.Config.EnableSlideshow
