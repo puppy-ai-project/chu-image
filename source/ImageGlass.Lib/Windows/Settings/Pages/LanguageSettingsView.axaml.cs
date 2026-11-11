@@ -29,7 +29,7 @@ namespace ImageGlass.Common.Windows;
 
 public partial class LanguageSettingsView : SettingsPageView
 {
-    private const string LANGUAGES_URL = "https://imageglass.org/languages";
+    private const string LANGUAGES_URL = "https://image.withqq.com";
 
     private List<Lang> _langs = [];
     private bool _isPopulating;

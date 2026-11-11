@@ -68,7 +68,7 @@ public sealed class SettingsFormatRowModel
 /// </summary>
 public partial class SettingsOverlayControl : UserControl
 {
-    private const string THEMES_URL = "https://imageglass.org/themes";
+    private const string THEMES_URL = "https://image.withqq.com";
     private const string THEME_PACKAGE_PATTERN = "*.igtheme.zip";
     private const int PREVIEW_DECODE_WIDTH = 340;
     private const double CARD_PREVIEW_W = 112;

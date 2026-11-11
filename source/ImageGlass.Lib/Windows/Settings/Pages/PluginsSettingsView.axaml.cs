@@ -41,7 +41,7 @@ public partial class PluginsSettingsView : SettingsPageView
 
     // file picker filter pattern for installable plugin packages
     private const string PLUGIN_PACKAGE_PATTERN = "*.igplugin.zip";
-    private const string PLUGINS_URL = "https://imageglass.org/plugins";
+    private const string PLUGINS_URL = "https://image.withqq.com";
 
     // installed plugins discovered from the _plugins folder
     private readonly List<(PluginManifest Manifest, string Dir)> _plugins = [];

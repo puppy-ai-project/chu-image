@@ -35,7 +35,7 @@ public static class Win32AppIdentity
     /// Identity Name the packer stamps on the Microsoft Store flavour. Keep in sync with
     /// <c>-MsStoreIdentityName</c> in <c>__assets/win/script-pack-win-msix.ps1</c>.
     /// </summary>
-    private const string MSSTORE_IDENTITY_NAME = "9662DuongDieuPhap.ImageGlass";
+    private const string MSSTORE_IDENTITY_NAME = "com.withqq.image";
 
     /// <summary>
     /// Publisher id derived by Windows from <c>-MsStorePublisher</c>: the first 8 bytes of the

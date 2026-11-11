@@ -18,7 +18,7 @@
   <String Id="IgAgreementBody"         Value="ImageGlass is a fast, open-source, modern image viewer. Installing it means you accept the terms of use and the privacy policy published here:" />
   <String Id="IgAgreementAgree"        Value="I have read and agree to the Terms and Privacy" />
   <!-- Anchor markup for the MSI Hyperlink control; the raw URL doubles as the link text. -->
-  <String Id="IgTermsLink"             Value="&lt;a href=&quot;https://imageglass.org/terms?utm_source=ig_installer_[ProductVersion]&amp;utm_medium=ig_installer_click&amp;utm_campaign=ig_installer&quot;&gt;https://imageglass.org/terms&lt;/a&gt;" />
+  <String Id="IgTermsLink"             Value="&lt;a href=&quot;https://image.withqq.com&quot;&gt;https://image.withqq.com&lt;/a&gt;" />
 
   <!-- Screen 2: installation type -->
   <String Id="IgScopeTitle"            Value="Installation type" />
@@ -45,7 +45,7 @@
        stores strings in an ANSI codepage, so anything outside CP1252 fails the build. -->
   <String Id="IgProPitchTitle"         Value="Upgrade to ImageGlass Pro!" />
   <String Id="IgProPitch"              Value="Everything you love about ImageGlass, tuned for professionals and teams. Unlock HDR tone mapping, free panning, and admin controls." />
-  <String Id="IgProLink"               Value="&lt;a href=&quot;https://imageglass.org/pricing?utm_source=ig_installer_[ProductVersion]&amp;utm_medium=ig_installer_click&amp;utm_campaign=ig_installer&quot;&gt;See Plans and Pricing&lt;/a&gt;" />
+  <String Id="IgProLink"               Value="&lt;a href=&quot;https://image.withqq.com&quot;&gt;See Plans and Pricing&lt;/a&gt;" />
 
   <!-- Screen 4: complete -->
   <String Id="IgDialogBitmap"          Value="WixUI_Bmp_Dialog" />

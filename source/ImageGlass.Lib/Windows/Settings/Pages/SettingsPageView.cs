@@ -36,7 +36,7 @@ namespace ImageGlass.Common.Windows;
 /// </summary>
 public abstract class SettingsPageView : PhControl
 {
-    private const string TRANSITIONS_URL = "https://imageglass.org/effects";
+    private const string TRANSITIONS_URL = "https://image.withqq.com";
 
 
     /// <summary>

@@ -45,7 +45,7 @@ namespace ImageGlass.Common.Windows;
 
 public partial class AppearanceSettingsView : SettingsPageView
 {
-    private const string THEMES_URL = "https://imageglass.org/themes";
+    private const string THEMES_URL = "https://image.withqq.com";
 
     // file picker filter pattern for installable theme packs
     private const string THEME_PACKAGE_PATTERN = "*.igtheme.zip";

@@ -62,7 +62,7 @@
 .PARAMETER CertSubject
     Substring of the code-signing certificate Subject to select it from the
     Current User / Local Machine "My" store (passed to signtool /n). Ignored when
-    -CertFile is supplied. Default: "Duong Dieu Phap".
+    -CertFile is supplied. Default: "puppy".
 
 .PARAMETER CertFile
     Path to a PFX certificate to sign with instead of a store certificate.
@@ -109,7 +109,7 @@ param(
 
     [switch]$Sign,
 
-    [string]$CertSubject = 'Duong Dieu Phap',
+    [string]$CertSubject = 'puppy',
     [string]$CertFile = '',
     [string]$CertPassword = '',
     [string]$TimestampUrl = 'http://timestamp.sectigo.com',
@@ -117,12 +117,12 @@ param(
     [string]$PackageVersion = '',
 
     # msstore identity (unsigned build) — reserved name assigned by Partner Center.
-    [string]$MsStoreIdentityName = '9662DuongDieuPhap.ImageGlass',
-    [string]$MsStorePublisher = 'CN=29F1B9EC-D220-4DC3-BEDB-01A9CCA51904',
+    [string]$MsStoreIdentityName = 'com.withqq.image',
+    [string]$MsStorePublisher = '',
 
     # Sideload identity (signed build) — Publisher is overwritten with the cert Subject.
-    [string]$SideloadIdentityName = 'DuongDieuPhap.ImageGlass',
-    [string]$PublisherDisplayName = 'Duong Dieu Phap',
+    [string]$SideloadIdentityName = 'com.withqq.image',
+    [string]$PublisherDisplayName = 'puppy',
 
     [switch]$SkipPublish,
 
@@ -567,6 +567,9 @@ if ($Sign) {
     }
 }
 else {
+    if ([string]::IsNullOrWhiteSpace($MsStorePublisher)) {
+        throw 'Pass -MsStorePublisher using the Publisher value assigned to your Microsoft Store account.'
+    }
     $identityName  = $MsStoreIdentityName
     $publisher     = $MsStorePublisher
     $script:doSign = $false

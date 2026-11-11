@@ -86,7 +86,7 @@ param(
 
     [switch]$Sign,
 
-    [string]$CertSubject = 'Duong Dieu Phap',
+    [string]$CertSubject = 'puppy',
     [string]$CertFile = '',
     [string]$CertPassword = '',
     [string]$TimestampUrl = 'http://timestamp.sectigo.com',

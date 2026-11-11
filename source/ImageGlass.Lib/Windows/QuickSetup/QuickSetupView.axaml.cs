@@ -40,7 +40,7 @@ namespace ImageGlass.Windows;
 
 public partial class QuickSetupView : PhControl
 {
-    private const string NEWS_URL = "https://imageglass.org/news";
+    private const string NEWS_URL = "https://image.withqq.com";
 
     private readonly List<Control> _stepPanels;
     private readonly List<Border> _dots = [];

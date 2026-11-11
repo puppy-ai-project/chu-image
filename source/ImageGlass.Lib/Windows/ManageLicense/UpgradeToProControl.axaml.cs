@@ -103,9 +103,9 @@ public partial class UpgradeToProControl : PhControl
 
         Localize();
 
-        PART_BtnViewFeatures.Click += (_, _) => OpenUrl("https://imageglass.org/pro");
-        PART_BtnBuyOnline.Click += (_, _) => OpenUrl("https://imageglass.org/pricing");
-        PART_BtnRetrieveEmail.Click += (_, _) => OpenUrl("https://imageglass.org/pro/retrieve");
+        PART_BtnViewFeatures.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnBuyOnline.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnRetrieveEmail.Click += (_, _) => OpenUrl("https://image.withqq.com");
         PART_BtnImportLicense.Click += async (_, _) => await ImportAndShowResultAsync();
     }
 

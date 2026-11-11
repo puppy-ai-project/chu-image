@@ -49,9 +49,9 @@ public partial class ManageLicenseView : PhControl
         if (isPro) FillLicenseInfo();
         SetupHero();
 
-        PART_BtnPlan.Click += (_, _) => OpenUrl("https://imageglass.org/license");
+        PART_BtnPlan.Click += (_, _) => OpenUrl("https://image.withqq.com");
         PART_BtnChangeLicense.Click += async (_, _) => await UpgradeToProControl.ImportLicenseAsync(this);
-        PART_BtnUpgradePlan.Click += (_, _) => OpenUrl("https://imageglass.org/pricing");
+        PART_BtnUpgradePlan.Click += (_, _) => OpenUrl("https://image.withqq.com");
         PART_BtnExportLicense.Click += async (_, _) => await ExportLicenseAsync();
     }
 

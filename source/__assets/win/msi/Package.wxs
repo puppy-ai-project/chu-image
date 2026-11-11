@@ -35,18 +35,6 @@
         AllowSameVersionUpgrades="yes"
         DowngradeErrorMessage="!(loc.IgNewerVersionInstalled)" />
 
-    <!-- IgnoreRemoveFailure is mandatory: a per-user v10 cannot remove a per-machine v9, and
-         without it that failure rolls the whole install back. -->
-    <Upgrade Id="$(var.Ig9UpgradeCode)">
-      <UpgradeVersion
-          Minimum="0.0.0"  IncludeMinimum="yes"
-          Maximum="10.0.0" IncludeMaximum="no"
-          Property="IGV9INSTALLED"
-          MigrateFeatures="no"
-          OnlyDetect="no"
-          IgnoreRemoveFailure="yes" />
-    </Upgrade>
-
     <!-- ==== Public properties (admin-settable on the msiexec command line) =============== -->
     <!-- ALLUSERS=2 and MSIINSTALLPERUSER=1 are emitted automatically by Scope="perUserOrMachine". -->
 
@@ -202,10 +190,10 @@
           SourceFile="$(sys.SOURCEFILEDIR)..\..\..\ImageGlass.Win32\icon256.ico" />
 
     <Property Id="ARPPRODUCTICON"   Value="ImageGlassIcon" />
-    <Property Id="ARPCONTACT"       Value="phap@imageglass.org" />
-    <Property Id="ARPHELPLINK"      Value="https://imageglass.org/support" />
-    <Property Id="ARPURLINFOABOUT"  Value="https://imageglass.org" />
-    <Property Id="ARPURLUPDATEINFO" Value="https://imageglass.org/download" />
+    <Property Id="ARPCONTACT"       Value="puppy" />
+    <Property Id="ARPHELPLINK"      Value="https://image.withqq.com" />
+    <Property Id="ARPURLINFOABOUT"  Value="https://image.withqq.com" />
+    <Property Id="ARPURLUPDATEINFO" Value="https://image.withqq.com" />
     <Property Id="ARPCOMMENTS"      Value="A Fast, Seamless Photo Viewer" />
 
     <!-- One feature only, so Change would be a dead end; Repair still works from a re-run. -->

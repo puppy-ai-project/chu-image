@@ -36,7 +36,7 @@ public static class Const
     /// <summary>
     /// Official website host. Campaign params are appended to this host and its subdomains only.
     /// </summary>
-    public const string WEBSITE_HOST = "imageglass.org";
+    public const string WEBSITE_HOST = "image.withqq.com";
 
 
     /// <summary>

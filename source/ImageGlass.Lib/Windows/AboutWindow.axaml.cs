@@ -97,7 +97,7 @@ public partial class AboutWindow : DialogWindow
         DefaultFocus = DialogFocus.Button1;
         ShowInTaskbar = true;
 
-        PART_LblCopyright.Text = $"Copyright © 2010-{DateTime.UtcNow.Year} Dương Diệu Pháp";
+        PART_LblCopyright.Text = $"Copyright © 2010-{DateTime.UtcNow.Year} Dương Diệu Pháp · 二次开发：puppy";
         PART_LblCreditContent.Text = _creditContent;
 
         SetupEditionChip();
@@ -107,11 +107,11 @@ public partial class AboutWindow : DialogWindow
         PhButton[] linkButtons = [PART_BtnWebsite, PART_BtnGitHub, PART_BtnEula, PART_BtnPrivacy];
         foreach (var btn in linkButtons) btn.Padding = new Thickness(6, 2);
 
-        PART_BtnWebsite.Click += (_, _) => OpenUrl("https://imageglass.org");
-        PART_BtnGitHub.Click += (_, _) => OpenUrl("https://github.com/d2phap/ImageGlass");
-        PART_BtnEula.Click += (_, _) => OpenUrl("https://imageglass.org/license");
-        PART_BtnPrivacy.Click += (_, _) => OpenUrl("https://imageglass.org/privacy");
-        PART_BtnDonate.Click += (_, _) => OpenUrl("https://imageglass.org/donate");
+        PART_BtnWebsite.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnGitHub.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnEula.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnPrivacy.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnDonate.Click += (_, _) => OpenUrl("https://image.withqq.com");
 
         PART_BtnCheckForUpdate.Click += async (_, _) =>
         {

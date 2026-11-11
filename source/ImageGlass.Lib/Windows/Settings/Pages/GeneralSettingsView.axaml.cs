@@ -151,7 +151,7 @@ public partial class GeneralSettingsView : SettingsPageView
     {
         try
         {
-            await BHelper.OpenUrlAsync(this, "https://imageglass.org/docs", $"from_setting_{NavId}");
+            await BHelper.OpenUrlAsync(this, "https://image.withqq.com", $"from_setting_{NavId}");
         }
         catch
         {

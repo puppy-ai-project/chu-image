@@ -40,7 +40,7 @@ public partial class ToolsSettingsView : SettingsPageView
 {
     private const double NAME_MAX_WIDTH = 220;
     private const double HOTKEY_MAX_WIDTH = 200;
-    private const string TOOLS_URL = "https://imageglass.org/tools";
+    private const string TOOLS_URL = "https://image.withqq.com";
 
     // working copy of the registered tools; staged into the VM on change
     private readonly List<ExternalTool> _tools = [];

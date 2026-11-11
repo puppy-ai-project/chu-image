@@ -77,7 +77,6 @@ public partial class AppAPIProvider
 
     // set once the user runs a check-for-update with UI; the startup silent check then completes
     // its work without popping its own window on top of what the user already asked for
-    private static InterlockedBool _hasManualUpdateCheck;
 
 
     /// <summary>
@@ -3295,56 +3294,8 @@ public partial class AppAPIProvider
     /// </summary>
     public static async Task IG_CheckForUpdateAsync(bool showUI = true)
     {
-        if (showUI) _hasManualUpdateCheck.SetTrue();
-
-        // silent mode: skip if disabled or checked recently
-        if (!showUI)
-        {
-            if (string.Equals(Core.Config.AutoUpdate, "0", StringComparison.Ordinal)) return;
-            if (!UpdateProvider.ShouldCheck) return;
-
-            // delay to let the app finish starting
-            await Task.Delay(TimeSpan.FromSeconds(10));
-        }
-
-
-        UpdateWindow? updateWindow = null;
-
-        if (showUI)
-        {
-            // open UpdateWindow immediately in "checking" state
-            updateWindow = new UpdateWindow();
-            updateWindow.SetCheckingState();
-
-            // show the window non-blocking, then perform the check
-            _ = updateWindow.ShowAsync(App.MainWindow);
-        }
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var result = await Core.UpdateProvider.CheckForUpdateAsync(cts.Token, isScheduled: !showUI);
-
-        if (showUI)
-        {
-            // show check progress
-            await Task.Delay(1000);
-
-            // transition the already-open window to result state
-            updateWindow!.SetResultState(result);
-        }
-        else
-        {
-            // auto-download when enabled; the ready package shows the menu affordance, not a popup
-            var download = await Core.UpdateProvider.TryDownloadUpdateAsync(result, CancellationToken.None);
-            if (download.IsSuccess) return;
-
-            // silent mode: only show window for an update the user has not already checked for
-            if (result.Status == Update.UpdateCheckStatus.UpdateAvailable && !_hasManualUpdateCheck)
-            {
-                updateWindow = new UpdateWindow();
-                updateWindow.SetResultState(result);
-                _ = await updateWindow.ShowAsync(App.MainWindow);
-            }
-        }
+        // The fork has no update feed yet; never check or install upstream releases.
+        if (showUI) await BHelper.OpenUrlAsync(App.MainWindow, "https://image.withqq.com", "from_update");
     }
 
 
@@ -3461,7 +3412,7 @@ public partial class AppAPIProvider
     public static void IG_ReportIssue()
     {
         _ = BHelper.OpenUrlAsync(App.MainWindow,
-            "https://github.com/d2phap/ImageGlass/issues?q=is%3Aissue+",
+            "https://image.withqq.com",
             "from_report_issue");
     }
 

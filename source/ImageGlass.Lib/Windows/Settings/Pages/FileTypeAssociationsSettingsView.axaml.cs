@@ -36,7 +36,7 @@ namespace ImageGlass.Common.Windows;
 
 public partial class FileTypeAssociationsSettingsView : SettingsPageView
 {
-    private const string EXT_ICON_PACKS_URL = "https://imageglass.org/extension-icons";
+    private const string EXT_ICON_PACKS_URL = "https://image.withqq.com";
 
     // floor + bottom inset for fitting the formats table to the page viewport height
     private const double MIN_TABLE_HEIGHT = 220;

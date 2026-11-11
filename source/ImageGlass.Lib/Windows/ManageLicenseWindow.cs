@@ -66,7 +66,7 @@ public partial class ManageLicenseWindow : DialogWindow
         };
 
         var campaign = Core.IsProEnabled ? "from_manage_license" : "from_upgrade_dialog";
-        btn.Click += (_, _) => _ = BHelper.OpenUrlAsync(this, "https://imageglass.org/support", campaign);
+        btn.Click += (_, _) => _ = BHelper.OpenUrlAsync(this, "https://image.withqq.com", campaign);
 
         return btn;
     }

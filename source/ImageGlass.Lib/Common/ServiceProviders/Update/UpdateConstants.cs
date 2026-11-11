@@ -25,23 +25,23 @@ internal static class UpdateConstants
     /// <summary>
     /// Update metadata endpoint (HTTPS only).
     /// </summary>
-    public const string MetadataUrl = "https://imageglass.org/url/update";
+    public const string MetadataUrl = "https://image.withqq.com";
 
     /// <summary>
     /// Fallback URL when update check fails.
     /// </summary>
-    public const string FallbackReleasesUrl = "https://github.com/d2phap/ImageGlass/releases";
+    public const string FallbackReleasesUrl = "https://image.withqq.com";
 
     /// <summary>
     /// Microsoft Store product page. The Store owns updating for that package, so its build sends
     /// the user here instead of to the download/changelog page.
     /// </summary>
-    public const string MsStoreProductUrl = "ms-windows-store://pdp/?productid=9N33VZK3C7TH";
+    public const string MsStoreProductUrl = "https://image.withqq.com";
 
     /// <summary>
     /// Pro pricing page, the online purchase route offered next to the Store one.
     /// </summary>
-    public const string ProPricingUrl = "https://imageglass.org/pricing";
+    public const string ProPricingUrl = "https://image.withqq.com";
 
     /// <summary>
     /// Maximum metadata response size (1 MB).
