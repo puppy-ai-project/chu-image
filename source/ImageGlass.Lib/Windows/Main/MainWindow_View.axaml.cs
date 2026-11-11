@@ -1196,10 +1196,42 @@ public partial class MainWindowView : PhControl
             mnuContext.Items.Add(item);
         }
 
+        if (BHelper.OS == OSType.Windows)
+        {
+            var photosItem = new PhMenuItem
+            {
+                Header = "使用 Windows 照片打开",
+                Icon = CreateContextMenuIcon(iconFolder, "#CBD5E1"),
+            };
+            photosItem.Click += OpenInWindowsPhotos_Click;
+            mnuContext.Items.Add(photosItem);
+        }
+
         mnuContext.Opened += (_, _) => UpdateContextMenuIconColors(mnuContext);
         UpdateContextMenuIconColors(mnuContext);
 
         FeatureManager.HideLockedMenuItems(mnuContext.Items);
+    }
+
+    private async void OpenInWindowsPhotos_Click(object? sender, RoutedEventArgs e)
+    {
+        var path = Core.Photos.CurrentFilePath;
+        if (Core.ClipboardImage is not null || !File.Exists(path)) return;
+
+        try
+        {
+            var uri = "ms-photos:viewer?fileName=" + Uri.EscapeDataString(Path.GetFullPath(path));
+            Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            await ImageGlass.UI.Windowing.ModalWindow.ShowErrorAsync(App.MainWindow,
+                new ImageGlass.UI.Windowing.ModalWindowOptions
+                {
+                    Title = "无法打开 Windows 照片",
+                    Description = ex.Message,
+                });
+        }
     }
 
     private static PhMenuItem CreateDangerMenuItem(string iconTrash)
