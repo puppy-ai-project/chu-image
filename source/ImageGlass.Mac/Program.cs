@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -17,8 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 using ImageGlass.Common;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.ServiceProviders;
@@ -81,5 +83,13 @@ sealed class Program
         .With(new SkiaOptions
         {
             MaxGpuResourceSizeBytes = long.MaxValue,
+        })
+        .AfterSetup(_ =>
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.Startup += (_, _) =>
+                    Dispatcher.UIThread.Post(Common.MacEventApi.SetDockIcon, DispatcherPriority.Loaded);
+            }
         });
 }

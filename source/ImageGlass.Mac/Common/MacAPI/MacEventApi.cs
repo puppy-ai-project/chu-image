@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace ImageGlass.Mac.Common;
@@ -47,10 +48,84 @@ public static partial class MacEventApi
     }
 
 
+    /// <summary>
+    /// Sets the macOS Dock application icon from the embedded PNG resource,
+    /// ensuring debug and standalone binaries display the app icon properly.
+    /// </summary>
+    public static void SetDockIcon()
+    {
+        try
+        {
+            using var stream = typeof(MacEventApi).Assembly.GetManifestResourceStream("dock_icon.png");
+            if (stream is null) return;
+
+            using var ms = new MemoryStream();
+            stream.CopyTo(ms);
+            var bytes = ms.ToArray();
+            if (bytes.Length == 0) return;
+
+            var nsDataClass = objc_getClass("NSData");
+            var nsImageClass = objc_getClass("NSImage");
+            if (nsDataClass == 0 || nsImageClass == 0) return;
+
+            var dataWithBytesSel = sel_registerName("dataWithBytes:length:");
+            var allocSel = sel_registerName("alloc");
+            var initWithDataSel = sel_registerName("initWithData:");
+            var setAppIconSel = sel_registerName("setApplicationIconImage:");
+            var releaseSel = sel_registerName("release");
+
+            nint nsData;
+            unsafe
+            {
+                fixed (byte* ptr = bytes)
+                {
+                    nsData = objc_msgSend_ptr_len(nsDataClass, dataWithBytesSel, (nint)ptr, (nuint)bytes.Length);
+                }
+            }
+            if (nsData == 0) return;
+
+            var nsImageAlloc = objc_msgSend(nsImageClass, allocSel);
+            if (nsImageAlloc == 0) return;
+
+            var nsImage = objc_msgSend_ptr(nsImageAlloc, initWithDataSel, nsData);
+            if (nsImage == 0) return;
+
+            try
+            {
+                var nsApp = objc_msgSend(_nsAppClass.Value, _sharedAppSel.Value);
+                if (nsApp != 0)
+                {
+                    objc_msgSend_void_ptr(nsApp, setAppIconSel, nsImage);
+                }
+            }
+            finally
+            {
+                objc_msgSend_void(nsImage, releaseSel);
+            }
+        }
+        catch
+        {
+            // Ignore Dock icon styling failures
+        }
+    }
+
+
     #region ObjC runtime interop
 
     [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
     private static partial nint objc_msgSend(nint receiver, nint selector);
+
+    [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
+    private static partial nint objc_msgSend_ptr(nint receiver, nint selector, nint arg1);
+
+    [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
+    private static partial nint objc_msgSend_ptr_len(nint receiver, nint selector, nint arg1, nuint arg2);
+
+    [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
+    private static partial void objc_msgSend_void(nint receiver, nint selector);
+
+    [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
+    private static partial void objc_msgSend_void_ptr(nint receiver, nint selector, nint arg1);
 
     [LibraryImport(LIB_OBJC, EntryPoint = "objc_msgSend")]
     [return: MarshalAs(UnmanagedType.Bool)]

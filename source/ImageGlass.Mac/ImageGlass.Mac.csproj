@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net11.0</TargetFramework>
@@ -48,6 +48,11 @@
   </ItemGroup>
 
   
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/dock_icon.png" LogicalName="dock_icon.png" />
+  </ItemGroup>
+
+
   <ItemGroup>
     <ProjectReference Include="..\ImageGlass.Lib\ImageGlass.Lib.csproj" />
   </ItemGroup>
