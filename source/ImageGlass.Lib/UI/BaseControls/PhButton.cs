@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -68,6 +68,18 @@ public class PhButton : Button
     }
     public static readonly StyledProperty<Geometry?> IconDataProperty =
         AvaloniaProperty.Register<PhButton, Geometry?>(nameof(IconData));
+
+
+    /// <summary>
+    /// 获取或设置按钮图标着色画刷，未设置时沿用按钮前景色。
+    /// </summary>
+    public IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+    public static readonly StyledProperty<IBrush?> IconBrushProperty =
+        AvaloniaProperty.Register<PhButton, IBrush?>(nameof(IconBrush));
 
 
     /// <summary>
@@ -265,7 +277,7 @@ public class PhButton : Button
         {
             UpdateContentVisual();
         }
-        else if (e.Property == ForegroundProperty || e.Property == IconStrokeThicknessProperty)
+        else if (e.Property == ForegroundProperty || e.Property == IconBrushProperty || e.Property == IconStrokeThicknessProperty)
         {
             UpdateIconPaint();
         }
@@ -510,9 +522,10 @@ public class PhButton : Button
         if (_iconEl is null) return;
 
         var isOutlined = IconStrokeThickness > 0;
+        var brush = IconBrush ?? Foreground;
         _iconEl.StrokeThickness = IconStrokeThickness;
-        _iconEl.Fill = isOutlined ? null : Foreground;
-        _iconEl.Stroke = isOutlined ? Foreground : null;
+        _iconEl.Fill = isOutlined ? null : brush;
+        _iconEl.Stroke = isOutlined ? brush : null;
     }
 
 

@@ -41,6 +41,11 @@ public partial class ConfigJsonContext : JsonSerializerContext { }
 
 public partial class Config : PhReactive
 {
+    public string AppearanceMode
+    {
+        get => Get(ConfigId.AppearanceMode, "System");
+        set => Set(ConfigId.AppearanceMode, value);
+    }
     [JsonIgnore]
     private readonly Dictionary<ConfigId, object> _values = [];
 

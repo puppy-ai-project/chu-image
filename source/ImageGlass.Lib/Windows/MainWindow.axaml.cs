@@ -22,6 +22,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
@@ -73,6 +74,7 @@ public partial class MainWindow : PhWindow
     private Size _resizeStartSize;
     private Cursor? _diagonalResizeCursor;
     private Cursor? _oppositeDiagonalResizeCursor;
+    private readonly DispatcherTimer _saveWindowSizeTimer = new() { Interval = TimeSpan.FromMilliseconds(700) };
 
     private static Cursor CreateDiagonalResizeCursor(bool mirror)
     {
@@ -179,7 +181,30 @@ public partial class MainWindow : PhWindow
         if (_resizeEdge is null) return;
         _resizeEdge = null;
         e.Pointer.Capture(null);
+        ScheduleWindowSizeSave();
         e.Handled = true;
+    }
+
+    protected override void OnResized(WindowResizedEventArgs e)
+    {
+        base.OnResized(e);
+        if (e.Reason == WindowResizeReason.User) ScheduleWindowSizeSave();
+    }
+
+    private void ScheduleWindowSizeSave()
+    {
+        if (!IsVisible || WindowState != WindowState.Normal || Core.Config.EnableWindowFit) return;
+        _saveWindowSizeTimer.Stop();
+        _saveWindowSizeTimer.Start();
+    }
+
+    private async void SaveWindowSizeTimer_Tick(object? sender, EventArgs e)
+    {
+        _saveWindowSizeTimer.Stop();
+        if (!IsVisible || WindowState != WindowState.Normal || Core.Config.EnableWindowFit) return;
+        if (WindowedBounds is not { } bounds || bounds.Width < MIN_RESTORE_WIDTH || bounds.Height < MIN_RESTORE_HEIGHT) return;
+        Core.Config.MainWindowBounds = bounds;
+        await Core.Config.SaveAsync();
     }
 
     private void ResizeHandle_PointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
@@ -190,6 +215,7 @@ public partial class MainWindow : PhWindow
     {
         StartupTrace.Mark("MainWindow:InitComponent:begin");
         InitializeComponent();
+        _saveWindowSizeTimer.Tick += SaveWindowSizeTimer_Tick;
         UseCustomBackdrop = true;
         TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
         _diagonalResizeCursor = CreateDiagonalResizeCursor(false);
@@ -341,6 +367,8 @@ public partial class MainWindow : PhWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        _saveWindowSizeTimer.Stop();
+        _saveWindowSizeTimer.Tick -= SaveWindowSizeTimer_Tick;
         base.OnClosed(e);
 
         _diagonalResizeCursor?.Dispose();
@@ -483,9 +511,16 @@ public partial class MainWindow : PhWindow
     }
 
 
-    private void PART_Toolbar_ItemClicked(object sender, ToolbarItemClickEventArgs e)
+    private async void PART_Toolbar_ItemClicked(object sender, ToolbarItemClickEventArgs e)
     {
-        _ = Core.API.RunActionAsync(e.VM.OnClick);
+        await Core.API.RunActionAsync(e.VM.OnClick);
+        // Persist explicit toolbar choices immediately. Full screen uses a temporary
+        // layout and is saved from its windowed snapshot on close instead.
+        if (e.VM.Id is "Btn_Gallery" or "Btn_Checkerboard"
+            && Core.API.PreFullScreenLayout is null && !Core.Config.EnableSlideshow)
+        {
+            await CaptureAndSaveConfigAsync();
+        }
     }
 
 
@@ -563,13 +598,12 @@ public partial class MainWindow : PhWindow
 
     private async Task SaveConfigOnClosingAsync()
     {
+        // Capture live bounds before hiding the window: WindowedBounds ignores hidden windows.
+        var taskConfig = CaptureAndSaveConfigAsync();
+
         // hide the open windows
         Hide();
         App.SettingsWindow?.Hide();
-
-
-        // save config to file
-        var taskConfig = CaptureAndSaveConfigAsync();
 
 
         // permanently adds the data that is on the Clipboard so that it is available

@@ -49,6 +49,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/DarkPalette.axaml" />
                 <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/CommonResources.axaml" />
                 <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/ToggleSwitchResources.axaml" />
                 <ResourceInclude Source="avares://ImageGlass.Lib/UI/Styles/IconResources.axaml" />

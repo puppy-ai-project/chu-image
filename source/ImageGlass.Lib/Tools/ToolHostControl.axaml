@@ -53,6 +53,7 @@
                     Width="18"
                     Height="18"
                     Data="{CompiledBinding #Root.ToolIcon}"
+                    Foreground="{DynamicResource IgIconCyanBrush}"
                     IsVisible="{CompiledBinding #Root.ToolIcon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <ui:PhTextBlock
                     VerticalAlignment="Center"
@@ -88,7 +89,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Data="{StaticResource IconClose}"
-                        Fill="{DynamicResource IG_ThemeForegroundBrush}"
+                        Fill="{DynamicResource IgIconRoseBrush}"
                         Stretch="Uniform" />
                 </ui:PhToolButton>
 
@@ -106,9 +107,8 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Data="{StaticResource IconSettings}"
-                        Stretch="Uniform"
-                        Stroke="{DynamicResource IG_ThemeForegroundBrush}"
-                        StrokeThickness="1" />
+                        Fill="{DynamicResource IgIconIndigoBrush}"
+                        Stretch="Uniform" />
                 </ui:PhToolButton>
 
                 <!--  Pro badge  -->

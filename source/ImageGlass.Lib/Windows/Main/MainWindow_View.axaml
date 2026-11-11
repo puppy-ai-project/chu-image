@@ -26,37 +26,37 @@
         </ControlTemplate>
         <!--  顶部工作台渐变：轻盈温润石板灰  -->
         <LinearGradientBrush x:Key="WindowBarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#2C2E34" Offset="0.0" />
-            <GradientStop Color="#23252A" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor2C2E34}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor23252A}" Offset="1.0" />
         </LinearGradientBrush>
         <!--  底部控制栏渐变  -->
         <LinearGradientBrush x:Key="WindowBottomBarGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#23252A" Offset="0.0" />
-            <GradientStop Color="#1D1F24" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor23252A}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor1D1F24}" Offset="1.0" />
         </LinearGradientBrush>
         <!--  弹窗光学顶高光玻璃描边 (顶部微光反射逐渐衰减)  -->
         <LinearGradientBrush x:Key="ModalGlassBorderBrush" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#36FFFFFF" Offset="0.0" />
-            <GradientStop Color="#16FFFFFF" Offset="0.45" />
-            <GradientStop Color="#0BFFFFFF" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor36FFFFFF}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor16FFFFFF}" Offset="0.45" />
+            <GradientStop Color="{DynamicResource IgDarkColor0BFFFFFF}" Offset="1.0" />
         </LinearGradientBrush>
         <!--  弹窗确认删除柔雅低饱和珊瑚红渐变 (与暗灰主调和谐融合)  -->
         <LinearGradientBrush x:Key="DangerBtnGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#B83E3E" Offset="0.0" />
-            <GradientStop Color="#9E3232" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColorB83E3E}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor9E3232}" Offset="1.0" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="DangerBtnHoverGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#C94B4B" Offset="0.0" />
-            <GradientStop Color="#AE3B3B" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColorC94B4B}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColorAE3B3B}" Offset="1.0" />
         </LinearGradientBrush>
         <!--  弹窗确认/完成温和沉稳蓝渐变  -->
         <LinearGradientBrush x:Key="ModalAccentBtnGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#356BBF" Offset="0.0" />
-            <GradientStop Color="#2B59A1" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor356BBF}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor2B59A1}" Offset="1.0" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="ModalAccentBtnHoverGradient" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#407AD2" Offset="0.0" />
-            <GradientStop Color="#3368B8" Offset="1.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor407AD2}" Offset="0.0" />
+            <GradientStop Color="{DynamicResource IgDarkColor3368B8}" Offset="1.0" />
         </LinearGradientBrush>
         <!--  弹窗专用干净按钮模板：彻底隔离全局 ButtonStyle.axaml 的浅色主题覆盖  -->
         <ControlTemplate x:Key="ModalCleanButtonTemplate" TargetType="Button">
@@ -86,15 +86,15 @@
                     Height="15"
                     CornerRadius="4"
                     BorderThickness="1.2"
-                    Background="#181A1F"
-                    BorderBrush="#4B505C"
+                    Background="{DynamicResource IgDarkBrush181A1F}"
+                    BorderBrush="{DynamicResource IgDarkBrush4B505C}"
                     VerticalAlignment="Center">
                     <Path
                         x:Name="PART_ModalCheckMark"
                         Width="9"
                         Height="9"
                         Data="M 1,4.5 L 3.5,7 L 8,1.5"
-                        Stroke="#FFFFFF"
+                        Stroke="White"
                         StrokeThickness="1.6"
                         StrokeLineCap="Round"
                         StrokeJoin="Round"
@@ -146,7 +146,7 @@
                     <TextBlock
                         x:Name="PART_InputGestureText"
                         Grid.Column="2"
-                        Foreground="#747B89"
+                        Foreground="{DynamicResource IgDarkBrush747B89}"
                         FontSize="11"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Right" />
@@ -187,25 +187,25 @@
             <Setter Property="RenderTransform" Value="scale(0.88)" />
         </Style>
         <Style Selector="Button.mac-win-btn.close">
-            <Setter Property="Background" Value="#FF5F56" />
-            <Setter Property="BorderBrush" Value="#E0443E" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushFF5F56}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrushE0443E}" />
         </Style>
         <Style Selector="Button.mac-win-btn.close:pointerover">
-            <Setter Property="Background" Value="#FF736A" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushFF736A}" />
         </Style>
         <Style Selector="Button.mac-win-btn.minimize">
-            <Setter Property="Background" Value="#FFBD2E" />
-            <Setter Property="BorderBrush" Value="#DEA123" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushFFBD2E}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrushDEA123}" />
         </Style>
         <Style Selector="Button.mac-win-btn.minimize:pointerover">
-            <Setter Property="Background" Value="#FFCC4D" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushFFCC4D}" />
         </Style>
         <Style Selector="Button.mac-win-btn.maximize">
-            <Setter Property="Background" Value="#27C93F" />
-            <Setter Property="BorderBrush" Value="#1AAB29" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush27C93F}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush1AAB29}" />
         </Style>
         <Style Selector="Button.mac-win-btn.maximize:pointerover">
-            <Setter Property="Background" Value="#3BD852" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush3BD852}" />
         </Style>
 
         <!-- macOS Traffic Light Icons: 平时隐藏保持纯净圆点，悬停红绿灯组时同步淡入 -->
@@ -238,10 +238,10 @@
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="Button.win-caption-btn:pointerover">
-            <Setter Property="Background" Value="#18FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
         </Style>
         <Style Selector="Button.win-caption-btn:pressed">
-            <Setter Property="Background" Value="#24FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
         </Style>
         <Style Selector="Button.win-caption-btn-close">
             <Setter Property="Template" Value="{StaticResource CaptionButtonTemplate}" />
@@ -256,27 +256,27 @@
             <Setter Property="Padding" Value="0" />
         </Style>
         <Style Selector="Button.win-caption-btn-close:pointerover">
-            <Setter Property="Background" Value="#E81123" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushE81123}" />
         </Style>
         <Style Selector="Button.win-caption-btn-close:pointerover Line">
             <Setter Property="Stroke" Value="White" />
         </Style>
         <Style Selector="Button.win-caption-btn-close:pressed">
-            <Setter Property="Background" Value="#C42B1C" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrushC42B1C}" />
         </Style>
         <Style Selector="Button.win-caption-btn-close:pressed Line">
             <Setter Property="Stroke" Value="White" />
         </Style>
     </ui:PhControl.Styles>
 
-    <Grid RowDefinitions="Auto,*,Auto" Background="#1D1F24">
+    <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource IgDarkBrush1D1F24}">
         <!--  Custom Title Bar (纤巧精致的 38px 顶栏)  -->
         <Border
             x:Name="PART_CustomTitleBarBorder"
             Grid.Row="0"
             Height="38"
             Background="{StaticResource WindowBarGradient}"
-            BorderBrush="#12FFFFFF"
+            BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
             BorderThickness="0,0,0,1">
             <Grid
                 x:Name="PART_CustomTitleBar"
@@ -297,39 +297,39 @@
                         Spacing="8"
                         Margin="14,0,10,0"
                         Background="Transparent">
-                        <Button Classes="mac-win-btn close" Background="#FF5F56" Click="CloseWindow_Click" ToolTip.Tip="关闭">
-                            <Border Width="12" Height="12" CornerRadius="6" Background="#FF5F56">
+                        <Button Classes="mac-win-btn close" Background="{DynamicResource IgDarkBrushFF5F56}" Click="CloseWindow_Click" ToolTip.Tip="关闭">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="{DynamicResource IgDarkBrushFF5F56}">
                             <Path
                                 Width="6"
                                 Height="6"
                                 Data="M 1,1 L 5,5 M 5,1 L 1,5"
-                                Stroke="#4C0000"
+                                Stroke="{DynamicResource IgDarkBrush4C0000}"
                                 StrokeThickness="1.2"
                                 StrokeLineCap="Round"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
                             </Border>
                         </Button>
-                        <Button Classes="mac-win-btn minimize" Background="#FFBD2E" Click="MinimizeWindow_Click" ToolTip.Tip="最小化">
-                            <Border Width="12" Height="12" CornerRadius="6" Background="#FFBD2E">
+                        <Button Classes="mac-win-btn minimize" Background="{DynamicResource IgDarkBrushFFBD2E}" Click="MinimizeWindow_Click" ToolTip.Tip="最小化">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="{DynamicResource IgDarkBrushFFBD2E}">
                             <Path
                                 Width="6"
                                 Height="6"
                                 Data="M 0.5,3 L 5.5,3"
-                                Stroke="#563D00"
+                                Stroke="{DynamicResource IgDarkBrush563D00}"
                                 StrokeThickness="1.2"
                                 StrokeLineCap="Round"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
                             </Border>
                         </Button>
-                        <Button Classes="mac-win-btn maximize" Background="#27C93F" Click="MaximizeWindow_Click" ToolTip.Tip="最大化">
-                            <Border Width="12" Height="12" CornerRadius="6" Background="#27C93F">
+                        <Button Classes="mac-win-btn maximize" Background="{DynamicResource IgDarkBrush27C93F}" Click="MaximizeWindow_Click" ToolTip.Tip="最大化">
+                            <Border Width="12" Height="12" CornerRadius="6" Background="{DynamicResource IgDarkBrush27C93F}">
                             <Path
                                 Width="6"
                                 Height="6"
                                 Data="M 0,2.5 L 3.5,0 L 3.5,2.5 Z M 6,3.5 L 2.5,6 L 2.5,3.5 Z"
-                                Fill="#004D1A"
+                                Fill="{DynamicResource IgDarkBrush004D1A}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center" />
                             </Border>
@@ -353,7 +353,7 @@
                         Margin="4,0,12,0"
                         FontSize="12"
                         FontWeight="Medium"
-                        Foreground="#E5E7EB"
+                        Foreground="{DynamicResource IgDarkBrushE5E7EB}"
                         Opacity="0.92"
                         TextTrimming="CharacterEllipsis"
                         MaxWidth="280"
@@ -392,7 +392,7 @@
                             <Line
                                 StartPoint="0,5"
                                 EndPoint="10,5"
-                                Stroke="#E5E7EB"
+                                Stroke="{DynamicResource IgDarkBrushE5E7EB}"
                                 StrokeThickness="1" />
                         </Panel>
                     </Button>
@@ -406,7 +406,7 @@
                                 x:Name="PART_PathMaximize"
                                 Width="10"
                                 Height="10"
-                                Stroke="#E5E7EB"
+                                Stroke="{DynamicResource IgDarkBrushE5E7EB}"
                                 StrokeThickness="1" />
                             <Path
                                 x:Name="PART_PathRestore"
@@ -414,7 +414,7 @@
                                 Height="10"
                                 Data="M 2,0 H 10 V 8 H 8 M 0,2 H 8 V 10 H 0 Z"
                                 IsVisible="False"
-                                Stroke="#E5E7EB"
+                                Stroke="{DynamicResource IgDarkBrushE5E7EB}"
                                 StrokeThickness="1" />
                         </Panel>
                     </Button>
@@ -427,12 +427,12 @@
                             <Line
                                 StartPoint="0,0"
                                 EndPoint="10,10"
-                                Stroke="#E5E7EB"
+                                Stroke="{DynamicResource IgDarkBrushE5E7EB}"
                                 StrokeThickness="1.1" />
                             <Line
                                 StartPoint="10,0"
                                 EndPoint="0,10"
-                                Stroke="#E5E7EB"
+                                Stroke="{DynamicResource IgDarkBrushE5E7EB}"
                                 StrokeThickness="1.1" />
                         </Panel>
                     </Button>
@@ -470,27 +470,31 @@
                         <viewer:ViewerControl.ContextMenu>
                             <ContextMenu
                                 x:Name="PART_ViewerContextMenu"
-                                Background="#F424262C"
+                                Background="{DynamicResource IgDarkBrushF424262C}"
                                 BorderBrush="{StaticResource ModalGlassBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="5,6"
                                 MinWidth="220">
                                 <ContextMenu.Resources>
-                                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F424262C" />
+                                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="{DynamicResource IgDarkColorF424262C}" />
                                     <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="ModalGlassBorderBrush" />
                                     <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
                                     <CornerRadius x:Key="OverlayCornerRadius">10</CornerRadius>
                                     <Thickness x:Key="MenuFlyoutPresenterThemePadding">5,6</Thickness>
-                                    <BoxShadows x:Key="MenuShadow">0 18 48 0 #B3000000</BoxShadows>
-                                    <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="#E5E7EB" />
-                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="#FFFFFF" />
-                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="#FFFFFF" />
-                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" Color="#747B89" />
-                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" Color="#A1A8B8" />
-                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" Color="#A1A8B8" />
+                                    <BoxShadows x:Key="MenuShadow">0 0 0 0 #00000000</BoxShadows>
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForeground" Color="{DynamicResource IgDarkColorE5E7EB}" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPointerOver" Color="{DynamicResource IgDarkColorFFFFFF}" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemForegroundPressed" Color="{DynamicResource IgDarkColorFFFFFF}" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForeground" Color="{DynamicResource IgDarkColor747B89}" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver" Color="{DynamicResource IgDarkColorA1A8B8}" />
+                                    <SolidColorBrush x:Key="MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed" Color="{DynamicResource IgDarkColorA1A8B8}" />
                                 </ContextMenu.Resources>
                                 <ContextMenu.Styles>
+                                    <Style Selector="ContextMenu#PART_ViewerContextMenu > Border">
+                                        <Setter Property="Margin" Value="0" />
+                                        <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+                                    </Style>
                                     <Style Selector="MenuItem">
                                         <Setter Property="Template" Value="{StaticResource ViewerContextMenuItemTemplate}" />
                                         <Setter Property="Background" Value="Transparent" />
@@ -498,38 +502,38 @@
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="7" />
                                         <Setter Property="Margin" Value="0,1" />
-                                        <Setter Property="Foreground" Value="#E5E7EB" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushE5E7EB}" />
                                         <Setter Property="Cursor" Value="Hand" />
                                     </Style>
                                     <Style Selector="MenuItem:not(:disabled):pointerover, MenuItem:not(:disabled):selected">
-                                        <Setter Property="Background" Value="#16FFFFFF" />
-                                        <Setter Property="BorderBrush" Value="#14FFFFFF" />
-                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                        <Setter Property="Background" Value="{DynamicResource IgContextMenuHoverBrush}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFFFFFF}" />
                                     </Style>
                                     <Style Selector="MenuItem:not(:disabled):pointerover /template/ ContentPresenter#PART_MenuHeaderPresenter, MenuItem:not(:disabled):selected /template/ ContentPresenter#PART_MenuHeaderPresenter">
-                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFFFFFF}" />
                                     </Style>
                                     <Style Selector="MenuItem:not(:disabled):pointerover /template/ TextBlock#PART_InputGestureText, MenuItem:not(:disabled):selected /template/ TextBlock#PART_InputGestureText">
-                                        <Setter Property="Foreground" Value="#A1A8B8" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushA1A8B8}" />
                                     </Style>
                                     <Style Selector="MenuItem:not(:disabled):pressed">
-                                        <Setter Property="Background" Value="#22FFFFFF" />
-                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                        <Setter Property="Background" Value="{DynamicResource IgContextMenuPressedBrush}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFFFFFF}" />
                                     </Style>
                                     <Style Selector="MenuItem.danger">
-                                        <Setter Property="Foreground" Value="#F3A0A0" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3A0A0}" />
                                     </Style>
                                     <Style Selector="MenuItem.danger:not(:disabled):pointerover, MenuItem.danger:not(:disabled):selected">
-                                        <Setter Property="Background" Value="#24EF4444" />
-                                        <Setter Property="BorderBrush" Value="#36EF4444" />
-                                        <Setter Property="Foreground" Value="#FECACA" />
+                                        <Setter Property="Background" Value="{DynamicResource IgDarkBrush24EF4444}" />
+                                        <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush36EF4444}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFECACA}" />
                                     </Style>
                                     <Style Selector="MenuItem.danger:not(:disabled):pointerover /template/ ContentPresenter#PART_MenuHeaderPresenter, MenuItem.danger:not(:disabled):selected /template/ ContentPresenter#PART_MenuHeaderPresenter">
-                                        <Setter Property="Foreground" Value="#FECACA" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFECACA}" />
                                     </Style>
                                     <Style Selector="MenuItem.danger:not(:disabled):pressed">
-                                        <Setter Property="Background" Value="#33EF4444" />
-                                        <Setter Property="Foreground" Value="#FECACA" />
+                                        <Setter Property="Background" Value="{DynamicResource IgDarkBrush33EF4444}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushFECACA}" />
                                     </Style>
                                     <Style Selector="MenuItem:disabled">
                                         <Setter Property="Opacity" Value="0.35" />
@@ -537,7 +541,7 @@
                                         <Setter Property="BorderBrush" Value="Transparent" />
                                     </Style>
                                     <Style Selector="Separator">
-                                        <Setter Property="Background" Value="#14FFFFFF" />
+                                        <Setter Property="Background" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
                                         <Setter Property="Height" Value="1" />
                                         <Setter Property="Margin" Value="8,4" />
                                         <Setter Property="Focusable" Value="False" />
@@ -586,53 +590,53 @@
 
         <!--  Bottom Bar: 左图像规格摘要 + 右精巧缩放组 (32px 高精密质感底栏)  -->
         <Border Grid.Row="2" Background="{StaticResource WindowBottomBarGradient}"
-                BorderBrush="#12FFFFFF"
+                BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
                 BorderThickness="0,1,0,0"
                 Height="32"
                 Padding="14,0" PointerPressed="BottomBar_PointerPressed">
             <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
                 <!-- 左侧图片摘要微信息条 -->
                 <StackPanel x:Name="PART_StatusGroup" Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" IsVisible="False">
-                    <Border Background="#12FFFFFF" CornerRadius="4" Padding="6,1.5" VerticalAlignment="Center">
-                        <TextBlock x:Name="PART_StatusIndex" Foreground="#D1D5DB" FontSize="11" FontWeight="SemiBold" />
+                    <Border Background="{DynamicResource IgIconBlueSoftBrush}" CornerRadius="4" Padding="6,1.5" VerticalAlignment="Center">
+                        <TextBlock x:Name="PART_StatusIndex" Foreground="{DynamicResource IgIconBlueBrush}" FontSize="11" FontWeight="SemiBold" />
                     </Border>
-                    <TextBlock x:Name="PART_StatusSpecs" Foreground="#9CA3AF" FontSize="11.5" VerticalAlignment="Center" />
+                    <TextBlock x:Name="PART_StatusSpecs" Foreground="{DynamicResource IgDarkBrush9CA3AF}" FontSize="11.5" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" Margin="0,0,18,0">
-                    <TextBlock Text="旋转" Foreground="#D1D5DB" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="旋转" Foreground="{DynamicResource IgDarkBrushD1D5DB}" FontSize="11" VerticalAlignment="Center" />
                     <Slider x:Name="PART_RotationSlider" Width="149.5" Minimum="-360" Maximum="360" VerticalAlignment="Center" ValueChanged="RotationSlider_ValueChanged">
                         <Slider.Resources>
-                            <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
-                            <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />
-                            <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="#2563EB" />
+                            <SolidColorBrush x:Key="PhSliderTrackFill" Color="{DynamicResource IgDarkColor3B82F6}" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="{DynamicResource IgDarkColor60A5FA}" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="{DynamicResource IgDarkColor2563EB}" />
                         </Slider.Resources>
                     </Slider>
                     <ui:PhToolButton Click="RotationReset_Click" ToolTip.Tip="复位旋转" Width="24" Height="24" CornerRadius="5" Padding="0">
-                        <TextBlock Text="↺" Foreground="#D1D5DB" FontSize="17" />
+                        <TextBlock Text="↺" Foreground="{DynamicResource IgIconAmberBrush}" FontSize="17" />
                     </ui:PhToolButton>
-                    <TextBlock x:Name="PART_RotationValue" Text="0°" Width="34" Foreground="#D1D5DB" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock x:Name="PART_RotationValue" Text="0°" Width="34" Foreground="{DynamicResource IgDarkBrushD1D5DB}" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
                 <!-- 右侧缩放控制组 -->
                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                     <ui:PhToolButton Click="ZoomOutButton_Click" ToolTip.Tip="缩小" Width="24" Height="24" CornerRadius="5" Padding="0">
-                        <TextBlock Foreground="#D1D5DB" Text="−" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Foreground="{DynamicResource IgIconOrangeBrush}" Text="−" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </ui:PhToolButton>
                     <Slider x:Name="PART_ZoomSlider" Width="149.5" Minimum="0" Maximum="1000"
                             VerticalAlignment="Center" ValueChanged="ZoomSlider_ValueChanged">
                         <Slider.Resources>
-                            <SolidColorBrush x:Key="PhSliderTrackFill" Color="#3B82F6" />
-                            <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="#60A5FA" />
-                            <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="#2563EB" />
+                            <SolidColorBrush x:Key="PhSliderTrackFill" Color="{DynamicResource IgDarkColor3B82F6}" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPointerOver" Color="{DynamicResource IgDarkColor60A5FA}" />
+                            <SolidColorBrush x:Key="PhSliderTrackFillPressed" Color="{DynamicResource IgDarkColor2563EB}" />
                         </Slider.Resources>
                     </Slider>
                     <ui:PhToolButton Click="ZoomInButton_Click" ToolTip.Tip="放大" Width="24" Height="24" CornerRadius="5" Padding="0">
-                        <TextBlock Foreground="#D1D5DB" Text="+" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBlock Foreground="{DynamicResource IgIconEmeraldBrush}" Text="+" FontSize="15" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </ui:PhToolButton>
-                    <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" MinWidth="34" Height="22" Padding="6,0" CornerRadius="5" Background="#0DFFFFFF" BorderBrush="#18FFFFFF" BorderThickness="1">
-                        <TextBlock Foreground="#E5E7EB" Text="1:1" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <ui:PhToolButton Click="ZoomActualSizeButton_Click" ToolTip.Tip="原始大小" MinWidth="34" Height="22" Padding="6,0" CornerRadius="5" Background="{DynamicResource IgDarkBrush0DFFFFFF}" BorderBrush="{DynamicResource IgDarkBrush18FFFFFF}" BorderThickness="1">
+                        <TextBlock Foreground="{DynamicResource IgIconBlueBrush}" Text="1:1" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </ui:PhToolButton>
-                    <TextBlock Foreground="#D1D5DB" FontWeight="Medium" FontSize="11.5" x:Name="PART_ZoomPercentage" Width="46" VerticalAlignment="Center" TextAlignment="Right" />
+                    <TextBlock Foreground="{DynamicResource IgDarkBrushD1D5DB}" FontWeight="Medium" FontSize="11.5" x:Name="PART_ZoomPercentage" Width="46" VerticalAlignment="Center" TextAlignment="Right" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -647,51 +651,51 @@
                 <Style Selector="CheckBox#PART_DeleteRemember">
                     <Setter Property="Template" Value="{StaticResource ModalCleanCheckBoxTemplate}" />
                     <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="#9CA3AF" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrush9CA3AF}" />
                     <Setter Property="FontSize" Value="12" />
                     <Setter Property="Cursor" Value="Hand" />
                     <Setter Property="MinHeight" Value="20" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:pointerover">
                     <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="#E5E7EB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushE5E7EB}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:pressed">
                     <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked">
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked:pointerover">
-                    <Setter Property="Foreground" Value="#F3F4F6" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3F4F6}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked:pressed">
-                    <Setter Property="Foreground" Value="#E5E7EB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushE5E7EB}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:unchecked /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#181A1F" />
-                    <Setter Property="BorderBrush" Value="#4B505C" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush181A1F}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush4B505C}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:unchecked:pointerover /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#242730" />
-                    <Setter Property="BorderBrush" Value="#7B8294" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush242730}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush7B8294}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:unchecked:pressed /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#1D1F26" />
-                    <Setter Property="BorderBrush" Value="#606778" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush1D1F26}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush606778}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#356BBF" />
-                    <Setter Property="BorderBrush" Value="#4A85E0" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush356BBF}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush4A85E0}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked:pointerover /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#407AD2" />
-                    <Setter Property="BorderBrush" Value="#669DF6" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush407AD2}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush669DF6}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked:pressed /template/ Border#PART_ModalCheckBox">
-                    <Setter Property="Background" Value="#2B59A1" />
-                    <Setter Property="BorderBrush" Value="#356BBF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush2B59A1}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush356BBF}" />
                 </Style>
                 <Style Selector="CheckBox#PART_DeleteRemember:checked /template/ Path#PART_ModalCheckMark">
                     <Setter Property="Opacity" Value="1" />
@@ -712,19 +716,19 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseDeleteModal:pointerover">
-                    <Setter Property="Background" Value="#14FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseDeleteModal:pressed">
-                    <Setter Property="Background" Value="#20FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush20FFFFFF}" />
                 </Style>
 
                 <!--  次要按钮：取消 (承接主深灰同色系，柔和统一)  -->
                 <Style Selector="Button#PART_DeleteCancel">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
-                    <Setter Property="Background" Value="#282B33" />
-                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush282B33}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush16FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                     <Setter Property="FontSize" Value="12.5" />
                     <Setter Property="FontWeight" Value="Medium" />
                     <Setter Property="MinWidth" Value="74" />
@@ -736,22 +740,22 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_DeleteCancel:pointerover">
-                    <Setter Property="Background" Value="#323640" />
-                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
-                    <Setter Property="Foreground" Value="#F3F4F6" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush323640}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3F4F6}" />
                 </Style>
                 <Style Selector="Button#PART_DeleteCancel:pressed">
-                    <Setter Property="Background" Value="#22252C" />
-                    <Setter Property="BorderBrush" Value="#12FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush22252C}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush12FFFFFF}" />
                 </Style>
 
                 <!--  主危险按钮：是 (低饱和柔和暗珊瑚红，不再刺眼突兀)  -->
                 <Style Selector="Button#PART_DeleteConfirm">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
                     <Setter Property="Background" Value="{StaticResource DangerBtnGradient}" />
-                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush26FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF9FAFB}" />
                     <Setter Property="FontSize" Value="12.5" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                     <Setter Property="MinWidth" Value="82" />
@@ -764,16 +768,16 @@
                 </Style>
                 <Style Selector="Button#PART_DeleteConfirm:pointerover">
                     <Setter Property="Background" Value="{StaticResource DangerBtnHoverGradient}" />
-                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush38FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_DeleteConfirm:pressed">
-                    <Setter Property="Background" Value="#8D2A2A" />
-                    <Setter Property="BorderBrush" Value="#18FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush8D2A2A}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
                 </Style>
             </Grid.Styles>
 
             <!--  全屏柔暗压光遮罩  -->
-            <Border Background="#7A000000" PointerPressed="DeleteBackdrop_PointerPressed" />
+            <Border Background="{DynamicResource IgDarkBrush7A000000}" PointerPressed="DeleteBackdrop_PointerPressed" />
 
             <!--  精巧立体弹窗卡片 (396px 宽，顶光学高光描边 + 分层底座)  -->
             <Border
@@ -792,8 +796,8 @@
                     <Border Grid.Row="0" Padding="20,20,20,16">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#292C33" Offset="0.0" />
-                                <GradientStop Color="#23252B" Offset="1.0" />
+                                <GradientStop Color="{DynamicResource IgDarkColor292C33}" Offset="0.0" />
+                                <GradientStop Color="{DynamicResource IgDarkColor23252B}" Offset="1.0" />
                             </LinearGradientBrush>
                         </Border.Background>
 
@@ -805,15 +809,15 @@
                                     Width="34"
                                     Height="34"
                                     CornerRadius="9"
-                                    Background="#1EEF4444"
-                                    BorderBrush="#38EF4444"
+                                    Background="{DynamicResource IgDarkBrush1EEF4444}"
+                                    BorderBrush="{DynamicResource IgDarkBrush38EF4444}"
                                     BorderThickness="1"
                                     VerticalAlignment="Top">
                                     <Path
                                         Width="15"
                                         Height="15"
                                         Data="M6.442 2.5a2 2 0 0 1 2-2h3.046a2 2 0 0 1 2 2v.314c0 .036-.003.07-.01.105h4.952a.5.5 0 1 1 0 1h-.764l-1.558 13.507a2.5 2.5 0 0 1-2.484 2.214H6.306a2.5 2.5 0 0 1-2.484-2.214L2.264 3.92H1.5a.5.5 0 0 1 0-1h4.953a.502.502 0 0 1-.011-.105V2.5Zm.989.419h5.068a.501.501 0 0 1-.01-.105V2.5a1 1 0 0 0-1-1H8.441a1 1 0 0 0-1 1v.314c0 .036-.004.07-.011.105Zm-4.16 1L4.815 17.31a1.5 1.5 0 0 0 1.49 1.329h7.318a1.5 1.5 0 0 0 1.49-1.329L16.66 3.92H3.27Zm5.38 3.337a.5.5 0 1 0-1 0v7.256a.5.5 0 0 0 1 0V7.256Zm3.128-.5a.5.5 0 0 1 .5.5v7.256a.5.5 0 0 1-1 0V7.256a.5.5 0 0 1 .5-.5Z"
-                                        Fill="#F87171"
+                                        Fill="{DynamicResource IgDarkBrushF87171}"
                                         Stretch="Uniform"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
@@ -822,13 +826,13 @@
                                 <StackPanel Grid.Column="1" Margin="12,0,6,0" Spacing="3" VerticalAlignment="Center">
                                     <TextBlock
                                         x:Name="PART_DeleteTitle"
-                                        Foreground="#F3F4F6"
+                                        Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                         FontSize="14.5"
                                         FontWeight="SemiBold"
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         x:Name="PART_DeleteHeading"
-                                        Foreground="#9CA3AF"
+                                        Foreground="{DynamicResource IgDarkBrush9CA3AF}"
                                         FontSize="12.5"
                                         LineHeight="17.5"
                                         TextWrapping="Wrap" />
@@ -844,7 +848,7 @@
                                         Width="9.5"
                                         Height="9.5"
                                         Data="{StaticResource IconClose}"
-                                        Fill="#8E95A2"
+                                        Fill="{DynamicResource IgDarkBrush8E95A2}"
                                         Stretch="Uniform"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
@@ -853,8 +857,8 @@
 
                             <!--  内嵌文件信息胶囊槽 (拆分高亮文件名与次要路径体积)  -->
                             <Border
-                                Background="#191B20"
-                                BorderBrush="#10FFFFFF"
+                                Background="{DynamicResource IgDarkBrush191B20}"
+                                BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                                 BorderThickness="1"
                                 CornerRadius="9"
                                 Padding="11,10">
@@ -864,15 +868,15 @@
                                         Width="30"
                                         Height="30"
                                         CornerRadius="7"
-                                        Background="#242730"
-                                        BorderBrush="#0DFFFFFF"
+                                        Background="{DynamicResource IgDarkBrush242730}"
+                                        BorderBrush="{DynamicResource IgDarkBrush0DFFFFFF}"
                                         BorderThickness="1"
                                         VerticalAlignment="Center">
                                         <Path
                                             Width="14.5"
                                             Height="14.5"
                                             Data="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm14 0H6v10.586l3.293-3.293a1 1 0 0 1 1.414 0L14 15.586l1.293-1.293a1 1 0 0 1 1.414 0L18 15.586V5Zm0 13.414-2-2-1.293 1.293a1 1 0 0 1-1.414 0L10 14.414l-4 4V19h12v-.586ZM15.5 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
-                                            Fill="#60A5FA"
+                                            Fill="{DynamicResource IgDarkBrush60A5FA}"
                                             Stretch="Uniform"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center" />
@@ -880,13 +884,13 @@
                                     <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2.5" VerticalAlignment="Center">
                                         <TextBlock
                                             x:Name="PART_DeleteFileName"
-                                            Foreground="#F3F4F6"
+                                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                             FontSize="12.5"
                                             FontWeight="Medium"
                                             TextTrimming="CharacterEllipsis" />
                                         <TextBlock
                                             x:Name="PART_DeletePath"
-                                            Foreground="#8B92A0"
+                                            Foreground="{DynamicResource IgDarkBrush8B92A0}"
                                             FontSize="11"
                                             TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
@@ -901,8 +905,8 @@
                     <!--  下部独立沉稳动作底座  -->
                     <Border
                         Grid.Row="1"
-                        Background="#1C1E23"
-                        BorderBrush="#10FFFFFF"
+                        Background="{DynamicResource IgDarkBrush1C1E23}"
+                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                         BorderThickness="0,1,0,0"
                         Padding="20,12">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
@@ -931,10 +935,10 @@
                 <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
                 <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
                 <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
-                <SolidColorBrush x:Key="TextControlForeground" Color="#F3F4F6" />
-                <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#FFFFFF" />
-                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFFFFF" />
-                <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#553B82F6" />
+                <SolidColorBrush x:Key="TextControlForeground" Color="{DynamicResource IgDarkColorF3F4F6}" />
+                <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{DynamicResource IgDarkColorFFFFFF}" />
+                <SolidColorBrush x:Key="TextControlForegroundFocused" Color="{DynamicResource IgDarkColorFFFFFF}" />
+                <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="{DynamicResource IgDarkColor553B82F6}" />
             </Grid.Resources>
             <Grid.Styles>
                 <!--  右上角关闭钮  -->
@@ -952,16 +956,16 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseRenameModal:pointerover">
-                    <Setter Property="Background" Value="#14FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseRenameModal:pressed">
-                    <Setter Property="Background" Value="#20FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush20FFFFFF}" />
                 </Style>
 
                 <!--  外层输入凹槽动态边界  -->
                 <Style Selector="Border.rename-input-box">
-                    <Setter Property="Background" Value="#15171C" />
-                    <Setter Property="BorderBrush" Value="#1CFFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush15171C}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush1CFFFFFF}" />
                     <Setter Property="BorderThickness" Value="1.2" />
                     <Setter Property="CornerRadius" Value="8" />
                     <Setter Property="Transitions">
@@ -971,13 +975,13 @@
                     </Setter>
                 </Style>
                 <Style Selector="Border.rename-input-box:pointerover">
-                    <Setter Property="BorderBrush" Value="#2EFFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush2EFFFFFF}" />
                 </Style>
                 <Style Selector="Border.rename-input-box:focus-within">
-                    <Setter Property="BorderBrush" Value="#3B82F6" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush3B82F6}" />
                 </Style>
                 <Style Selector="Border.rename-input-box.invalid">
-                    <Setter Property="BorderBrush" Value="#EF4444" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrushEF4444}" />
                 </Style>
 
                 <!--  穿透 TextBox 内部透明，防止自带白色边框干扰  -->
@@ -985,9 +989,9 @@
                     <Setter Property="Background" Value="Transparent" />
                     <Setter Property="BorderBrush" Value="Transparent" />
                     <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="Foreground" Value="#F3F4F6" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3F4F6}" />
                     <Setter Property="CaretBrush" Value="#60A5FA" />
-                    <Setter Property="SelectionBrush" Value="#553B82F6" />
+                    <Setter Property="SelectionBrush" Value="#356BBF" />
                     <Setter Property="SelectionForegroundBrush" Value="#FFFFFF" />
                     <Setter Property="FontSize" Value="13" />
                     <Setter Property="Padding" Value="11,8" />
@@ -1012,10 +1016,10 @@
                 <!--  次要按钮：取消 (承接主深灰同色系)  -->
                 <Style Selector="Button#PART_RenameCancel">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
-                    <Setter Property="Background" Value="#282B33" />
-                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush282B33}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush16FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                     <Setter Property="FontSize" Value="12.5" />
                     <Setter Property="FontWeight" Value="Medium" />
                     <Setter Property="MinWidth" Value="74" />
@@ -1027,22 +1031,22 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_RenameCancel:pointerover">
-                    <Setter Property="Background" Value="#323640" />
-                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
-                    <Setter Property="Foreground" Value="#F3F4F6" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush323640}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3F4F6}" />
                 </Style>
                 <Style Selector="Button#PART_RenameCancel:pressed">
-                    <Setter Property="Background" Value="#22252C" />
-                    <Setter Property="BorderBrush" Value="#12FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush22252C}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush12FFFFFF}" />
                 </Style>
 
                 <!--  主确认按钮：确定 (温和沉稳设计蓝渐变)  -->
                 <Style Selector="Button#PART_RenameConfirm">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
                     <Setter Property="Background" Value="{StaticResource ModalAccentBtnGradient}" />
-                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush26FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF9FAFB}" />
                     <Setter Property="FontSize" Value="12.5" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                     <Setter Property="MinWidth" Value="82" />
@@ -1055,11 +1059,11 @@
                 </Style>
                 <Style Selector="Button#PART_RenameConfirm:pointerover">
                     <Setter Property="Background" Value="{StaticResource ModalAccentBtnHoverGradient}" />
-                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush38FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_RenameConfirm:pressed">
-                    <Setter Property="Background" Value="#224987" />
-                    <Setter Property="BorderBrush" Value="#18FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush224987}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_RenameConfirm:disabled">
                     <Setter Property="Opacity" Value="0.4" />
@@ -1068,7 +1072,7 @@
             </Grid.Styles>
 
             <!--  全屏柔暗压光遮罩 (点击外部取消)  -->
-            <Border Background="#7A000000" PointerPressed="RenameBackdrop_PointerPressed" />
+            <Border Background="{DynamicResource IgDarkBrush7A000000}" PointerPressed="RenameBackdrop_PointerPressed" />
 
             <!--  精巧立体弹窗卡片 (400px 宽，顶光学高光描边 + 分层底座)  -->
             <Border
@@ -1087,8 +1091,8 @@
                     <Border Grid.Row="0" Padding="20,20,20,16">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#292C33" Offset="0.0" />
-                                <GradientStop Color="#23252B" Offset="1.0" />
+                                <GradientStop Color="{DynamicResource IgDarkColor292C33}" Offset="0.0" />
+                                <GradientStop Color="{DynamicResource IgDarkColor23252B}" Offset="1.0" />
                             </LinearGradientBrush>
                         </Border.Background>
 
@@ -1100,15 +1104,15 @@
                                     Width="34"
                                     Height="34"
                                     CornerRadius="9"
-                                    Background="#1E3B82F6"
-                                    BorderBrush="#353B82F6"
+                                    Background="{DynamicResource IgDarkBrush1E3B82F6}"
+                                    BorderBrush="{DynamicResource IgDarkBrush353B82F6}"
                                     BorderThickness="1"
                                     VerticalAlignment="Top">
                                     <Path
                                         Width="15"
                                         Height="15"
                                         Data="{StaticResource IconEdit}"
-                                        Fill="#60A5FA"
+                                        Fill="{DynamicResource IgDarkBrush60A5FA}"
                                         Stretch="Uniform"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
@@ -1117,13 +1121,13 @@
                                 <StackPanel Grid.Column="1" Margin="12,0,6,0" Spacing="3" VerticalAlignment="Center">
                                     <TextBlock
                                         x:Name="PART_RenameTitle"
-                                        Foreground="#F3F4F6"
+                                        Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                         FontSize="14.5"
                                         FontWeight="SemiBold"
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         x:Name="PART_RenameHeading"
-                                        Foreground="#9CA3AF"
+                                        Foreground="{DynamicResource IgDarkBrush9CA3AF}"
                                         FontSize="12.5"
                                         LineHeight="17.5"
                                         TextWrapping="Wrap" />
@@ -1139,7 +1143,7 @@
                                         Width="9.5"
                                         Height="9.5"
                                         Data="{StaticResource IconClose}"
-                                        Fill="#8E95A2"
+                                        Fill="{DynamicResource IgDarkBrush8E95A2}"
                                         Stretch="Uniform"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
@@ -1148,8 +1152,8 @@
 
                             <!--  内嵌缩略图与原文件信息胶囊槽  -->
                             <Border
-                                Background="#191B20"
-                                BorderBrush="#10FFFFFF"
+                                Background="{DynamicResource IgDarkBrush191B20}"
+                                BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                                 BorderThickness="1"
                                 CornerRadius="9"
                                 Padding="11,10">
@@ -1159,8 +1163,8 @@
                                         Width="36"
                                         Height="36"
                                         CornerRadius="7"
-                                        Background="#242730"
-                                        BorderBrush="#14FFFFFF"
+                                        Background="{DynamicResource IgDarkBrush242730}"
+                                        BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
                                         BorderThickness="1"
                                         ClipToBounds="True"
                                         VerticalAlignment="Center">
@@ -1170,7 +1174,7 @@
                                                 Width="15"
                                                 Height="15"
                                                 Data="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm14 0H6v10.586l3.293-3.293a1 1 0 0 1 1.414 0L14 15.586l1.293-1.293a1 1 0 0 1 1.414 0L18 15.586V5Zm0 13.414-2-2-1.293 1.293a1 1 0 0 1-1.414 0L10 14.414l-4 4V19h12v-.586ZM15.5 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
-                                                Fill="#60A5FA"
+                                                Fill="{DynamicResource IgDarkBrush60A5FA}"
                                                 Stretch="Uniform"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" />
@@ -1182,13 +1186,13 @@
                                     <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="2.5" VerticalAlignment="Center">
                                         <TextBlock
                                             x:Name="PART_RenameOldName"
-                                            Foreground="#F3F4F6"
+                                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                             FontSize="12.5"
                                             FontWeight="Medium"
                                             TextTrimming="CharacterEllipsis" />
                                         <TextBlock
                                             x:Name="PART_RenamePath"
-                                            Foreground="#8B92A0"
+                                            Foreground="{DynamicResource IgDarkBrush8B92A0}"
                                             FontSize="11"
                                             TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
@@ -1210,13 +1214,13 @@
                                             Margin="0,0,8,0"
                                             Padding="7,2.5"
                                             CornerRadius="5"
-                                            Background="#14FFFFFF"
-                                            BorderBrush="#12FFFFFF"
+                                            Background="{DynamicResource IgDarkBrush14FFFFFF}"
+                                            BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
                                             BorderThickness="1"
                                             VerticalAlignment="Center">
                                             <TextBlock
                                                 x:Name="PART_RenameExtText"
-                                                Foreground="#9CA3AF"
+                                                Foreground="{DynamicResource IgDarkBrush9CA3AF}"
                                                 FontSize="11.5"
                                                 FontWeight="SemiBold" />
                                         </Border>
@@ -1225,7 +1229,7 @@
                                 <TextBlock
                                     x:Name="PART_RenameError"
                                     IsVisible="False"
-                                    Foreground="#F87171"
+                                    Foreground="{DynamicResource IgDarkBrushF87171}"
                                     FontSize="11.5"
                                     Margin="2,0,0,0" />
                             </StackPanel>
@@ -1235,8 +1239,8 @@
                     <!--  下部独立沉稳动作底座  -->
                     <Border
                         Grid.Row="1"
-                        Background="#1C1E23"
-                        BorderBrush="#10FFFFFF"
+                        Background="{DynamicResource IgDarkBrush1C1E23}"
+                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                         BorderThickness="0,1,0,0"
                         Padding="20,12">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
@@ -1261,10 +1265,10 @@
                 <!-- 复制按钮 -->
                 <Style Selector="Button#PART_BtnCopyImageInfo">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
-                    <Setter Property="Background" Value="#282B33" />
-                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush282B33}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush16FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                     <Setter Property="Height" Value="26" />
                     <Setter Property="Padding" Value="10,0" />
                     <Setter Property="CornerRadius" Value="6" />
@@ -1273,11 +1277,11 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_BtnCopyImageInfo:pointerover">
-                    <Setter Property="Background" Value="#323640" />
-                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush323640}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnCopyImageInfo:pressed">
-                    <Setter Property="Background" Value="#22252C" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush22252C}" />
                 </Style>
 
                 <!-- 关闭按钮 -->
@@ -1295,19 +1299,19 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseImageInfo:pointerover">
-                    <Setter Property="Background" Value="#14FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnCloseImageInfo:pressed">
-                    <Setter Property="Background" Value="#20FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush20FFFFFF}" />
                 </Style>
 
                 <!-- 打开文件夹按钮 -->
                 <Style Selector="Button#PART_BtnOpenFolder">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
-                    <Setter Property="Background" Value="#282B33" />
-                    <Setter Property="BorderBrush" Value="#16FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush282B33}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush16FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#D1D5DB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushD1D5DB}" />
                     <Setter Property="Height" Value="28" />
                     <Setter Property="Padding" Value="10,0" />
                     <Setter Property="CornerRadius" Value="6" />
@@ -1316,20 +1320,20 @@
                     <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
                 <Style Selector="Button#PART_BtnOpenFolder:pointerover">
-                    <Setter Property="Background" Value="#323640" />
-                    <Setter Property="BorderBrush" Value="#24FFFFFF" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush323640}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnOpenFolder:pressed">
-                    <Setter Property="Background" Value="#22252C" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush22252C}" />
                 </Style>
 
                 <!-- 完成按钮 -->
                 <Style Selector="Button#PART_BtnDoneImageInfo">
                     <Setter Property="Template" Value="{StaticResource ModalCleanButtonTemplate}" />
                     <Setter Property="Background" Value="{StaticResource ModalAccentBtnGradient}" />
-                    <Setter Property="BorderBrush" Value="#26FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush26FFFFFF}" />
                     <Setter Property="BorderThickness" Value="1" />
-                    <Setter Property="Foreground" Value="#F9FAFB" />
+                    <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF9FAFB}" />
                     <Setter Property="MinWidth" Value="76" />
                     <Setter Property="Height" Value="28" />
                     <Setter Property="Padding" Value="16,0" />
@@ -1340,17 +1344,17 @@
                 </Style>
                 <Style Selector="Button#PART_BtnDoneImageInfo:pointerover">
                     <Setter Property="Background" Value="{StaticResource ModalAccentBtnHoverGradient}" />
-                    <Setter Property="BorderBrush" Value="#38FFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush38FFFFFF}" />
                 </Style>
                 <Style Selector="Button#PART_BtnDoneImageInfo:pressed">
-                    <Setter Property="Background" Value="#224987" />
+                    <Setter Property="Background" Value="{DynamicResource IgDarkBrush224987}" />
                 </Style>
             </Grid.Styles>
 
             <!--  Frosted Mask / Backdrop (点击背景关闭)  -->
             <Border
                 x:Name="PART_ImageInfoBackdrop"
-                Background="#7A000000"
+                Background="{DynamicResource IgDarkBrush7A000000}"
                 PointerPressed="ImageInfoBackdrop_PointerPressed" />
 
             <!--  Centered Floating Metadata Card  -->
@@ -1368,8 +1372,8 @@
                 ClipToBounds="True">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#292C33" Offset="0.0" />
-                        <GradientStop Color="#23252B" Offset="1.0" />
+                        <GradientStop Color="{DynamicResource IgDarkColor292C33}" Offset="0.0" />
+                        <GradientStop Color="{DynamicResource IgDarkColor23252B}" Offset="1.0" />
                     </LinearGradientBrush>
                 </Border.Background>
 
@@ -1379,7 +1383,7 @@
                     <Border
                         Grid.Row="0"
                         Padding="18,13"
-                        BorderBrush="#10FFFFFF"
+                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                         BorderThickness="0,0,0,1">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
@@ -1387,14 +1391,14 @@
                                     Width="28"
                                     Height="28"
                                     CornerRadius="7"
-                                    Background="#1E3B82F6"
-                                    BorderBrush="#333B82F6"
+                                    Background="{DynamicResource IgIconCyanSoftBrush}"
+                                    BorderBrush="{DynamicResource IgDarkBrush333B82F6}"
                                     BorderThickness="1">
                                     <Path
                                         Width="14"
                                         Height="14"
                                         Data="{StaticResource IconInfo}"
-                                        Fill="#60A5FA"
+                                        Fill="{DynamicResource IgIconCyanBrush}"
                                         Stretch="Uniform"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
@@ -1402,7 +1406,7 @@
                                 <TextBlock
                                     FontSize="14.5"
                                     FontWeight="SemiBold"
-                                    Foreground="#F3F4F6"
+                                    Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                     VerticalAlignment="Center"
                                     Text="图片信息" />
                             </StackPanel>
@@ -1420,12 +1424,12 @@
                                             Height="11.5"
                                             VerticalAlignment="Center"
                                             Data="{StaticResource IconCopy}"
-                                            Fill="#D1D5DB"
+                                            Fill="{DynamicResource IgIconBlueBrush}"
                                             Stretch="Uniform" />
                                         <TextBlock
                                             x:Name="PART_TxtCopyImageInfo"
                                             FontSize="11.5"
-                                            Foreground="#D1D5DB"
+                                            Foreground="{DynamicResource IgDarkBrushD1D5DB}"
                                             VerticalAlignment="Center"
                                             Text="复制" />
                                     </StackPanel>
@@ -1441,7 +1445,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Data="{StaticResource IconClose}"
-                                        Fill="#8E95A2"
+                                        Fill="{DynamicResource IgDarkBrush8E95A2}"
                                         Stretch="Uniform" />
                                 </Button>
                             </StackPanel>
@@ -1455,8 +1459,8 @@
                             <!-- Overview Card (文件名与徽标) -->
                             <Border
                                 Padding="13,11"
-                                Background="#191B20"
-                                BorderBrush="#10FFFFFF"
+                                Background="{DynamicResource IgDarkBrush191B20}"
+                                BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                                 BorderThickness="1"
                                 CornerRadius="9">
                                 <StackPanel Spacing="9">
@@ -1464,26 +1468,26 @@
                                         x:Name="PART_InfoFileName"
                                         FontSize="13.5"
                                         FontWeight="SemiBold"
-                                        Foreground="#F3F4F6"
+                                        Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                         TextWrapping="Wrap" />
 
                                     <!-- Chips / Badges Row -->
                                     <WrapPanel Orientation="Horizontal">
                                         <!-- Format Chip -->
-                                        <Border x:Name="PART_ChipFormat" Margin="0,0,6,0" Padding="7,2.5" Background="#243B82F6" BorderBrush="#403B82F6" BorderThickness="1" CornerRadius="5">
-                                            <TextBlock x:Name="PART_InfoFormatText" FontSize="10.5" FontWeight="Bold" Foreground="#93C5FD" />
+                                        <Border x:Name="PART_ChipFormat" Margin="0,0,6,0" Padding="7,2.5" Background="{DynamicResource IgDarkBrush243B82F6}" BorderBrush="{DynamicResource IgDarkBrush403B82F6}" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoFormatText" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource IgDarkBrush93C5FD}" />
                                         </Border>
                                         <!-- Dimensions Chip -->
-                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
-                                            <TextBlock x:Name="PART_InfoDimensionsText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
+                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="{DynamicResource IgDarkBrush12FFFFFF}" BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoDimensionsText" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource IgDarkBrushD1D5DB}" />
                                         </Border>
                                         <!-- Megapixels Chip -->
-                                        <Border x:Name="PART_ChipMegapixels" Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
-                                            <TextBlock x:Name="PART_InfoMegapixelsText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
+                                        <Border x:Name="PART_ChipMegapixels" Margin="0,0,6,0" Padding="7,2.5" Background="{DynamicResource IgDarkBrush12FFFFFF}" BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoMegapixelsText" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource IgDarkBrushD1D5DB}" />
                                         </Border>
                                         <!-- File Size Chip -->
-                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="#12FFFFFF" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="5">
-                                            <TextBlock x:Name="PART_InfoFileSizeText" FontSize="11" FontWeight="Medium" Foreground="#D1D5DB" />
+                                        <Border Margin="0,0,6,0" Padding="7,2.5" Background="{DynamicResource IgDarkBrush12FFFFFF}" BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}" BorderThickness="1" CornerRadius="5">
+                                            <TextBlock x:Name="PART_InfoFileSizeText" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource IgDarkBrushD1D5DB}" />
                                         </Border>
                                     </WrapPanel>
                                 </StackPanel>
@@ -1491,28 +1495,28 @@
 
                             <!-- EXIF / Shooting Parameters (拍照参数, if available) -->
                             <StackPanel x:Name="PART_SectionExif" Spacing="6">
-                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="拍摄参数 (EXIF)" />
-                                <Border Padding="12,10" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="拍摄参数 (EXIF)" />
+                                <Border Padding="12,10" Background="{DynamicResource IgDarkBrush191B20}" BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}" BorderThickness="1" CornerRadius="9">
                                     <StackPanel Spacing="9">
                                         <!-- Camera Model -->
-                                        <TextBlock x:Name="PART_InfoCameraModel" FontSize="12.5" FontWeight="Medium" Foreground="#E5E7EB" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="PART_InfoCameraModel" FontSize="12.5" FontWeight="Medium" Foreground="{DynamicResource IgDarkBrushE5E7EB}" TextWrapping="Wrap" />
                                         <!-- Exposure 4-col Grid -->
                                         <Grid ColumnDefinitions="*,*,*,*" Margin="0,2,0,0">
                                             <StackPanel Grid.Column="0" Spacing="2">
-                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="光圈" />
-                                                <TextBlock x:Name="PART_InfoAperture" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                                <TextBlock FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="光圈" />
+                                                <TextBlock x:Name="PART_InfoAperture" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Spacing="2">
-                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="快门" />
-                                                <TextBlock x:Name="PART_InfoShutter" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                                <TextBlock FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="快门" />
+                                                <TextBlock x:Name="PART_InfoShutter" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Spacing="2">
-                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="感光度" />
-                                                <TextBlock x:Name="PART_InfoIso" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                                <TextBlock FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="感光度" />
+                                                <TextBlock x:Name="PART_InfoIso" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="3" Spacing="2">
-                                                <TextBlock FontSize="10.5" Foreground="#8B92A0" Text="焦距" />
-                                                <TextBlock x:Name="PART_InfoFocalLength" FontSize="12.5" FontWeight="SemiBold" Foreground="#F3F4F6" />
+                                                <TextBlock FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="焦距" />
+                                                <TextBlock x:Name="PART_InfoFocalLength" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>
@@ -1521,28 +1525,28 @@
 
                             <!-- Image Details (色彩、分辨率、帧数) -->
                             <StackPanel Spacing="6">
-                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="图像规格" />
-                                <Border Padding="12,9" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="图像规格" />
+                                <Border Padding="12,9" Background="{DynamicResource IgDarkBrush191B20}" BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}" BorderThickness="1" CornerRadius="9">
                                     <StackPanel Spacing="7">
                                         <!-- Color Space -->
                                         <Grid ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="色彩空间" />
-                                            <SelectableTextBlock x:Name="PART_InfoColorSpace" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="色彩空间" />
+                                            <SelectableTextBlock x:Name="PART_InfoColorSpace" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                         <!-- DPI -->
                                         <Grid ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="分辨率" />
-                                            <SelectableTextBlock x:Name="PART_InfoDpi" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="分辨率" />
+                                            <SelectableTextBlock x:Name="PART_InfoDpi" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                         <!-- Frames -->
                                         <Grid x:Name="PART_RowFrames" ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="帧数" />
-                                            <SelectableTextBlock x:Name="PART_InfoFrames" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="帧数" />
+                                            <SelectableTextBlock x:Name="PART_InfoFrames" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                         <!-- HDR / Live -->
                                         <Grid x:Name="PART_RowHdr" ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="特性" />
-                                            <SelectableTextBlock x:Name="PART_InfoFeatures" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="特性" />
+                                            <SelectableTextBlock x:Name="PART_InfoFeatures" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -1550,23 +1554,23 @@
 
                             <!-- Storage & Dates (时间与路径) -->
                             <StackPanel Spacing="6">
-                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="#8B92A0" Text="时间与存储" />
-                                <Border Padding="12,9" Background="#191B20" BorderBrush="#10FFFFFF" BorderThickness="1" CornerRadius="9">
+                                <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="时间与存储" />
+                                <Border Padding="12,9" Background="{DynamicResource IgDarkBrush191B20}" BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}" BorderThickness="1" CornerRadius="9">
                                     <StackPanel Spacing="7">
                                         <!-- Date Taken / Created -->
                                         <Grid ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="拍摄/创建" />
-                                            <SelectableTextBlock x:Name="PART_InfoDateCreated" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="拍摄/创建" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateCreated" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                         <!-- Date Modified -->
                                         <Grid ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="修改时间" />
-                                            <SelectableTextBlock x:Name="PART_InfoDateModified" Grid.Column="1" FontSize="11.5" Foreground="#E5E7EB" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="修改时间" />
+                                            <SelectableTextBlock x:Name="PART_InfoDateModified" Grid.Column="1" FontSize="11.5" Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
                                         </Grid>
                                         <!-- File Path -->
                                         <Grid ColumnDefinitions="92, *">
-                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="#8B92A0" Text="文件路径" />
-                                            <SelectableTextBlock x:Name="PART_InfoFilePath" Grid.Column="1" FontSize="11" Foreground="#D1D5DB" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Column="0" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="文件路径" />
+                                            <SelectableTextBlock x:Name="PART_InfoFilePath" Grid.Column="1" FontSize="11" Foreground="{DynamicResource IgDarkBrushD1D5DB}" TextWrapping="Wrap" />
                                         </Grid>
                                     </StackPanel>
                                 </Border>
@@ -1578,9 +1582,9 @@
                     <!--  Card Footer (沉稳独立底座)  -->
                     <Border
                         Grid.Row="2"
-                        Background="#1C1E23"
+                        Background="{DynamicResource IgDarkBrush1C1E23}"
                         Padding="18,11"
-                        BorderBrush="#10FFFFFF"
+                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
                         BorderThickness="0,1,0,0">
                         <Grid ColumnDefinitions="*, Auto">
                             <Button
@@ -1595,11 +1599,11 @@
                                         Height="12.5"
                                         VerticalAlignment="Center"
                                         Data="{StaticResource IconFolderOpen}"
-                                        Fill="#D1D5DB"
+                                        Fill="{DynamicResource IgIconAmberBrush}"
                                         Stretch="Uniform" />
                                     <TextBlock
                                         FontSize="12"
-                                        Foreground="#D1D5DB"
+                                        Foreground="{DynamicResource IgDarkBrushD1D5DB}"
                                         VerticalAlignment="Center"
                                         Text="打开所在文件夹" />
                                 </StackPanel>
@@ -1610,7 +1614,7 @@
                                 Classes="link"
                                 Grid.Column="1"
                                 Click="BtnCloseImageInfo_Click">
-                                <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#F9FAFB" Text="完成" />
+                                <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF9FAFB}" Text="完成" />
                             </Button>
                         </Grid>
                     </Border>

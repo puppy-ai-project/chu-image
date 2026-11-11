@@ -121,6 +121,7 @@
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     VerticalAlignment="Center"
+                    IconBrush="{DynamicResource IgIconAmberBrush}"
                     IconData="{StaticResource IconReset}" />
             </StackPanel>
         </StackPanel>

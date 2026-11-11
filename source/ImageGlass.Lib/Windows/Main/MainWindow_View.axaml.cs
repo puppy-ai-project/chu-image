@@ -1170,6 +1170,9 @@ public partial class MainWindowView : PhControl
             mnuContext.Items.Add(item);
         }
 
+        mnuContext.Opened += (_, _) => UpdateContextMenuIconColors(mnuContext);
+        UpdateContextMenuIconColors(mnuContext);
+
         FeatureManager.HideLockedMenuItems(mnuContext.Items);
     }
 
@@ -1193,6 +1196,7 @@ public partial class MainWindowView : PhControl
         if (sender is not ContextMenu mnuContext) return;
 
         var hasFile = Core.ClipboardImage is null && File.Exists(Core.Photos.CurrentFilePath);
+        UpdateContextMenuIconColors(mnuContext);
 
         foreach (var obj in mnuContext.Items)
         {
@@ -1210,6 +1214,35 @@ public partial class MainWindowView : PhControl
                 item.IsEnabled = hasFile;
             }
         }
+    }
+
+    private void UpdateContextMenuIconColors(ContextMenu menu)
+    {
+        var dark = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+        foreach (var item in menu.Items.OfType<PhMenuItem>())
+        {
+            if (item.Icon is not Avalonia.Controls.Shapes.Path icon) continue;
+            var color = GetContextMenuSemanticColor(item, dark);
+            icon.Fill = Avalonia.Media.Brush.Parse(color);
+        }
+    }
+
+
+    private static string GetContextMenuSemanticColor(PhMenuItem item, bool isDark)
+    {
+        if (item.Classes.Contains("danger") || item.LangKey == LangId.Menu_MnuMoveToRecycleBin)
+        {
+            return isDark ? "#F87171" : "#DC2626";
+        }
+
+        return item.LangKey switch
+        {
+            LangId.Menu_MnuCopyPath => isDark ? "#818CF8" : "#4F46E5",
+            LangId.Menu_MnuCopyFile => isDark ? "#38BDF8" : "#0284C7",
+            LangId.Menu_MnuRename => isDark ? "#FBBF24" : "#D97706",
+            LangId.Menu_MnuOpenLocation => isDark ? "#34D399" : "#059669",
+            _ => isDark ? "#E2E8F0" : "#334155",
+        };
     }
 
 

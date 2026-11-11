@@ -19,6 +19,6 @@
         Margin="3,0"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
-        Background="#18FFFFFF"
+        Background="{DynamicResource IgDarkBrush18FFFFFF}"
         CornerRadius="0.5" />
 </StackPanel>

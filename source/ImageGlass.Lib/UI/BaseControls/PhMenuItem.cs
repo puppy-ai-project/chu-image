@@ -1,4 +1,4 @@
-﻿/*
+/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -89,6 +89,18 @@ public class PhMenuItem : MenuItem
         AvaloniaProperty.Register<PhMenuItem, Geometry?>(nameof(IconData));
 
 
+    /// <summary>
+    /// 获取或设置菜单图标着色画刷，未设置时沿用主题默认前景色。
+    /// </summary>
+    public IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+    public static readonly StyledProperty<IBrush?> IconBrushProperty =
+        AvaloniaProperty.Register<PhMenuItem, IBrush?>(nameof(IconBrush));
+
+
     #endregion // Public properties
 
 
@@ -145,9 +157,32 @@ public class PhMenuItem : MenuItem
         {
             LocalizeText();
         }
-        else if (e.Property == IconDataProperty)
+        else if (e.Property == IconDataProperty || e.Property == IconBrushProperty)
         {
-            Icon = IconData is null ? null : new PathIcon { Data = IconData };
+            UpdateMenuIcon();
+        }
+    }
+
+
+    private void UpdateMenuIcon()
+    {
+        if (IconData is null)
+        {
+            Icon = null;
+            return;
+        }
+
+        if (Icon is PathIcon pathIcon)
+        {
+            pathIcon.Data = IconData;
+            if (IconBrush is not null) pathIcon.Foreground = IconBrush;
+            else pathIcon.ClearValue(TemplatedControl.ForegroundProperty);
+        }
+        else
+        {
+            var icon = new PathIcon { Data = IconData };
+            if (IconBrush is not null) icon.Foreground = IconBrush;
+            Icon = icon;
         }
     }
 
@@ -166,6 +201,8 @@ public class PhMenuItem : MenuItem
     {
         var localizedText = Core.Lang[LangKey, LangParams];
         if (string.IsNullOrWhiteSpace(localizedText)) return;
+        if (LangKey == LangId.Menu_MnuRename)
+            localizedText = localizedText.TrimEnd('…', '.', ' ');
 
         // admin-locked: forbidden
         if (FeatureManager.IsLocked(LangKey))

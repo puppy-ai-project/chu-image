@@ -125,6 +125,7 @@ public enum ConfigId
     NavigationTransition,
     DarkTheme,
     LightTheme,
+    AppearanceMode,
     Language,
 
     #endregion // String settings

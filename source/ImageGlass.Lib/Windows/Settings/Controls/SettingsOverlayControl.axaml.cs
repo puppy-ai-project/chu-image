@@ -75,19 +75,22 @@ public partial class SettingsOverlayControl : UserControl
     private const double CARD_PREVIEW_H = 68;
     private const double THEME_ACTION_COL_GAP = 28;
 
-    private static readonly IBrush _textPrimaryBrush = Brush.Parse("#D1D5DB");
-    private static readonly IBrush _textSecondaryBrush = Brush.Parse("#9CA3AF");
-    private static readonly IBrush _textPluginBrush = Brush.Parse("#C4B5FD");
-    private static readonly IBrush _textMutedBrush = Brush.Parse("#525866");
-    private static readonly IBrush _hintNormalBrush = Brush.Parse("#8B92A0");
-    private static readonly IBrush _hintErrorBrush = Brush.Parse("#F87171");
-    private static readonly IBrush _countNormalDotBrush = Brush.Parse("#60A5FA");
+    private static IBrush ThemeBrush(string dark, string light) => Brush.Parse(Core.Theme.Settings.IsDarkMode ? dark : light);
+    private static IBrush _textPrimaryBrush => ThemeBrush("#D1D5DB", "#3F4C60");
+    private static IBrush _textSecondaryBrush => ThemeBrush("#9CA3AF", "#59687B");
+    private static IBrush _textPluginBrush => ThemeBrush("#C4B5FD", "#6D42B5");
+    private static IBrush _textMutedBrush => ThemeBrush("#525866", "#738195");
+    private static IBrush _hintNormalBrush => ThemeBrush("#8B92A0", "#64748B");
+    private static IBrush _hintErrorBrush => ThemeBrush("#F87171", "#BE3346");
+    private static IBrush _countNormalDotBrush => ThemeBrush("#60A5FA", "#2563B7");
     private static readonly IBrush _countDirtyDotBrush = Brush.Parse("#FBBF24");
 
     // 当前选中的导航标签 ("theme" | "associations")
     private string _activeSection = "theme";
     private Action<string?>? _previewBgCallback;
     private bool _isSaving;
+    private string _initialAppearanceMode = "System";
+    private string _appearanceMode = "System";
 
     // ---------------------------------------------------------
     // 主题与外观页工作副本状态
@@ -139,6 +142,11 @@ public partial class SettingsOverlayControl : UserControl
     public SettingsOverlayControl()
     {
         InitializeComponent();
+        SizeChanged += (_, _) => UpdateSettingsCardHeight();
+        ActualThemeVariantChanged += (_, _) =>
+        {
+            if (IsVisible) UpdateAppearanceMode();
+        };
     }
 
 
@@ -149,11 +157,15 @@ public partial class SettingsOverlayControl : UserControl
     /// <param name="previewBgCallback">查看器画布背景色实时预览回调。</param>
     public void Open(string? section = null, Action<string?>? previewBgCallback = null)
     {
+        UpdateSettingsCardHeight();
         _isSaving = false;
         _previewBgCallback = previewBgCallback;
 
         // 1. 解析初始导航标签
         _activeSection = ResolveSection(section);
+        _initialAppearanceMode = Core.Config.AppearanceMode;
+        _appearanceMode = _initialAppearanceMode;
+        UpdateAppearanceMode();
 
         // 2. 快照主题与外观配置
         _initialDarkTheme = Core.Config.Get(ConfigId.DarkTheme, Const.DEFAULT_THEME);
@@ -200,7 +212,6 @@ public partial class SettingsOverlayControl : UserControl
         SwitchSection(_activeSection);
 
         IsVisible = true;
-        _ = ReloadThemePacksAsync();
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -209,6 +220,11 @@ public partial class SettingsOverlayControl : UserControl
                 PART_SearchBox.Focus();
             }
         }, DispatcherPriority.Input);
+    }
+
+    private void UpdateSettingsCardHeight()
+    {
+        PART_SettingsCard.MaxHeight = Bounds.Height > 0 ? Math.Min(600, Math.Max(0, Bounds.Height - 36)) : 600;
     }
 
 
@@ -279,24 +295,25 @@ public partial class SettingsOverlayControl : UserControl
 
     private void SwitchSection(string section)
     {
-        _activeSection = "associations";
+        _activeSection = section == "theme" ? "theme" : "associations";
         var isTheme = _activeSection == "theme";
 
         PART_NavTheme.Classes.Set("active", isTheme);
         PART_NavAssociations.Classes.Set("active", !isTheme);
 
-        PART_PageTheme.IsVisible = isTheme;
+        PART_PageTheme.IsVisible = false;
+        PART_AppearancePage.IsVisible = isTheme;
         PART_PageAssociations.IsVisible = !isTheme;
 
-        PART_ThemeHeaderActions.IsVisible = isTheme;
+        PART_ThemeHeaderActions.IsVisible = false;
         PART_AssocHeaderBadge.IsVisible = !isTheme;
 
         if (isTheme)
         {
             PART_SectionTitle.Text = Core.Lang[LangId.Settings_Theme];
             PART_SectionSubtitle.Text = T(
-                "管理深浅色主题包、查看器画布底色及窗口视觉呈现",
-                "Customize theme packs, viewer canvas background, and window appearance");
+                "选择跟随系统、暗色或亮色外观",
+                "Choose system, dark or light appearance");
         }
         else
         {
@@ -397,7 +414,8 @@ public partial class SettingsOverlayControl : UserControl
 
 
     private bool IsThemeDirty()
-        => !string.Equals(_darkTheme, _initialDarkTheme, StringComparison.OrdinalIgnoreCase)
+        => _appearanceMode != _initialAppearanceMode
+        || !string.Equals(_darkTheme, _initialDarkTheme, StringComparison.OrdinalIgnoreCase)
         || !string.Equals(_lightTheme, _initialLightTheme, StringComparison.OrdinalIgnoreCase)
         || !string.Equals(NormalizeBgForCompare(_bgColor), NormalizeBgForCompare(_initialBgColor), StringComparison.OrdinalIgnoreCase)
         || _backdrop != _initialBackdrop;
@@ -1371,7 +1389,8 @@ public partial class SettingsOverlayControl : UserControl
             var backdropChanged = !_isBackdropLocked && _backdrop != _initialBackdrop;
             var assocChanged = !_isFormatsLocked && IsAssocDirty();
 
-            var anyChanged = darkChanged || lightChanged || bgChanged || backdropChanged || assocChanged;
+            var appearanceChanged = _appearanceMode != _initialAppearanceMode;
+            var anyChanged = appearanceChanged || darkChanged || lightChanged || bgChanged || backdropChanged || assocChanged;
             if (!anyChanged)
             {
                 HideOverlayAndDisposePreviews();
@@ -1380,13 +1399,14 @@ public partial class SettingsOverlayControl : UserControl
 
             // 1. 写入全部未锁定的工作副本到 Core.Config
             if (darkChanged) Core.Config.Set(ConfigId.DarkTheme, _darkTheme);
+            if (appearanceChanged) Core.Config.AppearanceMode = _appearanceMode;
             if (lightChanged) Core.Config.Set(ConfigId.LightTheme, _lightTheme);
             if (backdropChanged) Core.Config.Set(ConfigId.WindowBackdrop, _backdrop);
             if (bgChanged) Core.Config.Set(ConfigId.BackgroundColor, _bgColor);
             if (assocChanged) Core.Config.Set(ConfigId.FileFormats, new HashSet<string>(_exts, StringComparer.OrdinalIgnoreCase));
 
             // 2. 应用主题包变更 (可能覆盖主题自身 BackgroundColor，所以如果用户设置了自定义色将在之后保底还原)
-            if ((darkChanged || lightChanged) && Application.Current is App app)
+            if ((appearanceChanged || darkChanged || lightChanged) && Application.Current is App app)
             {
                 await app.ApplyThemePackAsync(Core.IsSystemDarkMode);
 
@@ -1423,29 +1443,11 @@ public partial class SettingsOverlayControl : UserControl
     }
 
 
-    private void ResetCurrentPageDefaults_Click(object? sender, RoutedEventArgs e)
+    private async void ResetCurrentPageDefaults_Click(object? sender, RoutedEventArgs e)
     {
         if (_activeSection == "theme")
         {
-            if (!_isThemeLocked)
-            {
-                _darkTheme = Const.DEFAULT_THEME;
-                _lightTheme = Const.DEFAULT_LIGHT_THEME;
-                RefreshThemeCardSelections();
-                UpdateThemeSlotOverview();
-            }
-            if (!_isBgColorLocked)
-            {
-                _bgColor = "#00000000";
-                SyncBgColorUI(_bgColor);
-                _previewBgCallback?.Invoke(_bgColor);
-            }
-            if (!_isBackdropLocked)
-            {
-                _backdrop = BackdropStyle.Mica;
-                UpdateBackdropPills();
-            }
-            UpdateFooterState();
+            await ApplyAppearanceModeAsync("System");
             return;
         }
 
@@ -1467,12 +1469,6 @@ public partial class SettingsOverlayControl : UserControl
 
     #region UI Event Handlers
 
-    private void Backdrop_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        CancelAndClose();
-        e.Handled = true;
-    }
-
     private void Cancel_Click(object? sender, RoutedEventArgs e) => CancelAndClose();
 
     private async void Save_Click(object? sender, RoutedEventArgs e) => await SaveAndCloseAsync();
@@ -1482,6 +1478,71 @@ public partial class SettingsOverlayControl : UserControl
         if (sender is Button { Tag: string target })
         {
             SwitchSection(target);
+        }
+    }
+
+    private void UpdateAppearanceMode()
+    {
+        PART_ModeSystem.IsChecked = _appearanceMode == "System";
+        PART_ModeDark.IsChecked = _appearanceMode == "Dark";
+        PART_ModeLight.IsChecked = _appearanceMode == "Light";
+
+        PART_AppearanceTitle.Text = T("外观模式", "Appearance Mode");
+        PART_AppearanceDesc.Text = T(
+            "选择应用外观，跟随系统时将随 macOS 自动切换深浅主题。",
+            "Choose the app appearance. System mode follows macOS automatically.");
+
+        PART_TxtModeSystemTitle.Text = T("跟随系统", "System");
+        PART_TxtModeSystemDesc.Text = T("随 macOS 自动切换", "Match macOS");
+        PART_TxtModeDarkTitle.Text = T("暗色", "Dark");
+        PART_TxtModeDarkDesc.Text = T("深邃低光专注视界", "Low-light studio");
+        PART_TxtModeLightTitle.Text = T("亮色", "Light");
+        PART_TxtModeLightDesc.Text = T("清爽明亮日间工作台", "Crisp daylight");
+
+        PART_AppearancePaletteTitle.Text = T("双主题语义图标自动适配", "Theme-Adaptive Semantic Icons");
+        PART_AppearancePaletteDesc.Text = T(
+            "已为当前主题自动调整工具栏、主菜单、右键菜单及工作台面板图标的色彩与对比度。",
+            "Toolbar, menu, context menu, and panel icons adapt automatically to the active theme.");
+
+        // 根据当前实时生效主题刷新右上角状态徽章图标与色彩
+        var isDarkActive = Core.Theme.Settings.IsDarkMode;
+        PART_CurrentThemeStatusIcon.Data = Resx.GetIcon(isDarkActive ? ResxIconId.IconWeatherMoon : ResxIconId.IconWeatherSunny);
+        PART_CurrentThemeStatusIcon.Fill = Brush.Parse(isDarkActive ? "#A78BFA" : "#D97706");
+        PART_CurrentThemeStatusBadge.Background = Brush.Parse(isDarkActive ? "#22A78BFA" : "#1AD97706");
+
+        var activeThemeLabel = isDarkActive ? T("暗色模式", "Dark") : T("亮色模式", "Light");
+        PART_TxtCurrentThemeStatus.Text = _appearanceMode == "System"
+            ? T($"自动 · 当前 {activeThemeLabel}", $"Auto · {activeThemeLabel}")
+            : T($"当前：{activeThemeLabel}", $"Active: {activeThemeLabel}");
+    }
+
+    private async void AppearanceMode_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { Tag: string mode })
+        {
+            await ApplyAppearanceModeAsync(mode);
+        }
+    }
+
+    private async Task ApplyAppearanceModeAsync(string mode)
+    {
+        if (_appearanceMode == mode) return;
+        PART_ModeSystem.IsEnabled = PART_ModeDark.IsEnabled = PART_ModeLight.IsEnabled = false;
+        try
+        {
+            _appearanceMode = mode;
+            Core.Config.AppearanceMode = mode;
+            if (Application.Current is App app) await app.ApplyThemePackAsync(Core.IsSystemDarkMode);
+            UpdateAppearanceMode();
+            RebuildFormatsList();
+            _initialAppearanceMode = mode;
+            UpdateFooterState();
+            if (!await Core.Config.SaveAsync())
+                await ModalWindow.ShowSettingsSaveErrorAsync(TopLevel.GetTopLevel(this) as PhWindow, Core.Lang[LangId.Menu_MnuSettings]);
+        }
+        finally
+        {
+            PART_ModeSystem.IsEnabled = PART_ModeDark.IsEnabled = PART_ModeLight.IsEnabled = true;
         }
     }
 

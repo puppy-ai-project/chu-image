@@ -41,10 +41,10 @@
             </Setter>
         </Style>
         <Style Selector="ui|PhToolButton#PART_BtnImageInfo:pointerover">
-            <Setter Property="Background" Value="#1CFFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
         </Style>
         <Style Selector="ui|PhToolButton#PART_BtnImageInfo:pressed">
-            <Setter Property="Background" Value="#2DFFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
             <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
     </ui:PhControl.Styles>
@@ -56,8 +56,8 @@
         <!--  Single Unified Toolbar Container (轻盈磨砂微雕胶囊)  -->
         <Border
             Classes="toolbar-container"
-            Background="#0AFFFFFF"
-            BorderBrush="#10FFFFFF"
+            Background="{DynamicResource IgToolbarContainerBackground}"
+            BorderBrush="{DynamicResource IgToolbarContainerBorder}"
             BorderThickness="1"
             CornerRadius="7"
             Padding="3,2"
@@ -90,7 +90,7 @@
                     Height="13"
                     Margin="2,0"
                     VerticalAlignment="Center"
-                    Background="#16FFFFFF" />
+                    Background="{DynamicResource IgDarkBrush18FFFFFF}" />
 
                 <!--  Toolbar: Right column Island  -->
                 <Border
@@ -128,8 +128,7 @@
                                     Width="13"
                                     Height="13"
                                     Data="{StaticResource IconInfo}"
-                                    Fill="#E2E5EB"
-                                    Opacity="0.92"
+                                    Fill="{DynamicResource IgIconCyanBrush}"
                                     Stretch="Uniform"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center" />
@@ -155,7 +154,7 @@
                             HorizontalAlignment="Center">
                             <Path
                                 Data="{StaticResource IconEllipsis}"
-                                Fill="#E2E5EB"
+                                Fill="{DynamicResource IgIconBlueBrush}"
                                 Opacity="0.95"
                                 Stretch="Uniform"
                                 HorizontalAlignment="Center"
@@ -224,14 +223,31 @@
                                     IsVisible="False" />
 
                                 <!--  File  -->
-                                <ui:PhMenuItem LangKey="Menu_MnuFile">
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuOpenFile" />
+                                <ui:PhMenuItem
+                                    IconBrush="{DynamicResource IgIconAmberBrush}"
+                                    IconData="{StaticResource IconFolderOpen}"
+                                    LangKey="Menu_MnuFile">
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconAmberBrush}"
+                                        IconData="{StaticResource IconFolderOpen}"
+                                        LangKey="Menu_MnuOpenFile" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuNewWindow" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuSave" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuSaveAs" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconBlueBrush}"
+                                        IconData="{StaticResource IconSave}"
+                                        LangKey="Menu_MnuSave" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconCyanBrush}"
+                                        IconData="{StaticResource IconSaveAs}"
+                                        LangKey="Menu_MnuSaveAs" />
                                     <ui:PhMenuItem
                                         x:Name="PART_MnuExportFrames"
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconEmeraldBrush}"
+                                        IconData="{StaticResource IconImageForward}"
                                         LangKey="Menu_MnuExportFrames" />
                                     <ui:PhMenuItem Header="-" />
 
@@ -248,15 +264,27 @@
                                                                Windows=True,
                                                                x:TypeArguments=x:Boolean}"
                                         LangKey="Menu_MnuShare" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuOpenLocation" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconEmeraldBrush}"
+                                        IconData="{StaticResource IconFolderOpen}"
+                                        LangKey="Menu_MnuOpenLocation" />
                                     <ui:PhMenuItem Header="-" />
 
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuRename" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconAmberBrush}"
+                                        IconData="{StaticResource IconEdit}"
+                                        LangKey="Menu_MnuRename" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuMoveToRecycleBin" />
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuDeleteFromHardDisk" />
                                     <ui:PhMenuItem Header="-" />
 
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuImageProperties" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconCyanBrush}"
+                                        IconData="{StaticResource IconInfo}"
+                                        LangKey="Menu_MnuImageProperties" />
                                 </ui:PhMenuItem>
 
 
@@ -490,6 +518,8 @@
                                     <ui:PhMenuItem
                                         x:Name="PART_MnuEdit"
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconAmberBrush}"
+                                        IconData="{StaticResource IconEdit}"
                                         LangKey="Menu_MnuEdit" />
                                     <ui:PhMenuItem
                                         x:Name="PART_MnuToggleImageAnimation"
@@ -528,13 +558,28 @@
 
 
                                 <!--  Clipboard  -->
-                                <ui:PhMenuItem LangKey="Menu_MnuClipboard">
+                                <ui:PhMenuItem
+                                    IconBrush="{DynamicResource IgIconCyanBrush}"
+                                    IconData="{StaticResource IconCopy}"
+                                    LangKey="Menu_MnuClipboard">
                                     <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPasteImage" />
                                     <ui:PhMenuItem Header="-" />
 
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuCopyImagePixels" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuCopyPath" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuCopyFile" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconBlueBrush}"
+                                        IconData="{StaticResource IconCopy}"
+                                        LangKey="Menu_MnuCopyImagePixels" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconIndigoBrush}"
+                                        IconData="{StaticResource IconCopy}"
+                                        LangKey="Menu_MnuCopyPath" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconCyanBrush}"
+                                        IconData="{StaticResource IconCopy}"
+                                        LangKey="Menu_MnuCopyFile" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
                                         IsVisible="{OnPlatform True,
@@ -600,33 +645,44 @@
 
 
                                 <!--  Tools  -->
-                                <ui:PhMenuItem x:Name="PART_MnuTools" LangKey="Menu_MnuTools">
+                                <ui:PhMenuItem
+                                    x:Name="PART_MnuTools"
+                                    IconBrush="{DynamicResource IgIconPurpleBrush}"
+                                    IconData="{StaticResource IconToolProjector}"
+                                    LangKey="Menu_MnuTools">
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconPinkBrush}"
                                         IconData="{StaticResource IconToolColorPicker}"
                                         LangKey="Menu_MnuColorPicker" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconEmeraldBrush}"
                                         IconData="{StaticResource IconToolCropImage}"
                                         LangKey="Menu_MnuCropTool" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconCyanBrush}"
                                         IconData="{StaticResource IconToolFrameNav}"
                                         LangKey="Menu_MnuFrameNav" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconAmberBrush}"
                                         IconData="{StaticResource IconToolHdrToneMapper}"
                                         LangKey="Menu_MnuHdrToneMapper" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconPurpleBrush}"
                                         IconData="{StaticResource IconToolProjector}"
                                         LangKey="Menu_MnuProjector" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconBlueBrush}"
                                         IconData="{StaticResource IconToolImageResizer}"
                                         LangKey="Menu_MnuResizeTool" />
                                     <ui:PhMenuItem
                                         Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconTealBrush}"
                                         IconData="{StaticResource IconToolLosslessCompression}"
                                         LangKey="Menu_MnuLosslessCompression" />
                                     <ui:PhMenuItem x:Name="PART_MnuExternalToolsBeginSeparator" Header="-" />
@@ -635,18 +691,29 @@
                                         x:Name="PART_MnuExternalToolsEndSeparator"
                                         Header="-"
                                         IsVisible="False" />
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuToolsSettings" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconIndigoBrush}"
+                                        IconData="{StaticResource IconSettings}"
+                                        LangKey="Menu_MnuToolsSettings" />
                                 </ui:PhMenuItem>
                                 <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuPlugins" />
 
 
                                 <!--  Settings  -->
                                 <ui:PhMenuItem Header="-" />
-                                <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuSettings" />
+                                <ui:PhMenuItem
+                                    Click="MainMenuItem_Click"
+                                    IconBrush="{DynamicResource IgIconIndigoBrush}"
+                                    IconData="{StaticResource IconSettings}"
+                                    LangKey="Menu_MnuSettings" />
 
 
                                 <!--  Help  -->
-                                <ui:PhMenuItem LangKey="Menu_MnuHelp">
+                                <ui:PhMenuItem
+                                    IconBrush="{DynamicResource IgIconCyanBrush}"
+                                    IconData="{StaticResource IconInfo}"
+                                    LangKey="Menu_MnuHelp">
                                     <ui:PhMenuItem
                                         x:Name="PART_MnuUpgradeLicense"
                                         Click="MainMenuItem_Click"
@@ -664,13 +731,21 @@
 
                                     <ui:PhMenuItem Header="-" />
 
-                                    <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuAbout" />
+                                    <ui:PhMenuItem
+                                        Click="MainMenuItem_Click"
+                                        IconBrush="{DynamicResource IgIconCyanBrush}"
+                                        IconData="{StaticResource IconInfo}"
+                                        LangKey="Menu_MnuAbout" />
                                 </ui:PhMenuItem>
 
 
                                 <!--  Exit  -->
                                 <ui:PhMenuItem Header="-" />
-                                <ui:PhMenuItem Click="MainMenuItem_Click" LangKey="Menu_MnuExit" />
+                                <ui:PhMenuItem
+                                    Click="MainMenuItem_Click"
+                                    IconBrush="{DynamicResource IgIconRoseBrush}"
+                                    IconData="{StaticResource IconClose}"
+                                    LangKey="Menu_MnuExit" />
 
                             </ContextMenu>
                         </ui:ToolbarButton.DropdownMenu>
@@ -688,7 +763,7 @@
                         ToolTip.Tip="设置"
                         Click="SettingsButton_Click">
                         <Path Width="14" Height="14" Data="{StaticResource IconSettings}"
-                              Fill="#E8E6EB" Stretch="Uniform" />
+                              Fill="{DynamicResource IgIconIndigoBrush}" Stretch="Uniform" />
                     </ui:PhToolButton>
 
             </StackPanel>

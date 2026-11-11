@@ -70,6 +70,7 @@
         <!--  Icon dims with the header: the Fluent template recolors only the header when disabled  -->
         <Style Selector="^:disabled > PathIcon">
             <Setter Property="Foreground" Value="{DynamicResource MenuFlyoutItemForegroundDisabled}" />
+            <Setter Property="Opacity" Value="0.4" />
         </Style>
 
         <!--  attention: a soft tinted row, e.g. a downloaded update waiting to install  -->

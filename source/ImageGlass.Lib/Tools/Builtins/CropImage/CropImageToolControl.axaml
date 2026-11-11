@@ -129,26 +129,31 @@
                 x:Name="PART_BtnCopy"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
+                IconBrush="{DynamicResource IgIconCyanBrush}"
                 IconData="{StaticResource IconCopy}" />
             <ui:PhButton
                 x:Name="PART_BtnSave"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
+                IconBrush="{DynamicResource IgIconBlueBrush}"
                 IconData="{StaticResource IconSave}" />
             <ui:PhButton
                 x:Name="PART_BtnSaveAs"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
+                IconBrush="{DynamicResource IgIconIndigoBrush}"
                 IconData="{StaticResource IconSaveAs}" />
             <ui:PhButton
                 x:Name="PART_BtnReset"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
+                IconBrush="{DynamicResource IgIconAmberBrush}"
                 IconData="{StaticResource IconReset}" />
             <ui:PhButton
                 x:Name="PART_BtnResetView"
                 MinWidth="80"
                 HorizontalContentAlignment="Center"
+                IconBrush="{DynamicResource IgIconAmberBrush}"
                 IconData="{StaticResource IconReset}" />
         </WrapPanel>
 

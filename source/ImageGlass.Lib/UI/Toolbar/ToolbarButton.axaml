@@ -38,14 +38,14 @@
             </Setter>
         </Style>
         <Style Selector="ui|ToolbarButton:pointerover">
-            <Setter Property="Background" Value="#1CFFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
         </Style>
         <Style Selector="ui|ToolbarButton:pressed">
-            <Setter Property="Background" Value="#2DFFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
             <Setter Property="RenderTransform" Value="scale(0.92)" />
         </Style>
         <Style Selector="ui|ToolbarButton:checked">
-            <Setter Property="Background" Value="#2D7AF0" />
+            <Setter Property="Background" Value="{DynamicResource IgToolbarCheckedBrush}" />
         </Style>
         <Style Selector="ui|ToolbarButton:disabled">
             <Setter Property="Opacity" Value="0.30" />
@@ -76,7 +76,7 @@
                 Width="{Binding #PART_Icon.Width}"
                 Height="{Binding #PART_Icon.Height}"
                 Data="{StaticResource IconPlaceholder}"
-                Fill="#E8E6EB"
+                Fill="{DynamicResource IgDarkBrushE5E7EB}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 IsVisible="{CompiledBinding IsPlaceholderIconVisible}"

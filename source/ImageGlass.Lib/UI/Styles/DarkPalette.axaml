@@ -1,0 +1,955 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="IgToolbarContainerBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="IgToolbarContainerBorder" Color="Transparent" />
+      <SolidColorBrush x:Key="IgContextMenuHoverBrush" Color="#16FFFFFF" />
+      <SolidColorBrush x:Key="IgContextMenuPressedBrush" Color="#22FFFFFF" />
+      <SolidColorBrush x:Key="IgToolbarCheckedBrush" Color="#2D7AF0" />
+      <Color x:Key="IgDarkColor004D1A">#004D1A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush004D1A" Color="#004D1A" />
+      <Color x:Key="IgDarkColor0AFFFFFF">#0AFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0AFFFFFF" Color="#0AFFFFFF" />
+      <Color x:Key="IgDarkColor0B0D10">#0B0D10</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0B0D10" Color="#0B0D10" />
+      <Color x:Key="IgDarkColor0BFFFFFF">#0BFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0BFFFFFF" Color="#0BFFFFFF" />
+      <Color x:Key="IgDarkColor0CFFFFFF">#0CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0CFFFFFF" Color="#0CFFFFFF" />
+      <Color x:Key="IgDarkColor0DFFFFFF">#0DFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0DFFFFFF" Color="#0DFFFFFF" />
+      <Color x:Key="IgDarkColor10FFFFFF">#10FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush10FFFFFF" Color="#10FFFFFF" />
+      <Color x:Key="IgDarkColor12FFFFFF">#12FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush12FFFFFF" Color="#12FFFFFF" />
+      <Color x:Key="IgDarkColor143B82F6">#143B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush143B82F6" Color="#143B82F6" />
+      <Color x:Key="IgDarkColor14FFFFFF">#14FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush14FFFFFF" Color="#14FFFFFF" />
+      <Color x:Key="IgDarkColor15171C">#15171C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush15171C" Color="#15171C" />
+      <Color x:Key="IgDarkColor16FFFFFF">#16FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush16FFFFFF" Color="#16FFFFFF" />
+      <Color x:Key="IgDarkColor17191E">#17191E</Color>
+      <SolidColorBrush x:Key="IgDarkBrush17191E" Color="#17191E" />
+      <Color x:Key="IgDarkColor181A1F">#181A1F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A1F" Color="#181A1F" />
+      <Color x:Key="IgDarkColor181A20">#181A20</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A20" Color="#181A20" />
+      <Color x:Key="IgDarkColor183B82F6">#183B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush183B82F6" Color="#183B82F6" />
+      <Color x:Key="IgDarkColor18FFFFFF">#18FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush18FFFFFF" Color="#18FFFFFF" />
+      <Color x:Key="IgDarkColor191B20">#191B20</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191B20" Color="#191B20" />
+      <Color x:Key="IgDarkColor191D25">#191D25</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191D25" Color="#191D25" />
+      <Color x:Key="IgDarkColor1AAB29">#1AAB29</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1AAB29" Color="#1AAB29" />
+      <Color x:Key="IgDarkColor1B1D22">#1B1D22</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1B1D22" Color="#1B1D22" />
+      <Color x:Key="IgDarkColor1C10B981">#1C10B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C10B981" Color="#1C10B981" />
+      <Color x:Key="IgDarkColor1C1E23">#1C1E23</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C1E23" Color="#1C1E23" />
+      <Color x:Key="IgDarkColor1CF59E0B">#1CF59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CF59E0B" Color="#1CF59E0B" />
+      <Color x:Key="IgDarkColor1CFFFFFF">#1CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CFFFFFF" Color="#1CFFFFFF" />
+      <Color x:Key="IgDarkColor1D1F24">#1D1F24</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F24" Color="#1D1F24" />
+      <Color x:Key="IgDarkColor1D1F26">#1D1F26</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F26" Color="#1D1F26" />
+      <Color x:Key="IgDarkColor1D2027">#1D2027</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D2027" Color="#1D2027" />
+      <Color x:Key="IgDarkColor1E2026">#1E2026</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E2026" Color="#1E2026" />
+      <Color x:Key="IgDarkColor1E3B82F6">#1E3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E3B82F6" Color="#1E3B82F6" />
+      <Color x:Key="IgDarkColor1EEF4444">#1EEF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1EEF4444" Color="#1EEF4444" />
+      <Color x:Key="IgDarkColor20FFFFFF">#20FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush20FFFFFF" Color="#20FFFFFF" />
+      <Color x:Key="IgDarkColor22252C">#22252C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22252C" Color="#22252C" />
+      <Color x:Key="IgDarkColor224987">#224987</Color>
+      <SolidColorBrush x:Key="IgDarkBrush224987" Color="#224987" />
+      <Color x:Key="IgDarkColor22FFFFFF">#22FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22FFFFFF" Color="#22FFFFFF" />
+      <Color x:Key="IgDarkColor23252A">#23252A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252A" Color="#23252A" />
+      <Color x:Key="IgDarkColor23252B">#23252B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252B" Color="#23252B" />
+      <Color x:Key="IgDarkColor232731">#232731</Color>
+      <SolidColorBrush x:Key="IgDarkBrush232731" Color="#232731" />
+      <Color x:Key="IgDarkColor242730">#242730</Color>
+      <SolidColorBrush x:Key="IgDarkBrush242730" Color="#242730" />
+      <Color x:Key="IgDarkColor243B82F6">#243B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush243B82F6" Color="#243B82F6" />
+      <Color x:Key="IgDarkColor248B5CF6">#248B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush248B5CF6" Color="#248B5CF6" />
+      <Color x:Key="IgDarkColor24EF4444">#24EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24EF4444" Color="#24EF4444" />
+      <Color x:Key="IgDarkColor24FFFFFF">#24FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24FFFFFF" Color="#24FFFFFF" />
+      <Color x:Key="IgDarkColor2563EB">#2563EB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2563EB" Color="#2563EB" />
+      <Color x:Key="IgDarkColor263B82F6">#263B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush263B82F6" Color="#263B82F6" />
+      <Color x:Key="IgDarkColor26FFFFFF">#26FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush26FFFFFF" Color="#26FFFFFF" />
+      <Color x:Key="IgDarkColor27C93F">#27C93F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush27C93F" Color="#27C93F" />
+      <Color x:Key="IgDarkColor282B33">#282B33</Color>
+      <SolidColorBrush x:Key="IgDarkBrush282B33" Color="#282B33" />
+      <Color x:Key="IgDarkColor28FFFFFF">#28FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush28FFFFFF" Color="#28FFFFFF" />
+      <Color x:Key="IgDarkColor292C33">#292C33</Color>
+      <SolidColorBrush x:Key="IgDarkBrush292C33" Color="#292C33" />
+      <Color x:Key="IgDarkColor2B59A1">#2B59A1</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2B59A1" Color="#2B59A1" />
+      <Color x:Key="IgDarkColor2C2E34">#2C2E34</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2C2E34" Color="#2C2E34" />
+      <Color x:Key="IgDarkColor2CFFFFFF">#2CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2CFFFFFF" Color="#2CFFFFFF" />
+      <Color x:Key="IgDarkColor2D3B82F6">#2D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2D3B82F6" Color="#2D3B82F6" />
+      <Color x:Key="IgDarkColor2E323D">#2E323D</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2E323D" Color="#2E323D" />
+      <Color x:Key="IgDarkColor2EFFFFFF">#2EFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2EFFFFFF" Color="#2EFFFFFF" />
+      <Color x:Key="IgDarkColor323640">#323640</Color>
+      <SolidColorBrush x:Key="IgDarkBrush323640" Color="#323640" />
+      <Color x:Key="IgDarkColor3260A5FA">#3260A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3260A5FA" Color="#3260A5FA" />
+      <Color x:Key="IgDarkColor333B82F6">#333B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush333B82F6" Color="#333B82F6" />
+      <Color x:Key="IgDarkColor3368B8">#3368B8</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3368B8" Color="#3368B8" />
+      <Color x:Key="IgDarkColor33EF4444">#33EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush33EF4444" Color="#33EF4444" />
+      <Color x:Key="IgDarkColor34D399">#34D399</Color>
+      <SolidColorBrush x:Key="IgDarkBrush34D399" Color="#34D399" />
+      <Color x:Key="IgDarkColor353B82F6">#353B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush353B82F6" Color="#353B82F6" />
+      <Color x:Key="IgDarkColor356BBF">#356BBF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush356BBF" Color="#356BBF" />
+      <Color x:Key="IgDarkColor3610B981">#3610B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3610B981" Color="#3610B981" />
+      <Color x:Key="IgDarkColor363B82F6">#363B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush363B82F6" Color="#363B82F6" />
+      <Color x:Key="IgDarkColor36EF4444">#36EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36EF4444" Color="#36EF4444" />
+      <Color x:Key="IgDarkColor36F59E0B">#36F59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36F59E0B" Color="#36F59E0B" />
+      <Color x:Key="IgDarkColor36FFFFFF">#36FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36FFFFFF" Color="#36FFFFFF" />
+      <Color x:Key="IgDarkColor3860A5FA">#3860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3860A5FA" Color="#3860A5FA" />
+      <Color x:Key="IgDarkColor38EF4444">#38EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38EF4444" Color="#38EF4444" />
+      <Color x:Key="IgDarkColor38FFFFFF">#38FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38FFFFFF" Color="#38FFFFFF" />
+      <Color x:Key="IgDarkColor3A3B82F6">#3A3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3A3B82F6" Color="#3A3B82F6" />
+      <Color x:Key="IgDarkColor3B82F6">#3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3B82F6" Color="#3B82F6" />
+      <Color x:Key="IgDarkColor3BD852">#3BD852</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3BD852" Color="#3BD852" />
+      <Color x:Key="IgDarkColor3D3B82F6">#3D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3D3B82F6" Color="#3D3B82F6" />
+      <Color x:Key="IgDarkColor403B82F6">#403B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush403B82F6" Color="#403B82F6" />
+      <Color x:Key="IgDarkColor4060A5FA">#4060A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4060A5FA" Color="#4060A5FA" />
+      <Color x:Key="IgDarkColor407AD2">#407AD2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush407AD2" Color="#407AD2" />
+      <Color x:Key="IgDarkColor408B5CF6">#408B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush408B5CF6" Color="#408B5CF6" />
+      <Color x:Key="IgDarkColor4860A5FA">#4860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4860A5FA" Color="#4860A5FA" />
+      <Color x:Key="IgDarkColor4A4F59">#4A4F59</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A4F59" Color="#4A4F59" />
+      <Color x:Key="IgDarkColor4A85E0">#4A85E0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A85E0" Color="#4A85E0" />
+      <Color x:Key="IgDarkColor4B505C">#4B505C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4B505C" Color="#4B505C" />
+      <Color x:Key="IgDarkColor4C0000">#4C0000</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4C0000" Color="#4C0000" />
+      <Color x:Key="IgDarkColor525866">#525866</Color>
+      <SolidColorBrush x:Key="IgDarkBrush525866" Color="#525866" />
+      <Color x:Key="IgDarkColor553B82F6">#553B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush553B82F6" Color="#553B82F6" />
+      <Color x:Key="IgDarkColor563D00">#563D00</Color>
+      <SolidColorBrush x:Key="IgDarkBrush563D00" Color="#563D00" />
+      <Color x:Key="IgDarkColor5C60A5FA">#5C60A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush5C60A5FA" Color="#5C60A5FA" />
+      <Color x:Key="IgDarkColor606778">#606778</Color>
+      <SolidColorBrush x:Key="IgDarkBrush606778" Color="#606778" />
+      <Color x:Key="IgDarkColor60A5FA">#60A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush60A5FA" Color="#60A5FA" />
+      <Color x:Key="IgDarkColor636B78">#636B78</Color>
+      <SolidColorBrush x:Key="IgDarkBrush636B78" Color="#636B78" />
+      <Color x:Key="IgDarkColor669DF6">#669DF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush669DF6" Color="#669DF6" />
+      <Color x:Key="IgDarkColor66FFFFFF">#66FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush66FFFFFF" Color="#66FFFFFF" />
+      <Color x:Key="IgDarkColor6860A5FA">#6860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6860A5FA" Color="#6860A5FA" />
+      <Color x:Key="IgDarkColor6B7280">#6B7280</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6B7280" Color="#6B7280" />
+      <Color x:Key="IgDarkColor6F7685">#6F7685</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7685" Color="#6F7685" />
+      <Color x:Key="IgDarkColor6F7785">#6F7785</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7785" Color="#6F7785" />
+      <Color x:Key="IgDarkColor747B89">#747B89</Color>
+      <SolidColorBrush x:Key="IgDarkBrush747B89" Color="#747B89" />
+      <Color x:Key="IgDarkColor78808F">#78808F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush78808F" Color="#78808F" />
+      <Color x:Key="IgDarkColor7A000000">#7A000000</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A000000" Color="#7A000000" />
+      <Color x:Key="IgDarkColor7A8291">#7A8291</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A8291" Color="#7A8291" />
+      <Color x:Key="IgDarkColor7AB0FA">#7AB0FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7AB0FA" Color="#7AB0FA" />
+      <Color x:Key="IgDarkColor7B8294">#7B8294</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7B8294" Color="#7B8294" />
+      <Color x:Key="IgDarkColor7C8391">#7C8391</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7C8391" Color="#7C8391" />
+      <Color x:Key="IgDarkColor848C9C">#848C9C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush848C9C" Color="#848C9C" />
+      <Color x:Key="IgDarkColor8B92A0">#8B92A0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8B92A0" Color="#8B92A0" />
+      <Color x:Key="IgDarkColor8D2A2A">#8D2A2A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8D2A2A" Color="#8D2A2A" />
+      <Color x:Key="IgDarkColor8E95A2">#8E95A2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8E95A2" Color="#8E95A2" />
+      <Color x:Key="IgDarkColor93C5FD">#93C5FD</Color>
+      <SolidColorBrush x:Key="IgDarkBrush93C5FD" Color="#93C5FD" />
+      <Color x:Key="IgDarkColor9CA3AF">#9CA3AF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9CA3AF" Color="#9CA3AF" />
+      <Color x:Key="IgDarkColor9E3232">#9E3232</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9E3232" Color="#9E3232" />
+      <Color x:Key="IgDarkColorA1A8B8">#A1A8B8</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA1A8B8" Color="#A1A8B8" />
+      <Color x:Key="IgDarkColorA8CCFC">#A8CCFC</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA8CCFC" Color="#A8CCFC" />
+      <Color x:Key="IgDarkColorAE3B3B">#AE3B3B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushAE3B3B" Color="#AE3B3B" />
+      <Color x:Key="IgDarkColorB83E3E">#B83E3E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushB83E3E" Color="#B83E3E" />
+      <Color x:Key="IgDarkColorBFDBFE">#BFDBFE</Color>
+      <SolidColorBrush x:Key="IgDarkBrushBFDBFE" Color="#BFDBFE" />
+      <Color x:Key="IgDarkColorC42B1C">#C42B1C</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC42B1C" Color="#C42B1C" />
+      <Color x:Key="IgDarkColorC4B5FD">#C4B5FD</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC4B5FD" Color="#C4B5FD" />
+      <Color x:Key="IgDarkColorC94B4B">#C94B4B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC94B4B" Color="#C94B4B" />
+      <Color x:Key="IgDarkColorCC101216">#CC101216</Color>
+      <SolidColorBrush x:Key="IgDarkBrushCC101216" Color="#CC101216" />
+      <Color x:Key="IgDarkColorD1D5DB">#D1D5DB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushD1D5DB" Color="#D1D5DB" />
+      <Color x:Key="IgDarkColorDEA123">#DEA123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushDEA123" Color="#DEA123" />
+      <Color x:Key="IgDarkColorE0443E">#E0443E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE0443E" Color="#E0443E" />
+      <Color x:Key="IgDarkColorE5E7EB">#E5E7EB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE5E7EB" Color="#E5E7EB" />
+      <Color x:Key="IgDarkColorE81123">#E81123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE81123" Color="#E81123" />
+      <Color x:Key="IgDarkColorEF4444">#EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrushEF4444" Color="#EF4444" />
+      <Color x:Key="IgDarkColorF3A0A0">#F3A0A0</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3A0A0" Color="#F3A0A0" />
+      <Color x:Key="IgDarkColorF3F4F6">#F3F4F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3F4F6" Color="#F3F4F6" />
+      <Color x:Key="IgDarkColorF424262C">#F424262C</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF424262C" Color="#F424262C" />
+      <Color x:Key="IgDarkColorF87171">#F87171</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF87171" Color="#F87171" />
+      <Color x:Key="IgDarkColorF9FAFB">#F9FAFB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF9FAFB" Color="#F9FAFB" />
+      <Color x:Key="IgDarkColorFBBF24">#FBBF24</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFBBF24" Color="#FBBF24" />
+      <Color x:Key="IgDarkColorFCD34D">#FCD34D</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFCD34D" Color="#FCD34D" />
+      <Color x:Key="IgDarkColorFECACA">#FECACA</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFECACA" Color="#FECACA" />
+      <Color x:Key="IgDarkColorFF5F56">#FF5F56</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF5F56" Color="#FF5F56" />
+      <Color x:Key="IgDarkColorFF736A">#FF736A</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF736A" Color="#FF736A" />
+      <Color x:Key="IgDarkColorFFBD2E">#FFBD2E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFBD2E" Color="#FFBD2E" />
+      <Color x:Key="IgDarkColorFFCC4D">#FFCC4D</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFCC4D" Color="#FFCC4D" />
+      <Color x:Key="IgDarkColorFFFFFF">#FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFFFFF" Color="#FFFFFF" />
+
+      <!-- 语义化图标配色（暗色主题） -->
+      <Color x:Key="IgIconBlueColor">#60A5FA</Color>
+      <SolidColorBrush x:Key="IgIconBlueBrush" Color="#60A5FA" />
+      <SolidColorBrush x:Key="IgIconBlueSoftBrush" Color="#2260A5FA" />
+      <Color x:Key="IgIconCyanColor">#38BDF8</Color>
+      <SolidColorBrush x:Key="IgIconCyanBrush" Color="#38BDF8" />
+      <SolidColorBrush x:Key="IgIconCyanSoftBrush" Color="#2238BDF8" />
+      <Color x:Key="IgIconIndigoColor">#818CF8</Color>
+      <SolidColorBrush x:Key="IgIconIndigoBrush" Color="#818CF8" />
+      <SolidColorBrush x:Key="IgIconIndigoSoftBrush" Color="#22818CF8" />
+      <Color x:Key="IgIconEmeraldColor">#34D399</Color>
+      <SolidColorBrush x:Key="IgIconEmeraldBrush" Color="#34D399" />
+      <SolidColorBrush x:Key="IgIconEmeraldSoftBrush" Color="#2234D399" />
+      <Color x:Key="IgIconTealColor">#2DD4BF</Color>
+      <SolidColorBrush x:Key="IgIconTealBrush" Color="#2DD4BF" />
+      <Color x:Key="IgIconAmberColor">#FBBF24</Color>
+      <SolidColorBrush x:Key="IgIconAmberBrush" Color="#FBBF24" />
+      <SolidColorBrush x:Key="IgIconAmberSoftBrush" Color="#22FBBF24" />
+      <Color x:Key="IgIconOrangeColor">#FB923C</Color>
+      <SolidColorBrush x:Key="IgIconOrangeBrush" Color="#FB923C" />
+      <Color x:Key="IgIconPurpleColor">#A78BFA</Color>
+      <SolidColorBrush x:Key="IgIconPurpleBrush" Color="#A78BFA" />
+      <SolidColorBrush x:Key="IgIconPurpleSoftBrush" Color="#22A78BFA" />
+      <Color x:Key="IgIconPinkColor">#F472B6</Color>
+      <SolidColorBrush x:Key="IgIconPinkBrush" Color="#F472B6" />
+      <Color x:Key="IgIconRoseColor">#F87171</Color>
+      <SolidColorBrush x:Key="IgIconRoseBrush" Color="#F87171" />
+      <SolidColorBrush x:Key="IgIconRoseSoftBrush" Color="#22F87171" />
+      <SolidColorBrush x:Key="IgIconNeutralBrush" Color="#CBD5E1" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="IgToolbarContainerBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="IgToolbarContainerBorder" Color="Transparent" />
+      <SolidColorBrush x:Key="IgContextMenuHoverBrush" Color="#DCE8F7" />
+      <SolidColorBrush x:Key="IgContextMenuPressedBrush" Color="#C9DBF2" />
+      <SolidColorBrush x:Key="IgToolbarCheckedBrush" Color="#BFD8FA" />
+      <Color x:Key="IgDarkColor004D1A">#004D1A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush004D1A" Color="#004D1A" />
+      <Color x:Key="IgDarkColor0AFFFFFF">#0A232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0AFFFFFF" Color="#0A232323" />
+      <Color x:Key="IgDarkColor0B0D10">#FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0B0D10" Color="#FFFFFF" />
+      <Color x:Key="IgDarkColor0BFFFFFF">#0B232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0BFFFFFF" Color="#0B232323" />
+      <Color x:Key="IgDarkColor0CFFFFFF">#0C232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0CFFFFFF" Color="#0C232323" />
+      <Color x:Key="IgDarkColor0DFFFFFF">#0D232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0DFFFFFF" Color="#0D232323" />
+      <Color x:Key="IgDarkColor10FFFFFF">#10232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush10FFFFFF" Color="#10232323" />
+      <Color x:Key="IgDarkColor12FFFFFF">#12232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush12FFFFFF" Color="#12232323" />
+      <Color x:Key="IgDarkColor143B82F6">#143B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush143B82F6" Color="#143B82F6" />
+      <Color x:Key="IgDarkColor14FFFFFF">#14232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush14FFFFFF" Color="#14232323" />
+      <Color x:Key="IgDarkColor15171C">#F8FAFC</Color>
+      <SolidColorBrush x:Key="IgDarkBrush15171C" Color="#F8FAFC" />
+      <Color x:Key="IgDarkColor16FFFFFF">#16232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush16FFFFFF" Color="#16232323" />
+      <Color x:Key="IgDarkColor17191E">#F5F7FB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush17191E" Color="#F5F7FB" />
+      <Color x:Key="IgDarkColor181A1F">#F7F9FC</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A1F" Color="#F7F9FC" />
+      <Color x:Key="IgDarkColor181A20">#F8FAFD</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A20" Color="#F8FAFD" />
+      <Color x:Key="IgDarkColor183B82F6">#183B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush183B82F6" Color="#183B82F6" />
+      <Color x:Key="IgDarkColor18FFFFFF">#18232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush18FFFFFF" Color="#18232323" />
+      <Color x:Key="IgDarkColor191B20">#F4F7FB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191B20" Color="#F4F7FB" />
+      <Color x:Key="IgDarkColor191D25">#EFF4FB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191D25" Color="#EFF4FB" />
+      <Color x:Key="IgDarkColor1AAB29">#1AAB29</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1AAB29" Color="#1AAB29" />
+      <Color x:Key="IgDarkColor1B1D22">#F1F5F9</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1B1D22" Color="#F1F5F9" />
+      <Color x:Key="IgDarkColor1C10B981">#1C10B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C10B981" Color="#1C10B981" />
+      <Color x:Key="IgDarkColor1C1E23">#F1F4F8</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C1E23" Color="#F1F4F8" />
+      <Color x:Key="IgDarkColor1CF59E0B">#1CF59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CF59E0B" Color="#1CF59E0B" />
+      <Color x:Key="IgDarkColor1CFFFFFF">#1C232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CFFFFFF" Color="#1C232323" />
+      <Color x:Key="IgDarkColor1D1F24">#EDF1F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F24" Color="#EDF1F6" />
+      <Color x:Key="IgDarkColor1D1F26">#EDF1F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F26" Color="#EDF1F6" />
+      <Color x:Key="IgDarkColor1D2027">#F6F8FC</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D2027" Color="#F6F8FC" />
+      <Color x:Key="IgDarkColor1E2026">#EEEEF0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E2026" Color="#EEEEF0" />
+      <Color x:Key="IgDarkColor1E3B82F6">#1E3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E3B82F6" Color="#1E3B82F6" />
+      <Color x:Key="IgDarkColor1EEF4444">#1EEF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1EEF4444" Color="#1EEF4444" />
+      <Color x:Key="IgDarkColor20FFFFFF">#20232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush20FFFFFF" Color="#20232323" />
+      <Color x:Key="IgDarkColor22252C">#E3E9F2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22252C" Color="#E3E9F2" />
+      <Color x:Key="IgDarkColor224987">#224987</Color>
+      <SolidColorBrush x:Key="IgDarkBrush224987" Color="#224987" />
+      <Color x:Key="IgDarkColor22FFFFFF">#22232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22FFFFFF" Color="#22232323" />
+      <Color x:Key="IgDarkColor23252A">#F1F4F8</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252A" Color="#F1F4F8" />
+      <Color x:Key="IgDarkColor23252B">#F6F8FC</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252B" Color="#F6F8FC" />
+      <Color x:Key="IgDarkColor232731">#E8EDF5</Color>
+      <SolidColorBrush x:Key="IgDarkBrush232731" Color="#E8EDF5" />
+      <Color x:Key="IgDarkColor242730">#F5F7FB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush242730" Color="#F5F7FB" />
+      <Color x:Key="IgDarkColor243B82F6">#243B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush243B82F6" Color="#243B82F6" />
+      <Color x:Key="IgDarkColor248B5CF6">#248B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush248B5CF6" Color="#248B5CF6" />
+      <Color x:Key="IgDarkColor24EF4444">#24EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24EF4444" Color="#24EF4444" />
+      <Color x:Key="IgDarkColor24FFFFFF">#24232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24FFFFFF" Color="#24232323" />
+      <Color x:Key="IgDarkColor2563EB">#2563EB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2563EB" Color="#2563EB" />
+      <Color x:Key="IgDarkColor263B82F6">#263B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush263B82F6" Color="#263B82F6" />
+      <Color x:Key="IgDarkColor26FFFFFF">#26232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush26FFFFFF" Color="#26232323" />
+      <Color x:Key="IgDarkColor27C93F">#27C93F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush27C93F" Color="#27C93F" />
+      <Color x:Key="IgDarkColor282B33">#E9EEF5</Color>
+      <SolidColorBrush x:Key="IgDarkBrush282B33" Color="#E9EEF5" />
+      <Color x:Key="IgDarkColor28FFFFFF">#28232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush28FFFFFF" Color="#28232323" />
+      <Color x:Key="IgDarkColor292C33">#FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush292C33" Color="#FFFFFF" />
+      <Color x:Key="IgDarkColor2B59A1">#2B59A1</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2B59A1" Color="#2B59A1" />
+      <Color x:Key="IgDarkColor2C2E34">#FAFBFE</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2C2E34" Color="#FAFBFE" />
+      <Color x:Key="IgDarkColor2CFFFFFF">#2C232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2CFFFFFF" Color="#2C232323" />
+      <Color x:Key="IgDarkColor2D3B82F6">#2D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2D3B82F6" Color="#2D3B82F6" />
+      <Color x:Key="IgDarkColor2E323D">#E8E9EC</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2E323D" Color="#E8E9EC" />
+      <Color x:Key="IgDarkColor2EFFFFFF">#2E232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2EFFFFFF" Color="#2E232323" />
+      <Color x:Key="IgDarkColor323640">#DDE5F0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush323640" Color="#DDE5F0" />
+      <Color x:Key="IgDarkColor3260A5FA">#3260A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3260A5FA" Color="#3260A5FA" />
+      <Color x:Key="IgDarkColor333B82F6">#333B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush333B82F6" Color="#333B82F6" />
+      <Color x:Key="IgDarkColor3368B8">#3368B8</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3368B8" Color="#3368B8" />
+      <Color x:Key="IgDarkColor33EF4444">#33EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush33EF4444" Color="#33EF4444" />
+      <Color x:Key="IgDarkColor34D399">#34D399</Color>
+      <SolidColorBrush x:Key="IgDarkBrush34D399" Color="#34D399" />
+      <Color x:Key="IgDarkColor353B82F6">#353B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush353B82F6" Color="#353B82F6" />
+      <Color x:Key="IgDarkColor356BBF">#356BBF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush356BBF" Color="#356BBF" />
+      <Color x:Key="IgDarkColor3610B981">#3610B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3610B981" Color="#3610B981" />
+      <Color x:Key="IgDarkColor363B82F6">#363B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush363B82F6" Color="#363B82F6" />
+      <Color x:Key="IgDarkColor36EF4444">#36EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36EF4444" Color="#36EF4444" />
+      <Color x:Key="IgDarkColor36F59E0B">#36F59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36F59E0B" Color="#36F59E0B" />
+      <Color x:Key="IgDarkColor36FFFFFF">#36232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36FFFFFF" Color="#36232323" />
+      <Color x:Key="IgDarkColor3860A5FA">#3860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3860A5FA" Color="#3860A5FA" />
+      <Color x:Key="IgDarkColor38EF4444">#38EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38EF4444" Color="#38EF4444" />
+      <Color x:Key="IgDarkColor38FFFFFF">#38232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38FFFFFF" Color="#38232323" />
+      <Color x:Key="IgDarkColor3A3B82F6">#3A3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3A3B82F6" Color="#3A3B82F6" />
+      <Color x:Key="IgDarkColor3B82F6">#3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3B82F6" Color="#3B82F6" />
+      <Color x:Key="IgDarkColor3BD852">#3BD852</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3BD852" Color="#3BD852" />
+      <Color x:Key="IgDarkColor3D3B82F6">#3D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3D3B82F6" Color="#3D3B82F6" />
+      <Color x:Key="IgDarkColor403B82F6">#403B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush403B82F6" Color="#403B82F6" />
+      <Color x:Key="IgDarkColor4060A5FA">#4060A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4060A5FA" Color="#4060A5FA" />
+      <Color x:Key="IgDarkColor407AD2">#407AD2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush407AD2" Color="#407AD2" />
+      <Color x:Key="IgDarkColor408B5CF6">#408B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush408B5CF6" Color="#408B5CF6" />
+      <Color x:Key="IgDarkColor4860A5FA">#4860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4860A5FA" Color="#4860A5FA" />
+      <Color x:Key="IgDarkColor4A4F59">#E0E1E3</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A4F59" Color="#E0E1E3" />
+      <Color x:Key="IgDarkColor4A85E0">#4A85E0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A85E0" Color="#4A85E0" />
+      <Color x:Key="IgDarkColor4B505C">#AEBACA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4B505C" Color="#AEBACA" />
+      <Color x:Key="IgDarkColor4C0000">#4C0000</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4C0000" Color="#4C0000" />
+      <Color x:Key="IgDarkColor525866">#738195</Color>
+      <SolidColorBrush x:Key="IgDarkBrush525866" Color="#738195" />
+      <Color x:Key="IgDarkColor553B82F6">#553B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush553B82F6" Color="#553B82F6" />
+      <Color x:Key="IgDarkColor563D00">#563D00</Color>
+      <SolidColorBrush x:Key="IgDarkBrush563D00" Color="#563D00" />
+      <Color x:Key="IgDarkColor5C60A5FA">#5C60A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush5C60A5FA" Color="#5C60A5FA" />
+      <Color x:Key="IgDarkColor606778">#86888C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush606778" Color="#86888C" />
+      <Color x:Key="IgDarkColor60A5FA">#2563B7</Color>
+      <SolidColorBrush x:Key="IgDarkBrush60A5FA" Color="#2563B7" />
+      <Color x:Key="IgDarkColor636B78">#64748B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush636B78" Color="#64748B" />
+      <Color x:Key="IgDarkColor669DF6">#669DF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush669DF6" Color="#669DF6" />
+      <Color x:Key="IgDarkColor66FFFFFF">#66232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush66FFFFFF" Color="#66232323" />
+      <Color x:Key="IgDarkColor6860A5FA">#6860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6860A5FA" Color="#6860A5FA" />
+      <Color x:Key="IgDarkColor6B7280">#64748B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6B7280" Color="#64748B" />
+      <Color x:Key="IgDarkColor6F7685">#7F8185</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7685" Color="#7F8185" />
+      <Color x:Key="IgDarkColor6F7785">#7F8185</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7785" Color="#7F8185" />
+      <Color x:Key="IgDarkColor747B89">#65748A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush747B89" Color="#65748A" />
+      <Color x:Key="IgDarkColor78808F">#7A7C80</Color>
+      <SolidColorBrush x:Key="IgDarkBrush78808F" Color="#7A7C80" />
+      <Color x:Key="IgDarkColor7A000000">#660B1323</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A000000" Color="#660B1323" />
+      <Color x:Key="IgDarkColor7A8291">#797B7F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A8291" Color="#797B7F" />
+      <Color x:Key="IgDarkColor7AB0FA">#7AB0FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7AB0FA" Color="#7AB0FA" />
+      <Color x:Key="IgDarkColor7B8294">#797A7F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7B8294" Color="#797A7F" />
+      <Color x:Key="IgDarkColor7C8391">#797B7E</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7C8391" Color="#797B7E" />
+      <Color x:Key="IgDarkColor848C9C">#74767A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush848C9C" Color="#74767A" />
+      <Color x:Key="IgDarkColor8B92A0">#64748B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8B92A0" Color="#64748B" />
+      <Color x:Key="IgDarkColor8D2A2A">#8D2A2A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8D2A2A" Color="#8D2A2A" />
+      <Color x:Key="IgDarkColor8E95A2">#64748B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8E95A2" Color="#64748B" />
+      <Color x:Key="IgDarkColor93C5FD">#245EB1</Color>
+      <SolidColorBrush x:Key="IgDarkBrush93C5FD" Color="#245EB1" />
+      <Color x:Key="IgDarkColor9CA3AF">#59687B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9CA3AF" Color="#59687B" />
+      <Color x:Key="IgDarkColor9E3232">#9E3232</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9E3232" Color="#9E3232" />
+      <Color x:Key="IgDarkColorA1A8B8">#59687B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA1A8B8" Color="#59687B" />
+      <Color x:Key="IgDarkColorA8CCFC">#A8CCFC</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA8CCFC" Color="#A8CCFC" />
+      <Color x:Key="IgDarkColorAE3B3B">#AE3B3B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushAE3B3B" Color="#AE3B3B" />
+      <Color x:Key="IgDarkColorB83E3E">#B83E3E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushB83E3E" Color="#B83E3E" />
+      <Color x:Key="IgDarkColorBFDBFE">#BFDBFE</Color>
+      <SolidColorBrush x:Key="IgDarkBrushBFDBFE" Color="#BFDBFE" />
+      <Color x:Key="IgDarkColorC42B1C">#C42B1C</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC42B1C" Color="#C42B1C" />
+      <Color x:Key="IgDarkColorC4B5FD">#6D42B5</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC4B5FD" Color="#6D42B5" />
+      <Color x:Key="IgDarkColorC94B4B">#C94B4B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC94B4B" Color="#C94B4B" />
+      <Color x:Key="IgDarkColorCC101216">#99101825</Color>
+      <SolidColorBrush x:Key="IgDarkBrushCC101216" Color="#99101825" />
+      <Color x:Key="IgDarkColorD1D5DB">#3F4C60</Color>
+      <SolidColorBrush x:Key="IgDarkBrushD1D5DB" Color="#3F4C60" />
+      <Color x:Key="IgDarkColorDEA123">#DEA123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushDEA123" Color="#DEA123" />
+      <Color x:Key="IgDarkColorE0443E">#E0443E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE0443E" Color="#E0443E" />
+      <Color x:Key="IgDarkColorE5E7EB">#253247</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE5E7EB" Color="#253247" />
+      <Color x:Key="IgDarkColorE81123">#E81123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE81123" Color="#E81123" />
+      <Color x:Key="IgDarkColorEF4444">#EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrushEF4444" Color="#EF4444" />
+      <Color x:Key="IgDarkColorF3A0A0">#A6182B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3A0A0" Color="#A6182B" />
+      <Color x:Key="IgDarkColorF3F4F6">#1F2937</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3F4F6" Color="#1F2937" />
+      <Color x:Key="IgDarkColorF424262C">#F4ECEDEE</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF424262C" Color="#F4ECEDEE" />
+      <Color x:Key="IgDarkColorF87171">#BE3346</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF87171" Color="#BE3346" />
+      <Color x:Key="IgDarkColorF9FAFB">#FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF9FAFB" Color="#FFFFFF" />
+      <Color x:Key="IgDarkColorFBBF24">#996000</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFBBF24" Color="#996000" />
+      <Color x:Key="IgDarkColorFCD34D">#865900</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFCD34D" Color="#865900" />
+      <Color x:Key="IgDarkColorFECACA">#B42332</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFECACA" Color="#B42332" />
+      <Color x:Key="IgDarkColorFF5F56">#FF5F56</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF5F56" Color="#FF5F56" />
+      <Color x:Key="IgDarkColorFF736A">#FF736A</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF736A" Color="#FF736A" />
+      <Color x:Key="IgDarkColorFFBD2E">#FFBD2E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFBD2E" Color="#FFBD2E" />
+      <Color x:Key="IgDarkColorFFCC4D">#FFCC4D</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFCC4D" Color="#FFCC4D" />
+      <Color x:Key="IgDarkColorFFFFFF">#232323</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFFFFF" Color="#232323" />
+
+      <!-- 语义化图标配色（亮色主题） -->
+      <Color x:Key="IgIconBlueColor">#2563EB</Color>
+      <SolidColorBrush x:Key="IgIconBlueBrush" Color="#2563EB" />
+      <SolidColorBrush x:Key="IgIconBlueSoftBrush" Color="#1A2563EB" />
+      <Color x:Key="IgIconCyanColor">#0284C7</Color>
+      <SolidColorBrush x:Key="IgIconCyanBrush" Color="#0284C7" />
+      <SolidColorBrush x:Key="IgIconCyanSoftBrush" Color="#1A0284C7" />
+      <Color x:Key="IgIconIndigoColor">#4F46E5</Color>
+      <SolidColorBrush x:Key="IgIconIndigoBrush" Color="#4F46E5" />
+      <SolidColorBrush x:Key="IgIconIndigoSoftBrush" Color="#1A4F46E5" />
+      <Color x:Key="IgIconEmeraldColor">#059669</Color>
+      <SolidColorBrush x:Key="IgIconEmeraldBrush" Color="#059669" />
+      <SolidColorBrush x:Key="IgIconEmeraldSoftBrush" Color="#1A059669" />
+      <Color x:Key="IgIconTealColor">#0D9488</Color>
+      <SolidColorBrush x:Key="IgIconTealBrush" Color="#0D9488" />
+      <Color x:Key="IgIconAmberColor">#D97706</Color>
+      <SolidColorBrush x:Key="IgIconAmberBrush" Color="#D97706" />
+      <SolidColorBrush x:Key="IgIconAmberSoftBrush" Color="#1AD97706" />
+      <Color x:Key="IgIconOrangeColor">#EA580C</Color>
+      <SolidColorBrush x:Key="IgIconOrangeBrush" Color="#EA580C" />
+      <Color x:Key="IgIconPurpleColor">#7C3AED</Color>
+      <SolidColorBrush x:Key="IgIconPurpleBrush" Color="#7C3AED" />
+      <SolidColorBrush x:Key="IgIconPurpleSoftBrush" Color="#1A7C3AED" />
+      <Color x:Key="IgIconPinkColor">#DB2777</Color>
+      <SolidColorBrush x:Key="IgIconPinkBrush" Color="#DB2777" />
+      <Color x:Key="IgIconRoseColor">#DC2626</Color>
+      <SolidColorBrush x:Key="IgIconRoseBrush" Color="#DC2626" />
+      <SolidColorBrush x:Key="IgIconRoseSoftBrush" Color="#1ADC2626" />
+      <SolidColorBrush x:Key="IgIconNeutralBrush" Color="#475569" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="IgToolbarContainerBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="IgToolbarContainerBorder" Color="Transparent" />
+      <SolidColorBrush x:Key="IgContextMenuHoverBrush" Color="#16FFFFFF" />
+      <SolidColorBrush x:Key="IgContextMenuPressedBrush" Color="#22FFFFFF" />
+      <SolidColorBrush x:Key="IgToolbarCheckedBrush" Color="#2D7AF0" />
+      <Color x:Key="IgDarkColor004D1A">#004D1A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush004D1A" Color="#004D1A" />
+      <Color x:Key="IgDarkColor0AFFFFFF">#0AFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0AFFFFFF" Color="#0AFFFFFF" />
+      <Color x:Key="IgDarkColor0B0D10">#0B0D10</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0B0D10" Color="#0B0D10" />
+      <Color x:Key="IgDarkColor0BFFFFFF">#0BFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0BFFFFFF" Color="#0BFFFFFF" />
+      <Color x:Key="IgDarkColor0CFFFFFF">#0CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0CFFFFFF" Color="#0CFFFFFF" />
+      <Color x:Key="IgDarkColor0DFFFFFF">#0DFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush0DFFFFFF" Color="#0DFFFFFF" />
+      <Color x:Key="IgDarkColor10FFFFFF">#10FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush10FFFFFF" Color="#10FFFFFF" />
+      <Color x:Key="IgDarkColor12FFFFFF">#12FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush12FFFFFF" Color="#12FFFFFF" />
+      <Color x:Key="IgDarkColor143B82F6">#143B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush143B82F6" Color="#143B82F6" />
+      <Color x:Key="IgDarkColor14FFFFFF">#14FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush14FFFFFF" Color="#14FFFFFF" />
+      <Color x:Key="IgDarkColor15171C">#15171C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush15171C" Color="#15171C" />
+      <Color x:Key="IgDarkColor16FFFFFF">#16FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush16FFFFFF" Color="#16FFFFFF" />
+      <Color x:Key="IgDarkColor17191E">#17191E</Color>
+      <SolidColorBrush x:Key="IgDarkBrush17191E" Color="#17191E" />
+      <Color x:Key="IgDarkColor181A1F">#181A1F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A1F" Color="#181A1F" />
+      <Color x:Key="IgDarkColor181A20">#181A20</Color>
+      <SolidColorBrush x:Key="IgDarkBrush181A20" Color="#181A20" />
+      <Color x:Key="IgDarkColor183B82F6">#183B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush183B82F6" Color="#183B82F6" />
+      <Color x:Key="IgDarkColor18FFFFFF">#18FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush18FFFFFF" Color="#18FFFFFF" />
+      <Color x:Key="IgDarkColor191B20">#191B20</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191B20" Color="#191B20" />
+      <Color x:Key="IgDarkColor191D25">#191D25</Color>
+      <SolidColorBrush x:Key="IgDarkBrush191D25" Color="#191D25" />
+      <Color x:Key="IgDarkColor1AAB29">#1AAB29</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1AAB29" Color="#1AAB29" />
+      <Color x:Key="IgDarkColor1B1D22">#1B1D22</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1B1D22" Color="#1B1D22" />
+      <Color x:Key="IgDarkColor1C10B981">#1C10B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C10B981" Color="#1C10B981" />
+      <Color x:Key="IgDarkColor1C1E23">#1C1E23</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1C1E23" Color="#1C1E23" />
+      <Color x:Key="IgDarkColor1CF59E0B">#1CF59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CF59E0B" Color="#1CF59E0B" />
+      <Color x:Key="IgDarkColor1CFFFFFF">#1CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1CFFFFFF" Color="#1CFFFFFF" />
+      <Color x:Key="IgDarkColor1D1F24">#1D1F24</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F24" Color="#1D1F24" />
+      <Color x:Key="IgDarkColor1D1F26">#1D1F26</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D1F26" Color="#1D1F26" />
+      <Color x:Key="IgDarkColor1D2027">#1D2027</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1D2027" Color="#1D2027" />
+      <Color x:Key="IgDarkColor1E2026">#1E2026</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E2026" Color="#1E2026" />
+      <Color x:Key="IgDarkColor1E3B82F6">#1E3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1E3B82F6" Color="#1E3B82F6" />
+      <Color x:Key="IgDarkColor1EEF4444">#1EEF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush1EEF4444" Color="#1EEF4444" />
+      <Color x:Key="IgDarkColor20FFFFFF">#20FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush20FFFFFF" Color="#20FFFFFF" />
+      <Color x:Key="IgDarkColor22252C">#22252C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22252C" Color="#22252C" />
+      <Color x:Key="IgDarkColor224987">#224987</Color>
+      <SolidColorBrush x:Key="IgDarkBrush224987" Color="#224987" />
+      <Color x:Key="IgDarkColor22FFFFFF">#22FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush22FFFFFF" Color="#22FFFFFF" />
+      <Color x:Key="IgDarkColor23252A">#23252A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252A" Color="#23252A" />
+      <Color x:Key="IgDarkColor23252B">#23252B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush23252B" Color="#23252B" />
+      <Color x:Key="IgDarkColor232731">#232731</Color>
+      <SolidColorBrush x:Key="IgDarkBrush232731" Color="#232731" />
+      <Color x:Key="IgDarkColor242730">#242730</Color>
+      <SolidColorBrush x:Key="IgDarkBrush242730" Color="#242730" />
+      <Color x:Key="IgDarkColor243B82F6">#243B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush243B82F6" Color="#243B82F6" />
+      <Color x:Key="IgDarkColor248B5CF6">#248B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush248B5CF6" Color="#248B5CF6" />
+      <Color x:Key="IgDarkColor24EF4444">#24EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24EF4444" Color="#24EF4444" />
+      <Color x:Key="IgDarkColor24FFFFFF">#24FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush24FFFFFF" Color="#24FFFFFF" />
+      <Color x:Key="IgDarkColor2563EB">#2563EB</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2563EB" Color="#2563EB" />
+      <Color x:Key="IgDarkColor263B82F6">#263B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush263B82F6" Color="#263B82F6" />
+      <Color x:Key="IgDarkColor26FFFFFF">#26FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush26FFFFFF" Color="#26FFFFFF" />
+      <Color x:Key="IgDarkColor27C93F">#27C93F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush27C93F" Color="#27C93F" />
+      <Color x:Key="IgDarkColor282B33">#282B33</Color>
+      <SolidColorBrush x:Key="IgDarkBrush282B33" Color="#282B33" />
+      <Color x:Key="IgDarkColor28FFFFFF">#28FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush28FFFFFF" Color="#28FFFFFF" />
+      <Color x:Key="IgDarkColor292C33">#292C33</Color>
+      <SolidColorBrush x:Key="IgDarkBrush292C33" Color="#292C33" />
+      <Color x:Key="IgDarkColor2B59A1">#2B59A1</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2B59A1" Color="#2B59A1" />
+      <Color x:Key="IgDarkColor2C2E34">#2C2E34</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2C2E34" Color="#2C2E34" />
+      <Color x:Key="IgDarkColor2CFFFFFF">#2CFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2CFFFFFF" Color="#2CFFFFFF" />
+      <Color x:Key="IgDarkColor2D3B82F6">#2D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2D3B82F6" Color="#2D3B82F6" />
+      <Color x:Key="IgDarkColor2E323D">#2E323D</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2E323D" Color="#2E323D" />
+      <Color x:Key="IgDarkColor2EFFFFFF">#2EFFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush2EFFFFFF" Color="#2EFFFFFF" />
+      <Color x:Key="IgDarkColor323640">#323640</Color>
+      <SolidColorBrush x:Key="IgDarkBrush323640" Color="#323640" />
+      <Color x:Key="IgDarkColor3260A5FA">#3260A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3260A5FA" Color="#3260A5FA" />
+      <Color x:Key="IgDarkColor333B82F6">#333B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush333B82F6" Color="#333B82F6" />
+      <Color x:Key="IgDarkColor3368B8">#3368B8</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3368B8" Color="#3368B8" />
+      <Color x:Key="IgDarkColor33EF4444">#33EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush33EF4444" Color="#33EF4444" />
+      <Color x:Key="IgDarkColor34D399">#34D399</Color>
+      <SolidColorBrush x:Key="IgDarkBrush34D399" Color="#34D399" />
+      <Color x:Key="IgDarkColor353B82F6">#353B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush353B82F6" Color="#353B82F6" />
+      <Color x:Key="IgDarkColor356BBF">#356BBF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush356BBF" Color="#356BBF" />
+      <Color x:Key="IgDarkColor3610B981">#3610B981</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3610B981" Color="#3610B981" />
+      <Color x:Key="IgDarkColor363B82F6">#363B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush363B82F6" Color="#363B82F6" />
+      <Color x:Key="IgDarkColor36EF4444">#36EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36EF4444" Color="#36EF4444" />
+      <Color x:Key="IgDarkColor36F59E0B">#36F59E0B</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36F59E0B" Color="#36F59E0B" />
+      <Color x:Key="IgDarkColor36FFFFFF">#36FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush36FFFFFF" Color="#36FFFFFF" />
+      <Color x:Key="IgDarkColor3860A5FA">#3860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3860A5FA" Color="#3860A5FA" />
+      <Color x:Key="IgDarkColor38EF4444">#38EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38EF4444" Color="#38EF4444" />
+      <Color x:Key="IgDarkColor38FFFFFF">#38FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush38FFFFFF" Color="#38FFFFFF" />
+      <Color x:Key="IgDarkColor3A3B82F6">#3A3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3A3B82F6" Color="#3A3B82F6" />
+      <Color x:Key="IgDarkColor3B82F6">#3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3B82F6" Color="#3B82F6" />
+      <Color x:Key="IgDarkColor3BD852">#3BD852</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3BD852" Color="#3BD852" />
+      <Color x:Key="IgDarkColor3D3B82F6">#3D3B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush3D3B82F6" Color="#3D3B82F6" />
+      <Color x:Key="IgDarkColor403B82F6">#403B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush403B82F6" Color="#403B82F6" />
+      <Color x:Key="IgDarkColor4060A5FA">#4060A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4060A5FA" Color="#4060A5FA" />
+      <Color x:Key="IgDarkColor407AD2">#407AD2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush407AD2" Color="#407AD2" />
+      <Color x:Key="IgDarkColor408B5CF6">#408B5CF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush408B5CF6" Color="#408B5CF6" />
+      <Color x:Key="IgDarkColor4860A5FA">#4860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4860A5FA" Color="#4860A5FA" />
+      <Color x:Key="IgDarkColor4A4F59">#4A4F59</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A4F59" Color="#4A4F59" />
+      <Color x:Key="IgDarkColor4A85E0">#4A85E0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4A85E0" Color="#4A85E0" />
+      <Color x:Key="IgDarkColor4B505C">#4B505C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4B505C" Color="#4B505C" />
+      <Color x:Key="IgDarkColor4C0000">#4C0000</Color>
+      <SolidColorBrush x:Key="IgDarkBrush4C0000" Color="#4C0000" />
+      <Color x:Key="IgDarkColor525866">#525866</Color>
+      <SolidColorBrush x:Key="IgDarkBrush525866" Color="#525866" />
+      <Color x:Key="IgDarkColor553B82F6">#553B82F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush553B82F6" Color="#553B82F6" />
+      <Color x:Key="IgDarkColor563D00">#563D00</Color>
+      <SolidColorBrush x:Key="IgDarkBrush563D00" Color="#563D00" />
+      <Color x:Key="IgDarkColor5C60A5FA">#5C60A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush5C60A5FA" Color="#5C60A5FA" />
+      <Color x:Key="IgDarkColor606778">#606778</Color>
+      <SolidColorBrush x:Key="IgDarkBrush606778" Color="#606778" />
+      <Color x:Key="IgDarkColor60A5FA">#60A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush60A5FA" Color="#60A5FA" />
+      <Color x:Key="IgDarkColor636B78">#636B78</Color>
+      <SolidColorBrush x:Key="IgDarkBrush636B78" Color="#636B78" />
+      <Color x:Key="IgDarkColor669DF6">#669DF6</Color>
+      <SolidColorBrush x:Key="IgDarkBrush669DF6" Color="#669DF6" />
+      <Color x:Key="IgDarkColor66FFFFFF">#66FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush66FFFFFF" Color="#66FFFFFF" />
+      <Color x:Key="IgDarkColor6860A5FA">#6860A5FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6860A5FA" Color="#6860A5FA" />
+      <Color x:Key="IgDarkColor6B7280">#6B7280</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6B7280" Color="#6B7280" />
+      <Color x:Key="IgDarkColor6F7685">#6F7685</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7685" Color="#6F7685" />
+      <Color x:Key="IgDarkColor6F7785">#6F7785</Color>
+      <SolidColorBrush x:Key="IgDarkBrush6F7785" Color="#6F7785" />
+      <Color x:Key="IgDarkColor747B89">#747B89</Color>
+      <SolidColorBrush x:Key="IgDarkBrush747B89" Color="#747B89" />
+      <Color x:Key="IgDarkColor78808F">#78808F</Color>
+      <SolidColorBrush x:Key="IgDarkBrush78808F" Color="#78808F" />
+      <Color x:Key="IgDarkColor7A000000">#7A000000</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A000000" Color="#7A000000" />
+      <Color x:Key="IgDarkColor7A8291">#7A8291</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7A8291" Color="#7A8291" />
+      <Color x:Key="IgDarkColor7AB0FA">#7AB0FA</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7AB0FA" Color="#7AB0FA" />
+      <Color x:Key="IgDarkColor7B8294">#7B8294</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7B8294" Color="#7B8294" />
+      <Color x:Key="IgDarkColor7C8391">#7C8391</Color>
+      <SolidColorBrush x:Key="IgDarkBrush7C8391" Color="#7C8391" />
+      <Color x:Key="IgDarkColor848C9C">#848C9C</Color>
+      <SolidColorBrush x:Key="IgDarkBrush848C9C" Color="#848C9C" />
+      <Color x:Key="IgDarkColor8B92A0">#8B92A0</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8B92A0" Color="#8B92A0" />
+      <Color x:Key="IgDarkColor8D2A2A">#8D2A2A</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8D2A2A" Color="#8D2A2A" />
+      <Color x:Key="IgDarkColor8E95A2">#8E95A2</Color>
+      <SolidColorBrush x:Key="IgDarkBrush8E95A2" Color="#8E95A2" />
+      <Color x:Key="IgDarkColor93C5FD">#93C5FD</Color>
+      <SolidColorBrush x:Key="IgDarkBrush93C5FD" Color="#93C5FD" />
+      <Color x:Key="IgDarkColor9CA3AF">#9CA3AF</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9CA3AF" Color="#9CA3AF" />
+      <Color x:Key="IgDarkColor9E3232">#9E3232</Color>
+      <SolidColorBrush x:Key="IgDarkBrush9E3232" Color="#9E3232" />
+      <Color x:Key="IgDarkColorA1A8B8">#A1A8B8</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA1A8B8" Color="#A1A8B8" />
+      <Color x:Key="IgDarkColorA8CCFC">#A8CCFC</Color>
+      <SolidColorBrush x:Key="IgDarkBrushA8CCFC" Color="#A8CCFC" />
+      <Color x:Key="IgDarkColorAE3B3B">#AE3B3B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushAE3B3B" Color="#AE3B3B" />
+      <Color x:Key="IgDarkColorB83E3E">#B83E3E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushB83E3E" Color="#B83E3E" />
+      <Color x:Key="IgDarkColorBFDBFE">#BFDBFE</Color>
+      <SolidColorBrush x:Key="IgDarkBrushBFDBFE" Color="#BFDBFE" />
+      <Color x:Key="IgDarkColorC42B1C">#C42B1C</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC42B1C" Color="#C42B1C" />
+      <Color x:Key="IgDarkColorC4B5FD">#C4B5FD</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC4B5FD" Color="#C4B5FD" />
+      <Color x:Key="IgDarkColorC94B4B">#C94B4B</Color>
+      <SolidColorBrush x:Key="IgDarkBrushC94B4B" Color="#C94B4B" />
+      <Color x:Key="IgDarkColorCC101216">#CC101216</Color>
+      <SolidColorBrush x:Key="IgDarkBrushCC101216" Color="#CC101216" />
+      <Color x:Key="IgDarkColorD1D5DB">#D1D5DB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushD1D5DB" Color="#D1D5DB" />
+      <Color x:Key="IgDarkColorDEA123">#DEA123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushDEA123" Color="#DEA123" />
+      <Color x:Key="IgDarkColorE0443E">#E0443E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE0443E" Color="#E0443E" />
+      <Color x:Key="IgDarkColorE5E7EB">#E5E7EB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE5E7EB" Color="#E5E7EB" />
+      <Color x:Key="IgDarkColorE81123">#E81123</Color>
+      <SolidColorBrush x:Key="IgDarkBrushE81123" Color="#E81123" />
+      <Color x:Key="IgDarkColorEF4444">#EF4444</Color>
+      <SolidColorBrush x:Key="IgDarkBrushEF4444" Color="#EF4444" />
+      <Color x:Key="IgDarkColorF3A0A0">#F3A0A0</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3A0A0" Color="#F3A0A0" />
+      <Color x:Key="IgDarkColorF3F4F6">#F3F4F6</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF3F4F6" Color="#F3F4F6" />
+      <Color x:Key="IgDarkColorF424262C">#F424262C</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF424262C" Color="#F424262C" />
+      <Color x:Key="IgDarkColorF87171">#F87171</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF87171" Color="#F87171" />
+      <Color x:Key="IgDarkColorF9FAFB">#F9FAFB</Color>
+      <SolidColorBrush x:Key="IgDarkBrushF9FAFB" Color="#F9FAFB" />
+      <Color x:Key="IgDarkColorFBBF24">#FBBF24</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFBBF24" Color="#FBBF24" />
+      <Color x:Key="IgDarkColorFCD34D">#FCD34D</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFCD34D" Color="#FCD34D" />
+      <Color x:Key="IgDarkColorFECACA">#FECACA</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFECACA" Color="#FECACA" />
+      <Color x:Key="IgDarkColorFF5F56">#FF5F56</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF5F56" Color="#FF5F56" />
+      <Color x:Key="IgDarkColorFF736A">#FF736A</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFF736A" Color="#FF736A" />
+      <Color x:Key="IgDarkColorFFBD2E">#FFBD2E</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFBD2E" Color="#FFBD2E" />
+      <Color x:Key="IgDarkColorFFCC4D">#FFCC4D</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFCC4D" Color="#FFCC4D" />
+      <Color x:Key="IgDarkColorFFFFFF">#FFFFFF</Color>
+      <SolidColorBrush x:Key="IgDarkBrushFFFFFF" Color="#FFFFFF" />
+
+      <!-- 语义化图标配色（默认分支与暗色保持一致） -->
+      <Color x:Key="IgIconBlueColor">#60A5FA</Color>
+      <SolidColorBrush x:Key="IgIconBlueBrush" Color="#60A5FA" />
+      <SolidColorBrush x:Key="IgIconBlueSoftBrush" Color="#2260A5FA" />
+      <Color x:Key="IgIconCyanColor">#38BDF8</Color>
+      <SolidColorBrush x:Key="IgIconCyanBrush" Color="#38BDF8" />
+      <SolidColorBrush x:Key="IgIconCyanSoftBrush" Color="#2238BDF8" />
+      <Color x:Key="IgIconIndigoColor">#818CF8</Color>
+      <SolidColorBrush x:Key="IgIconIndigoBrush" Color="#818CF8" />
+      <SolidColorBrush x:Key="IgIconIndigoSoftBrush" Color="#22818CF8" />
+      <Color x:Key="IgIconEmeraldColor">#34D399</Color>
+      <SolidColorBrush x:Key="IgIconEmeraldBrush" Color="#34D399" />
+      <SolidColorBrush x:Key="IgIconEmeraldSoftBrush" Color="#2234D399" />
+      <Color x:Key="IgIconTealColor">#2DD4BF</Color>
+      <SolidColorBrush x:Key="IgIconTealBrush" Color="#2DD4BF" />
+      <Color x:Key="IgIconAmberColor">#FBBF24</Color>
+      <SolidColorBrush x:Key="IgIconAmberBrush" Color="#FBBF24" />
+      <SolidColorBrush x:Key="IgIconAmberSoftBrush" Color="#22FBBF24" />
+      <Color x:Key="IgIconOrangeColor">#FB923C</Color>
+      <SolidColorBrush x:Key="IgIconOrangeBrush" Color="#FB923C" />
+      <Color x:Key="IgIconPurpleColor">#A78BFA</Color>
+      <SolidColorBrush x:Key="IgIconPurpleBrush" Color="#A78BFA" />
+      <SolidColorBrush x:Key="IgIconPurpleSoftBrush" Color="#22A78BFA" />
+      <Color x:Key="IgIconPinkColor">#F472B6</Color>
+      <SolidColorBrush x:Key="IgIconPinkBrush" Color="#F472B6" />
+      <Color x:Key="IgIconRoseColor">#F87171</Color>
+      <SolidColorBrush x:Key="IgIconRoseBrush" Color="#F87171" />
+      <SolidColorBrush x:Key="IgIconRoseSoftBrush" Color="#22F87171" />
+      <SolidColorBrush x:Key="IgIconNeutralBrush" Color="#CBD5E1" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

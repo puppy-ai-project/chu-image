@@ -20,12 +20,12 @@
     "AppLogo": "logo.svg"
   },
   "Colors": {
-    "BgColor": "#151b1faa",
-    "TextColor": "#dedede",
+    "BgColor": "#1D1F24",
+    "TextColor": "#E5E7EB",
 
-    "ToolbarBgColor": "#151b1f00",
-    "GalleryBgColor": "#151b1f00",
-    "MenuBgColor": "#1e2429"
+    "ToolbarBgColor": "#0023252A",
+    "GalleryBgColor": "#001D1F24",
+    "MenuBgColor": "#23252A"
   },
   "ToolbarIcons": {
     "ActualSize": "ActualSize.svg",

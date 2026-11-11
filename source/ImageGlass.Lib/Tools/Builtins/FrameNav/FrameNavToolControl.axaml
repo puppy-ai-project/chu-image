@@ -44,6 +44,7 @@
                         Width="22"
                         Height="22"
                         Data="{StaticResource IconArrowPrevious}"
+                        Foreground="{DynamicResource IgIconIndigoBrush}"
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
@@ -61,6 +62,7 @@
                         Width="22"
                         Height="22"
                         Data="{StaticResource IconArrowLeft}"
+                        Foreground="{DynamicResource IgIconBlueBrush}"
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
@@ -71,7 +73,7 @@
                     Padding="8"
                     BorderThickness="1"
                     Focusable="False"
-                    IsEnabled="{CompiledBinding #Root.CanPlay}"
+                    IsEnabled="{CompiledBinding #Root.HasMultiFrames}"
                     ToolTip.Placement="Top"
                     ToolTip.VerticalOffset="0">
                     <Panel IsHitTestVisible="False">
@@ -80,6 +82,7 @@
                             Width="22"
                             Height="22"
                             Data="{StaticResource IconLivePhoto}"
+                            Foreground="{DynamicResource IgIconPurpleBrush}"
                             IsVisible="{CompiledBinding #Root.IsLivePhoto}" />
 
                         <!--  Animated Photo  -->
@@ -88,11 +91,13 @@
                                 Width="22"
                                 Height="22"
                                 Data="{StaticResource IconPlay}"
+                                Foreground="{DynamicResource IgIconEmeraldBrush}"
                                 IsVisible="{CompiledBinding !#Root.IsPlaying}" />
                             <PathIcon
                                 Width="22"
                                 Height="22"
                                 Data="{StaticResource IconPause}"
+                                Foreground="{DynamicResource IgIconAmberBrush}"
                                 IsVisible="{CompiledBinding #Root.IsPlaying}" />
                         </StackPanel>
                     </Panel>
@@ -112,6 +117,7 @@
                         Width="22"
                         Height="22"
                         Data="{StaticResource IconArrowRight}"
+                        Foreground="{DynamicResource IgIconBlueBrush}"
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
 
@@ -129,6 +135,7 @@
                         Width="22"
                         Height="22"
                         Data="{StaticResource IconArrowNext}"
+                        Foreground="{DynamicResource IgIconIndigoBrush}"
                         IsHitTestVisible="False" />
                 </ui:PhToolButton>
             </StackPanel>
@@ -152,6 +159,7 @@
                     Width="22"
                     Height="22"
                     Data="{StaticResource IconImageForward}"
+                    Foreground="{DynamicResource IgIconTealBrush}"
                     IsHitTestVisible="False" />
             </ui:PhToolButton>
         </StackPanel>
