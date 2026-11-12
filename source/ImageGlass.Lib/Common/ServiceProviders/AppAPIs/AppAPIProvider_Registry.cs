@@ -20,6 +20,7 @@ using ImageGlass.Common.Actions;
 using ImageGlass.Common.Commands;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Types;
+using ImageGlass.Common.Windows;
 using ImageGlass.UI.Windowing;
 using System;
 using System.Collections.Frozen;
@@ -192,10 +193,10 @@ public partial class AppAPIProvider
     /// is disabled and refuses to run while the API is LockedFeatures-locked. Command bindings skip
     /// <see cref="RunApiAsync(API, string?)"/>, so this restores the lock gate for them.
     /// </summary>
-    public IPhCommand? GetApiCommand(API api)
+    public IPhCommand? GetApiCommand(API api, MainWindow? window = null)
     {
         var cmd = _apis.GetValueOrDefault(api);
-        return cmd is null ? null : new LockAwareApiCommand(api, cmd);
+        return cmd is null ? null : new LockAwareApiCommand(api, cmd, window);
     }
 
 
@@ -205,7 +206,7 @@ public partial class AppAPIProvider
     /// <see cref="CanExecute"/> reports <c>false</c> when locked (so the bound item renders disabled),
     /// and <see cref="Execute"/>/<see cref="ExecuteAsync"/> no-op when locked as a hard backstop.
     /// </summary>
-    private sealed class LockAwareApiCommand(API api, IPhCommand inner) : IPhCommand
+    private sealed class LockAwareApiCommand(API api, IPhCommand inner, MainWindow? window) : IPhCommand
     {
         public bool IsAsync => inner.IsAsync;
 
@@ -216,15 +217,22 @@ public partial class AppAPIProvider
         }
 
         public bool CanExecute(object? parameter)
-            => !FeatureManager.IsLocked(api) && inner.CanExecute(parameter);
+        {
+            using var scope = window is null ? null : App.UseWindow(window);
+            return !FeatureManager.IsLocked(api) && inner.CanExecute(parameter);
+        }
 
         public void Execute(object? parameter)
         {
+            using var scope = window is null ? null : App.UseWindow(window);
             if (!FeatureManager.IsLocked(api)) inner.Execute(parameter);
         }
 
-        public Task ExecuteAsync(object? parameter)
-            => FeatureManager.IsLocked(api) ? Task.CompletedTask : inner.ExecuteAsync(parameter);
+        public async Task ExecuteAsync(object? parameter)
+        {
+            using var scope = window is null ? null : App.UseWindow(window);
+            if (!FeatureManager.IsLocked(api)) await inner.ExecuteAsync(parameter);
+        }
     }
 
 

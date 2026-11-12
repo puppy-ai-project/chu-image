@@ -36,6 +36,20 @@ public partial class ToolbarItemModelJsonContext : JsonSerializerContext { }
 
 public partial class ToolbarItemModel : PhReactive, IJsonOnDeserialized
 {
+    /// <summary>Copies shared toolbar configuration into mutable state owned by one window.</summary>
+    internal ToolbarItemModel CreateWindowCopy() => new()
+    {
+        Id = Id,
+        Image = Image,
+        Text = Text,
+        ShowText = ShowText,
+        ConfigBinding = ConfigBinding,
+        ConfigBindingValue = ConfigBindingValue,
+        Alignment = Alignment,
+        OnClick = OnClick,
+        HotkeyText = HotkeyText,
+    };
+
     #region Static Properties
 
     public static Config Config => Core.Config;

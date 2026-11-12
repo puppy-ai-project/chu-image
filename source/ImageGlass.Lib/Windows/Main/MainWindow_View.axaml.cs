@@ -53,6 +53,10 @@ namespace ImageGlass.Common.Windows;
 
 public partial class MainWindowView : PhControl
 {
+    private bool _fullscreenHidesToolbar;
+    private bool _fullscreenHidesGallery;
+    private MainWindow? _ownerWindow;
+    private MainWindow OwnerWindow => _ownerWindow ?? (MainWindow)TopLevel.GetTopLevel(this)!;
     private bool _updatingRotation;
     private void RotationSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
@@ -109,7 +113,7 @@ public partial class MainWindowView : PhControl
         PART_StatusIndex.Text = $"{index + 1} / {count}";
 
         var meta = Photos.Current?.Metadata;
-        if (Core.ClipboardImage is { } clip)
+        if (OwnerWindow.Session.ClipboardImage is { } clip)
         {
             PART_StatusSpecs.Text = $"{clip.Width} × {clip.Height}";
         }
@@ -283,22 +287,32 @@ public partial class MainWindowView : PhControl
         }
     }
 
-    private async void ZoomOutButton_Click(object? sender, RoutedEventArgs e)
-        => await Core.API.RunApiAsync(API.IG_ZoomOut);
+    private void ZoomOutButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (FeatureManager.IsLocked(API.IG_ZoomOut)) return;
+        if (PART_Viewer.ZoomLevels.Length > 0) PART_Viewer.ZoomOut();
+        else PART_Viewer.StartDrawingAnimation(AnimationSources.ZoomOut, 100);
+    }
 
-    private async void ZoomInButton_Click(object? sender, RoutedEventArgs e)
-        => await Core.API.RunApiAsync(API.IG_ZoomIn);
+    private void ZoomInButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (FeatureManager.IsLocked(API.IG_ZoomIn)) return;
+        if (PART_Viewer.ZoomLevels.Length > 0) PART_Viewer.ZoomIn();
+        else PART_Viewer.StartDrawingAnimation(AnimationSources.ZoomIn, 100);
+    }
 
-    private async void ZoomActualSizeButton_Click(object? sender, RoutedEventArgs e)
-        => await Core.API.RunApiAsync(API.IG_SetZoom, "1");
+    private void ZoomActualSizeButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!FeatureManager.IsLocked(API.IG_SetZoom)) _ = PART_Viewer.ZoomToPoint(1);
+    }
 
-    private void CloseWindow_Click(object? sender, RoutedEventArgs e) => App.MainWindow.Close();
+    private void CloseWindow_Click(object? sender, RoutedEventArgs e) => OwnerWindow.Close();
 
     private void MinimizeWindow_Click(object? sender, RoutedEventArgs e) =>
-        App.MainWindow.WindowState = WindowState.Minimized;
+        OwnerWindow.WindowState = WindowState.Minimized;
 
     private void MaximizeWindow_Click(object? sender, RoutedEventArgs e) =>
-        App.MainWindow.WindowState = App.MainWindow.WindowState == WindowState.Maximized
+        OwnerWindow.WindowState = OwnerWindow.WindowState == WindowState.Maximized
             ? WindowState.Normal : WindowState.Maximized;
 
     private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -309,7 +323,7 @@ public partial class MainWindowView : PhControl
         if (e.ClickCount == 2)
             MaximizeWindow_Click(sender, e);
         else
-            App.MainWindow.BeginMoveDrag(e);
+            OwnerWindow.BeginMoveDrag(e);
         e.Handled = true;
     }
 
@@ -317,7 +331,7 @@ public partial class MainWindowView : PhControl
     {
         if (e.Source is not Visual source || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         if (source.GetSelfAndVisualAncestors().Any(v => v is Button or ToggleButton or Slider or Thumb)) return;
-        App.MainWindow.BeginMoveDrag(e);
+        OwnerWindow.BeginMoveDrag(e);
         e.Handled = true;
     }
 
@@ -330,9 +344,9 @@ public partial class MainWindowView : PhControl
 
         UpdateWindowStateButtons();
 
-        if (App.MainWindow is not null)
+        if (OwnerWindow is not null)
         {
-            App.MainWindow.PropertyChanged += MainWindow_PropertyChanged;
+            OwnerWindow.PropertyChanged += MainWindow_PropertyChanged;
         }
     }
 
@@ -346,8 +360,8 @@ public partial class MainWindowView : PhControl
 
     private void UpdateWindowStateButtons()
     {
-        if (App.MainWindow is null) return;
-        var isMaximized = App.MainWindow.WindowState == WindowState.Maximized;
+        if (OwnerWindow is null) return;
+        var isMaximized = OwnerWindow.WindowState == WindowState.Maximized;
         PART_PathMaximize.IsVisible = !isMaximized;
         PART_PathRestore.IsVisible = isMaximized;
         ToolTip.SetTip(PART_WinBtnMaximize, isMaximized ? "向下还原" : "最大化");
@@ -506,14 +520,14 @@ public partial class MainWindowView : PhControl
         var meta = photo?.Metadata;
         var summary = new StringBuilder();
 
-        if (meta is null || Core.ClipboardImage is not null)
+        if (meta is null || OwnerWindow.Session.ClipboardImage is not null)
         {
-            var isClip = Core.ClipboardImage is not null;
+            var isClip = OwnerWindow.Session.ClipboardImage is not null;
             var name = isClip ? Core.Lang[LangId._ClipboardImage] : "未打开图片";
             PART_InfoFileName.Text = name;
             PART_ChipFormat.IsVisible = isClip;
             PART_InfoFormatText.Text = "剪贴板";
-            var sizeStr = isClip && Core.ClipboardImage is { } clipboardImage
+            var sizeStr = isClip && OwnerWindow.Session.ClipboardImage is { } clipboardImage
                 ? $"{clipboardImage.Width} × {clipboardImage.Height} 像素" : "-";
             PART_InfoDimensionsText.Text = sizeStr;
             PART_ChipMegapixels.IsVisible = false;
@@ -657,6 +671,7 @@ public partial class MainWindowView : PhControl
     public MainWindowView()
     {
         InitializeComponent();
+        PART_Gallery.Photos = Photos;
         PART_Gallery.ItemsSource = Photos.Items;
     }
 
@@ -666,6 +681,7 @@ public partial class MainWindowView : PhControl
         ArgumentNullException.ThrowIfNull(photos);
         if (IsLoaded) throw new InvalidOperationException("The photo manager must be assigned before the view is loaded.");
         Photos = photos;
+        PART_Gallery.Photos = photos;
         PART_Gallery.ItemsSource = photos.Items;
     }
 
@@ -675,6 +691,8 @@ public partial class MainWindowView : PhControl
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
+        _ownerWindow = TopLevel.GetTopLevel(this) as MainWindow;
+        using var windowScope = App.UseWindow(OwnerWindow);
         // apply app layout from settings
         ApplyAppLayout();
 
@@ -735,10 +753,11 @@ public partial class MainWindowView : PhControl
     {
         base.OnUnloaded(e);
 
-        if (App.MainWindow is not null)
+        if (OwnerWindow is not null)
         {
-            App.MainWindow.PropertyChanged -= MainWindow_PropertyChanged;
+            OwnerWindow.PropertyChanged -= MainWindow_PropertyChanged;
         }
+        _ownerWindow = null;
 
         // drag-drop events
         DragDrop.RemoveDragOverHandler(PART_Viewer, PART_Viewer_DragOver);
@@ -783,6 +802,11 @@ public partial class MainWindowView : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => { if (IsLoaded) Config_PropertyChanged(sender, e); });
+            return;
+        }
         if (e.PropertyName == nameof(Config.ThumbnailSize)) UpdateGalleryOverlayWidth();
         if (e.PropertyName == nameof(Config.Layout) || e.PropertyName == nameof(Config.ShowToolbar))
         {
@@ -791,7 +815,7 @@ public partial class MainWindowView : PhControl
         else if (e.PropertyName == nameof(Config.EnableFileWatcher))
         {
             // set file watcher
-            AppAPIProvider.SetFileWatcher(Core.Config.EnableFileWatcher);
+            AppAPIProvider.SetFileWatcher(Photos, Core.Config.EnableFileWatcher);
         }
         else if (e.PropertyName is nameof(Config.BackgroundColor)
             or nameof(Config.SlideshowBackgroundColor)
@@ -819,6 +843,7 @@ public partial class MainWindowView : PhControl
 
     private async void PART_Viewer_Drop(object? sender, DragEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         // if drag data contains files or folders
         if (e.DataTransfer.TryGetFiles() is not IStorageItem[] sItems) return;
 
@@ -837,8 +862,9 @@ public partial class MainWindowView : PhControl
 
         // 3. load single file path
         // 3.1 get foreground shell; always captured, since a search window is the only source of its own result list
-        Core.ShellProvider?.ForegroundShell = Core.ShellProvider?.GetForegroundWindowView();
-        Core.UpdateInitImagePath(paths[0]);
+        if (ReferenceEquals(Photos, Core.DefaultPhotos))
+            Core.ShellProvider?.ForegroundShell = Core.ShellProvider?.GetForegroundWindowView();
+        OwnerWindow.Session.InitialImagePath = BHelper.ResolvePath(paths[0]);
 
         // 3.2 open the path
         _ = await Core.API.RunApiAsync(API.IG_OpenPath, paths[0]);
@@ -902,6 +928,7 @@ public partial class MainWindowView : PhControl
 
     private void HandleFileWatcher_FilesDeleted(FileWatcherChangedEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         if (e.FilePaths.Count == 0) return;
 
         // if the currently viewed photo was deleted
@@ -955,7 +982,7 @@ public partial class MainWindowView : PhControl
                 {
                     ResetZoom = false,
                     UseCache = false,
-                    Channels = Core.ColorChannels,
+                    Channels = OwnerWindow.Session.ColorChannels,
                 });
             }
         }
@@ -1051,6 +1078,7 @@ public partial class MainWindowView : PhControl
 
     private void PART_Viewer_ZoomChanged(ViewerControl sender, ViewerZoomEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         UpdateZoomSlider();
         // update window fit
         if (Core.Config.EnableWindowFit
@@ -1065,6 +1093,7 @@ public partial class MainWindowView : PhControl
 
     private async void PART_Viewer_NavButtonClicked(ViewerControl sender, NavButtonClickedEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         if (e.Direction == NavButtonDirection.Right)
         {
             _ = await Core.API.RunApiAsync(API.IG_ViewNext);
@@ -1078,6 +1107,7 @@ public partial class MainWindowView : PhControl
 
     private async void PART_Viewer_ViewerPointerClicked(ViewerControl sender, ViewerPointerClickEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         // get pointer click action from user settings
         var action = Core.Config.MouseClickActions.GetValueOrDefault(e.ClickEvent);
 
@@ -1093,6 +1123,7 @@ public partial class MainWindowView : PhControl
 
     private async void PART_Viewer_ViewerMouseWheel(ViewerControl sender, ViewerMouseWheelEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         // get mouse wheel action from user settings
         if (!Core.Config.MouseWheelActions.TryGetValue(e.WheelEvent, out var wheelAction))
         {
@@ -1169,7 +1200,7 @@ public partial class MainWindowView : PhControl
                 LangKey = LangId.Menu_MnuCopyPath,
                 Tag = API.IG_CopyImagePath,
                 Icon = CreateContextMenuIcon(iconCopyPath, "#CBD5E1"),
-                Command = Core.API?.GetApiCommand(API.IG_CopyImagePath),
+                Command = Core.API?.GetApiCommand(API.IG_CopyImagePath, OwnerWindow),
                 HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuCopyPath),
             },
             new PhMenuItem
@@ -1177,7 +1208,7 @@ public partial class MainWindowView : PhControl
                 LangKey = LangId.Menu_MnuCopyFile,
                 Tag = API.IG_CopyFiles,
                 Icon = CreateContextMenuIcon(iconCopyFile, "#CBD5E1"),
-                Command = Core.API?.GetApiCommand(API.IG_CopyFiles),
+                Command = Core.API?.GetApiCommand(API.IG_CopyFiles, OwnerWindow),
                 HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuCopyFile),
             },
             new Separator(),
@@ -1186,7 +1217,7 @@ public partial class MainWindowView : PhControl
                 LangKey = LangId.Menu_MnuRename,
                 Tag = API.IG_Rename,
                 Icon = CreateContextMenuIcon(iconRename, "#CBD5E1"),
-                Command = Core.API?.GetApiCommand(API.IG_Rename),
+                Command = Core.API?.GetApiCommand(API.IG_Rename, OwnerWindow),
                 HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuRename),
             },
             CreateDangerMenuItem(iconTrash),
@@ -1195,7 +1226,7 @@ public partial class MainWindowView : PhControl
                 LangKey = LangId.Menu_MnuOpenLocation,
                 Tag = API.IG_OpenLocation,
                 Icon = CreateContextMenuIcon(iconFolder, "#CBD5E1"),
-                Command = Core.API?.GetApiCommand(API.IG_OpenLocation),
+                Command = Core.API?.GetApiCommand(API.IG_OpenLocation, OwnerWindow),
                 HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuOpenLocation),
             },
         };
@@ -1229,7 +1260,7 @@ public partial class MainWindowView : PhControl
     private async void OpenInWindowsPhotos_Click(object? sender, RoutedEventArgs e)
     {
         var path = Photos.CurrentFilePath;
-        if (Core.ClipboardImage is not null || !File.Exists(path)) return;
+        if (OwnerWindow.Session.ClipboardImage is not null || !File.Exists(path)) return;
 
         try
         {
@@ -1238,7 +1269,7 @@ public partial class MainWindowView : PhControl
         }
         catch (Exception ex)
         {
-            await ImageGlass.UI.Windowing.ModalWindow.ShowErrorAsync(App.MainWindow,
+            await ImageGlass.UI.Windowing.ModalWindow.ShowErrorAsync(OwnerWindow,
                 new ImageGlass.UI.Windowing.ModalWindowOptions
                 {
                     Title = "无法打开 Windows 照片",
@@ -1247,14 +1278,14 @@ public partial class MainWindowView : PhControl
         }
     }
 
-    private static PhMenuItem CreateDangerMenuItem(string iconTrash)
+    private PhMenuItem CreateDangerMenuItem(string iconTrash)
     {
         var item = new PhMenuItem
         {
             LangKey = LangId.Menu_MnuMoveToRecycleBin,
             Tag = API.IG_Delete,
             Icon = CreateContextMenuIcon(iconTrash, "#F87171"),
-            Command = Core.API?.GetApiCommand(API.IG_Delete),
+            Command = Core.API?.GetApiCommand(API.IG_Delete, OwnerWindow),
             CommandParameter = "true",
             HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuMoveToRecycleBin),
         };
@@ -1264,9 +1295,10 @@ public partial class MainWindowView : PhControl
 
     private void PART_Viewer_ContextMenu_Opening(object? sender, CancelEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         if (sender is not ContextMenu mnuContext) return;
 
-        var hasFile = Core.ClipboardImage is null && File.Exists(Photos.CurrentFilePath);
+        var hasFile = OwnerWindow.Session.ClipboardImage is null && File.Exists(Photos.CurrentFilePath);
         UpdateContextMenuIconColors(mnuContext);
 
         foreach (var obj in mnuContext.Items)
@@ -1275,7 +1307,7 @@ public partial class MainWindowView : PhControl
             {
                 if (item.Command is null && item.Tag is API api)
                 {
-                    item.Command = Core.API?.GetApiCommand(api);
+                    item.Command = Core.API?.GetApiCommand(api, OwnerWindow);
                 }
                 item.LocalizeText();
                 if (item.LangKey is { } key)
@@ -1325,7 +1357,7 @@ public partial class MainWindowView : PhControl
 
     private async void LoadImagesFromCmdArgs()
     {
-        var pathToLoad = Core.InputImagePathFromArgs;
+        var pathToLoad = OwnerWindow.Session.InitialImagePath;
 
         // check for last seen image
         if (string.IsNullOrEmpty(pathToLoad)
@@ -1371,14 +1403,16 @@ public partial class MainWindowView : PhControl
     /// </param>
     public void PrepareLoadPhotoList(ICollection<string> inputPaths, string? currentFilePath, bool disposeForegroundShell, bool reloadInitPhoto, bool selectLastPhoto = false)
     {
+        var owner = OwnerWindow;
         _selectLastOnSearch = selectLastPhoto;
 
         // dispose the foreground shell if requested
-        if (disposeForegroundShell) Core.ShellProvider?.ForegroundShell = null;
+        var isPrimaryCollection = ReferenceEquals(Photos, Core.DefaultPhotos);
+        if (disposeForegroundShell && isPrimaryCollection) Core.ShellProvider?.ForegroundShell = null;
 
 
         // check if we should load images from foreground window
-        var useForegroundWindow = Core.ShellProvider?.CanUseForegroundShell() ?? false;
+        var useForegroundWindow = isPrimaryCollection && (Core.ShellProvider?.CanUseForegroundShell() ?? false);
         var foregroundShell = useForegroundWindow
             ? Core.ShellProvider?.ForegroundShell
             : null;
@@ -1386,6 +1420,8 @@ public partial class MainWindowView : PhControl
 
         Dispatcher.UIThread.Post(async () =>
         {
+            if (!IsLoaded || !ReferenceEquals(_ownerWindow, owner)) return;
+            using var scope = App.UseWindow(owner);
             // resolve first: a shortcut must contribute its target's type, never ".lnk"
             var resolvedPaths = inputPaths.Select(BHelper.ResolvePath).ToList();
             var resolvedCurrentPath = BHelper.ResolvePath(currentFilePath);
@@ -1436,6 +1472,7 @@ public partial class MainWindowView : PhControl
         // straight from its worker, so the whole body must marshal: Items is bound to the gallery.
         Dispatcher.UIThread.Invoke(() =>
         {
+            if (!IsLoaded) return;
             try
             {
                 Files_Searched__(e);
@@ -1495,7 +1532,7 @@ public partial class MainWindowView : PhControl
         if (isEmptyList)
         {
             // set file watcher
-            AppAPIProvider.SetFileWatcher(Core.Config.EnableFileWatcher);
+            AppAPIProvider.SetFileWatcher(Photos, Core.Config.EnableFileWatcher);
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -1509,6 +1546,8 @@ public partial class MainWindowView : PhControl
     public async Task ViewPhotoAsync(Photo? photo, bool useCache = true, bool scrollToThumbnail = true, bool resetZoom = true,
         TransitionRequest? transition = null)
     {
+        var owner = OwnerWindow;
+        using var windowScope = App.UseWindow(owner);
         // Sequential mode: close the navigation gate here, not inside the post below,
         // so the next key repeat already sees a load in flight
         var isSequential = Core.Config.BrowsingMode == BrowsingMode.Sequential;
@@ -1521,7 +1560,7 @@ public partial class MainWindowView : PhControl
         _ = PART_Message.ClearAsync();
 
         Core.DisposeClipboardPhoto();
-        Core.ImageTransform.Clear();
+        OwnerWindow.Session.ImageTransform.Clear();
 
         // set read options for photo; a cached photo shows without a decode, so name its opening frame here
         if (photo is not null)
@@ -1531,8 +1570,10 @@ public partial class MainWindowView : PhControl
 
         Dispatcher.UIThread.Post(async () =>
         {
+            using var postedWindowScope = App.UseWindow(owner);
             try
             {
+                if (!IsLoaded || !ReferenceEquals(_ownerWindow, owner)) return;
                 // apply user settings to the viewer
                 PART_Viewer.EnableImagePreview = Core.Config.EnableImagePreview;
 
@@ -1546,7 +1587,7 @@ public partial class MainWindowView : PhControl
                 {
                     UseCache = useCache,
                     ResetZoom = resetZoom,
-                    Channels = Core.ColorChannels,
+                    Channels = OwnerWindow.Session.ColorChannels,
                     Transition = transition,
                 });
 
@@ -1564,7 +1605,8 @@ public partial class MainWindowView : PhControl
 
             // trigger background caching of adjacent photos
             // after the current photo finishes loading
-            Photos.RequestCacheAround(Photos.CurrentIndex);
+            if (IsLoaded && ReferenceEquals(_ownerWindow, owner))
+                Photos.RequestCacheAround(Photos.CurrentIndex);
         });
     }
 
@@ -1758,6 +1800,21 @@ public partial class MainWindowView : PhControl
 
         // 3. update gallery initial width
         UpdateGalleryWidth();
+        ApplyFullscreenVisibility();
+    }
+
+    internal void SetFullscreenVisibility(bool hideToolbar, bool hideGallery)
+    {
+        _fullscreenHidesToolbar = hideToolbar;
+        _fullscreenHidesGallery = hideGallery;
+        ApplyAppLayout();
+    }
+
+    private void ApplyFullscreenVisibility()
+    {
+        PART_Toolbar.IsVisible = !_fullscreenHidesToolbar;
+        PART_Gallery.IsVisible = !_fullscreenHidesGallery;
+        if (_fullscreenHidesGallery) PART_GalleryResizer.IsVisible = false;
     }
 
     private void UpdateGalleryOverlayMargin()
@@ -1805,7 +1862,7 @@ public partial class MainWindowView : PhControl
 
 
         // 3. hide gallery space
-        if (!Core.Config.ShowGallery)
+        if (!Core.Config.ShowGallery || _fullscreenHidesGallery)
         {
             PART_Layout.ColumnDefinitions[galleryColIndex].Width = new(0);
             PART_Layout.ColumnDefinitions[galleryResizerColIndex].Width = new(0);

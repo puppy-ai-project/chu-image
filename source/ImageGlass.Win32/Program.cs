@@ -82,10 +82,10 @@ sealed class Program
         .AfterSetup(builder =>
         {
             var app = (App?)builder.Instance;
-            app?.CreateMainWindowFn = () =>
+            app?.CreateMainWindowFn = session =>
             {
                 // create main window
-                var mainWindow = new MainWindow32();
+                var mainWindow = new MainWindow32(session);
                 mainWindow.DataContext = new MainWindowModel(mainWindow);
 
                 return mainWindow;

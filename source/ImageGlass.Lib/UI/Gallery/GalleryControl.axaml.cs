@@ -37,6 +37,7 @@ namespace ImageGlass.UI;
 
 public partial class GalleryControl : PhControl
 {
+    internal PhotoManager Photos { get; set; } = Core.Photos;
     private const int TOOLTIP_RESUME_DELAY_MS = 250;
 
     private CancellationTokenSource? _cancelScrollAnimation;
@@ -164,7 +165,7 @@ public partial class GalleryControl : PhControl
     {
         base.OnSizeChanged(e);
 
-        ScrollToItem(Core.Photos.CurrentIndex, false);
+        ScrollToItem(Photos.CurrentIndex, false);
     }
 
 
@@ -197,6 +198,11 @@ public partial class GalleryControl : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => { if (IsLoaded) Config_PropertyChanged(sender, e); });
+            return;
+        }
         if (e.PropertyName == nameof(Config.ShowGalleryFileName))
             RaisePropertyChanged(ShowItemFileNamesProperty, !ShowItemFileNames, ShowItemFileNames);
         if (e.PropertyName == nameof(Config.ThumbnailSize))
@@ -280,7 +286,7 @@ public partial class GalleryControl : PhControl
     /// </summary>
     public void LoadThumbnail(int index, bool useCache)
     {
-        var photo = Core.Photos.Get(index);
+        var photo = Photos.Get(index);
         if (photo is null) return;
 
         // Cancel in-flight thumbnail load so it exits early

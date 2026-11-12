@@ -1,4 +1,4 @@
-/*
+﻿/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -101,8 +101,9 @@ public partial class AppAPIProvider
     internal static ViewerControl? GetViewer() => Viewer;
 
 
-    public AppAPIProvider()
+    public AppAPIProvider(bool registerTools = true)
     {
+        if (!registerTools) return;
         // Register built-in hosted plugins (via ToolControlAdapter)
         Core.ToolRegistry.Register(ColorPickerToolControl.TOOL_ID,
             new ToolControlAdapter(ColorPickerToolControl.TOOL_ID, v => new ColorPickerToolControl { Viewer = v }));
@@ -257,7 +258,8 @@ public partial class AppAPIProvider
         var imageIndex = Core.Photos.IndexOf(fullPath);
 
         // 2.1 The file is located another folder, load the entire folder
-        if (imageIndex == -1 || (Core.ShellProvider?.CanUseForegroundShell() ?? false))
+        if (imageIndex == -1 || (ReferenceEquals(Core.Photos, Core.DefaultPhotos)
+            && (Core.ShellProvider?.CanUseForegroundShell() ?? false)))
         {
             // dispose the foreground shell when loading from a different folder,
             // so that file enumeration uses the new folder instead of the stale shell
@@ -284,27 +286,8 @@ public partial class AppAPIProvider
     /// </summary>
     public static void IG_NewWindow()
     {
-        if (!Core.Config.EnableMultiInstances)
-        {
-            _ = ModalWindow.ShowInfoAsync(App.MainWindow, new ModalWindowOptions
-            {
-                Title = Core.Lang[LangId.Menu_MnuNewWindow],
-                Heading = Core.Lang[LangId.Menu_MnuNewWindow],
-                Description = Core.Lang[LangId.Menu_MnuNewWindow_Error],
-            });
-            return;
-        }
-
-        var filePath = Core.Photos.CurrentFilePath;
-
-        // get position for new window
-        var posDiff = App.MainWindow.DpiScale(10f);
-        var newBounds = Core.Config.MainWindowBounds.WithX(Core.Config.MainWindowBounds.X + posDiff);
-        newBounds = newBounds.WithY(Core.Config.MainWindowBounds.Y + posDiff);
-        var boundStr = newBounds.ToStringDelimiter();
-        var boundCmd = BHelper.BuildConfigCmdLine(nameof(Config.MainWindowBounds), boundStr);
-
-        _ = BHelper.RunExeAsync(BHelper.AppRelaunchPath, [boundCmd, filePath]);
+        if (Application.Current is App app)
+            app.OpenImageWindow(Core.Photos.CurrentFilePath, App.MainWindow);
     }
 
 
@@ -1634,7 +1617,7 @@ public partial class AppAPIProvider
         enabled ??= !Core.Config.EnableExplorerSortOrder;
         Core.Config.EnableExplorerSortOrder = enabled.Value;
 
-        IG_ReloadList();
+        if (Application.Current is App app) app.ReloadAllImageLists();
     }
 
 
@@ -1666,7 +1649,7 @@ public partial class AppAPIProvider
         if (orderBy == Core.Config.ImageLoadingOrder) return;
 
         Core.Config.ImageLoadingOrder = orderBy;
-        IG_ReloadList();
+        if (Application.Current is App app) app.ReloadAllImageLists();
     }
 
 
@@ -1698,7 +1681,7 @@ public partial class AppAPIProvider
         if (orderType == Core.Config.ImageLoadingOrderType) return;
 
         Core.Config.ImageLoadingOrderType = orderType;
-        IG_ReloadList();
+        if (Application.Current is App app) app.ReloadAllImageLists();
     }
 
 
@@ -2363,7 +2346,7 @@ public partial class AppAPIProvider
         if (Core.Config.EnableWindowFit)
         {
             // exit full screen
-            if (Core.Config.EnableFullScreen)
+            if (App.MainWindow.WindowState == WindowState.FullScreen)
             {
                 IG_ToggleFullScreen(false);
             }
@@ -2522,7 +2505,7 @@ public partial class AppAPIProvider
         if (enabled)
         {
             // exit full screen
-            if (Core.Config.EnableFullScreen) IG_ToggleFullScreen(false);
+            if (App.MainWindow.WindowState == WindowState.FullScreen) IG_ToggleFullScreen(false);
 
             App.MainWindow.IsFrameless = true;
         }
@@ -2570,14 +2553,12 @@ public partial class AppAPIProvider
     /// </summary>
     public void IG_ToggleFullScreen(bool? enabled = null)
     {
-        enabled ??= !Core.Config.EnableFullScreen;
+        enabled ??= App.MainWindow.WindowState != WindowState.FullScreen;
         SetFullScreenMode__(enabled.Value,
             !Core.Config.ShowToolbarInFullscreen, !Core.Config.ShowGalleryInFullscreen);
     }
     private void SetFullScreenMode__(bool enabled, bool hideToolbar = false, bool hideThumbnails = false)
     {
-        Core.Config.EnableFullScreen = enabled;
-
         // enable full screen mode
         if (enabled)
         {
@@ -2594,8 +2575,7 @@ public partial class AppAPIProvider
 
 
             // hide toolbar & gallery
-            if (hideToolbar) IG_ToggleToolbar(false);
-            if (hideThumbnails) _ = IG_ToggleGalleryAsync(false);
+            App.MainWindow.PART_MainView.SetFullscreenVisibility(hideToolbar, hideThumbnails);
         }
 
         // disable full screen mode
@@ -2607,8 +2587,7 @@ public partial class AppAPIProvider
             _preFullScreenLayout = null;
 
             // restore layout
-            IG_ToggleToolbar(layout.ShowToolbar);
-            _ = IG_ToggleGalleryAsync(layout.ShowGallery);
+            App.MainWindow.PART_MainView.SetFullscreenVisibility(false, false);
 
 
             // restore window state, size, position
@@ -3578,6 +3557,10 @@ public partial class AppAPIProvider
     /// Sets the real-time file update engine without updating the setting <see cref="Config.EnableFileWatcher"/>.
     /// </summary>
     public static void SetFileWatcher(bool enabled)
+        => SetFileWatcher(Core.Photos, enabled);
+
+    /// <summary>Applies the shared file-watcher setting to one window's photo collection.</summary>
+    internal static void SetFileWatcher(PhotoManager photos, bool enabled)
     {
         // file watcher is a Pro feature
         if (enabled && !Core.AreProFeaturesAvailable) enabled = false;
@@ -3586,21 +3569,21 @@ public partial class AppAPIProvider
         {
             // always prefer the current photo list's directory so the watcher
             // follows folder changes (e.g. opening a photo in a new folder)
-            var dirPath = Core.Photos.DistinctDirs.FirstOrDefault();
+            var dirPath = photos.DistinctDirs.FirstOrDefault();
 
             if (string.IsNullOrEmpty(dirPath))
             {
-                dirPath = Core.Photos.FileWatcherFolderPath;
+                dirPath = photos.FileWatcherFolderPath;
             }
 
             if (!string.IsNullOrEmpty(dirPath))
             {
-                Core.Photos.StartFileWatcher(dirPath);
+                photos.StartFileWatcher(dirPath);
             }
         }
         else
         {
-            Core.Photos.StopFileWatcher();
+            photos.StopFileWatcher();
         }
     }
 

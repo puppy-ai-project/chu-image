@@ -1433,9 +1433,9 @@ public partial class SettingsOverlayControl : UserControl
             }
 
             // 4. 若关联格式发生变化且正在浏览文件夹，刷新当前文件夹图片清单
-            if (assocChanged && Core.Photos.DistinctDirs.Count > 0)
+            if (assocChanged && Application.Current is App appForReload)
             {
-                AppAPIProvider.IG_ReloadList();
+                appForReload.ReloadAllImageLists();
             }
 
             HideOverlayAndDisposePreviews();

@@ -37,17 +37,31 @@ namespace ImageGlass.UI;
 
 public partial class ToolbarControl : PhControl
 {
-    private async void SettingsButton_Click(object? sender, RoutedEventArgs e) =>
+    private ImageGlass.Common.Windows.MainWindow? _ownerWindow;
+    private ImageGlass.Common.Windows.MainWindow OwnerWindow => _ownerWindow ?? (ImageGlass.Common.Windows.MainWindow)TopLevel.GetTopLevel(this)!;
+    private async void OpenImageWindow_Click(object? sender, RoutedEventArgs e)
+    {
+        using var scope = App.UseWindow(OwnerWindow);
+        await Core.API.RunApiAsync(API.IG_NewWindow);
+    }
+    private async void SettingsButton_Click(object? sender, RoutedEventArgs e)
+    {
+        using var windowScope = App.UseWindow(OwnerWindow);
         await Core.API.RunApiAsync(API.IG_OpenSettings);
-    private void ImageInfo_Click(object? sender, RoutedEventArgs e) => App.MainWindow.ToggleImageInfoWindow();
-    private void FitWindow_Click(object? sender, RoutedEventArgs e) => App.MainWindow.FitWindowToImage();
-    private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = App.MainWindow.CanFitWindowToImage;
+    }
+    private void ImageInfo_Click(object? sender, RoutedEventArgs e) => OwnerWindow.ToggleImageInfoWindow();
+    private void FitWindow_Click(object? sender, RoutedEventArgs e) => OwnerWindow.FitWindowToImage();
+    private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = OwnerWindow.CanFitWindowToImage;
     private void Viewer_RenderStateChanged(Viewer.ViewerControl sender, EventArgs e) => UpdateFitWindowButton();
     private void Viewer_DisplayRotationChanged(object? sender, EventArgs e) => UpdateFitWindowButton();
     private void MainWindow_FitSizeChanged(object? sender, SizeChangedEventArgs e) => UpdateFitWindowButton();
     private void MainWindow_FitPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == Window.WindowStateProperty) UpdateFitWindowButton();
+        if (e.Property == Window.WindowStateProperty)
+        {
+            UpdateFitWindowButton();
+            UpdateButtonCheckState(nameof(Config.EnableFullScreen));
+        }
     }
 
     public ToolbarControlModel VM => (ToolbarControlModel)DataContext!;
@@ -62,6 +76,7 @@ public partial class ToolbarControl : PhControl
     public readonly List<ToolbarItemModel> _groupSecondaryItemModels = [];
     public readonly List<ToolbarItemModel> _groupOverflowItemModels = [];
     private readonly List<Control> _itemElements = [];
+    private readonly List<ToolbarItemModel> _windowItems = [];
     private double _lastOverflowWidth;
     private bool _overflowUpdateQueued;
 
@@ -110,12 +125,14 @@ public partial class ToolbarControl : PhControl
     {
         base.OnLoaded(e);
 
+        _ownerWindow = (ImageGlass.Common.Windows.MainWindow?)TopLevel.GetTopLevel(this);
         Core.Config.PropertyChanged += Config_PropertyChanged;
-        App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged += Viewer_RenderStateChanged;
-        App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
-        App.MainWindow.SizeChanged += MainWindow_FitSizeChanged;
-        App.MainWindow.PropertyChanged += MainWindow_FitPropertyChanged;
+        OwnerWindow.PART_MainView.PART_Viewer.RenderStateChanged += Viewer_RenderStateChanged;
+        OwnerWindow.PART_MainView.PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
+        OwnerWindow.SizeChanged += MainWindow_FitSizeChanged;
+        OwnerWindow.PropertyChanged += MainWindow_FitPropertyChanged;
         UpdateFitWindowButton();
+        UpdateButtonCheckState(nameof(Config.EnableFullScreen));
 
         RefreshPendingUpdateState();
         ScheduleOverflowUpdate();
@@ -126,10 +143,11 @@ public partial class ToolbarControl : PhControl
     {
         base.OnUnloaded(e);
         Core.Config.PropertyChanged -= Config_PropertyChanged;
-        App.MainWindow.PART_MainView.PART_Viewer.RenderStateChanged -= Viewer_RenderStateChanged;
-        App.MainWindow.PART_MainView.PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
-        App.MainWindow.SizeChanged -= MainWindow_FitSizeChanged;
-        App.MainWindow.PropertyChanged -= MainWindow_FitPropertyChanged;
+        OwnerWindow.PART_MainView.PART_Viewer.RenderStateChanged -= Viewer_RenderStateChanged;
+        OwnerWindow.PART_MainView.PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
+        OwnerWindow.SizeChanged -= MainWindow_FitSizeChanged;
+        OwnerWindow.PropertyChanged -= MainWindow_FitPropertyChanged;
+        _ownerWindow = null;
     }
 
 
@@ -188,6 +206,11 @@ public partial class ToolbarControl : PhControl
 
     private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (IsLoaded) Config_PropertyChanged(sender, e); });
+            return;
+        }
         // 1. Toolbar buttons
         // update toolbar spacing
         if (nameof(Core.Config.ToolbarIconHeight).Equals(e.PropertyName))
@@ -319,12 +342,14 @@ public partial class ToolbarControl : PhControl
 
     private void PART_BtnMainMenu_DropdownOpened(ContextMenu sender, RoutedEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         RefreshMainMenuState();
     }
 
 
     private void MainMenuItem_Click(object? sender, RoutedEventArgs e)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         if (sender is not PhMenuItem mnu) return;
 
         var action = AppAPIProvider.GetMenuAction(mnu.LangKey);
@@ -379,6 +404,7 @@ public partial class ToolbarControl : PhControl
         }
 
         _itemElements.Clear();
+        _windowItems.Clear();
         _metadataMap.Clear();
         _configBindingsMap.Clear();
 
@@ -411,6 +437,8 @@ public partial class ToolbarControl : PhControl
             var delete = Config.BuiltInToolbarItems.First(item => item.Id == "Btn_Delete");
             items.Add(delete);
         }
+        items = items.Select(item => item.CreateWindowCopy()).ToList();
+        _windowItems.AddRange(items);
         foreach (var vm in items)
         {
             srcIndex++;
@@ -540,7 +568,7 @@ public partial class ToolbarControl : PhControl
         if (string.IsNullOrWhiteSpace(configName)) return;
         if (_configBindingsMap.GetValueOrDefault(configName) is not List<int> itemIndice) return;
 
-        var items = ItemsSource;
+        var items = _windowItems;
         if (items is null || items.Count == 0) return;
 
         foreach (var srcIndex in itemIndice)
@@ -556,8 +584,11 @@ public partial class ToolbarControl : PhControl
     /// <summary>
     /// Computes the check state of the input view model.
     /// </summary>
-    private static bool ComputeCheckState(ToolbarItemModel vm)
+    private bool ComputeCheckState(ToolbarItemModel vm)
     {
+        if (vm.ConfigBinding == nameof(Config.EnableFullScreen)
+            && (_ownerWindow ?? TopLevel.GetTopLevel(this) as ImageGlass.Common.Windows.MainWindow) is { } window)
+            return window.WindowState == WindowState.FullScreen;
         var configValue = Core.Config.GetAsString(vm.ConfigBinding);
         var configBindingValue = vm.ConfigBindingValue;
         var configBindingValueEqual = true;
@@ -682,6 +713,7 @@ public partial class ToolbarControl : PhControl
 
     private async Task SetColorChannelsAsync(ColorChannels channels, bool? isEnabled)
     {
+        using var windowScope = App.UseWindow(OwnerWindow);
         var newChannels = Core.ColorChannels;
 
         // toggle a channel
@@ -750,7 +782,11 @@ public partial class ToolbarControl : PhControl
                 Tag = "external_tool",
                 CommandParameter = tool.ToolId,
             };
-            mnu.Click += async (_, _) => await Core.API.RunApiAsync(API.IG_OpenTool, tool.ToolId);
+            mnu.Click += async (_, _) =>
+            {
+                using var windowScope = App.UseWindow(OwnerWindow);
+                await Core.API.RunApiAsync(API.IG_OpenTool, tool.ToolId);
+            };
             items.Insert(sepEndIndex + i, mnu);
         }
     }
@@ -784,7 +820,7 @@ public partial class ToolbarControl : PhControl
     private void UpdateMenuItemEnableStates()
     {
         // animated format
-        var isAnimator = Core.Photos.Current?.Bitmap is AnimatorImpl;
+        var isAnimator = OwnerWindow.Session.Photos.Current?.Bitmap is AnimatorImpl;
         PART_MnuToggleImageAnimation.IsEnabled = isAnimator;
         PART_MnuViewChannels.IsEnabled
             = PART_MnuInvertColors.IsEnabled
@@ -795,7 +831,7 @@ public partial class ToolbarControl : PhControl
             = !isAnimator;
 
         // multi-frame format
-        var hasMultiFrames = Core.Photos.CurrentMetadata?.FrameCount > 1;
+        var hasMultiFrames = OwnerWindow.Session.Photos.CurrentMetadata?.FrameCount > 1;
         PART_MnuExportFrames.IsEnabled
             = PART_MnuViewNextFrame.IsEnabled
             = PART_MnuViewPreviousFrame.IsEnabled

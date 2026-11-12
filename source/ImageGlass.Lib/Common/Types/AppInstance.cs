@@ -130,9 +130,9 @@ public partial class AppInstance : PhDisposable
         try
         {
             // create and try to connect to the first instance's pipe server,
-            // timeout after 1000ms (1 second) if server isn't available
+            // Allow a starting primary process time to create and accept the pipe.
             using var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out);
-            client.Connect(1000);
+            client.Connect(5000);
 
             // send the argument count first so receiver knows how many lines to read
             using var writer = new StreamWriter(client);
@@ -174,7 +174,7 @@ public partial class AppInstance : PhDisposable
             {
                 // create pipe server & reader
                 using var server = new NamedPipeServerStream(_pipeName,
-                    PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 using var reader = new StreamReader(server);
 
                 // wait for connection
@@ -183,7 +183,7 @@ public partial class AppInstance : PhDisposable
 
                 // read first line which contains the number of arguments
                 var countStr = await reader.ReadLineAsync();
-                if (!int.TryParse(countStr, out var argsCount)) continue;
+                if (!int.TryParse(countStr, out var argsCount) || argsCount is < 1 or > 128) continue;
 
 
                 // create array to hold the arguments

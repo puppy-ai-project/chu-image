@@ -1,4 +1,4 @@
-/*
+﻿/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -320,8 +320,9 @@ public partial class MainWindow : PhWindow
 
 
     public ImageWindowSession Session { get; }
+    protected IDisposable EnterWindowContext() => App.UseWindow(this);
 
-    public MainWindow() : this(new ImageWindowSession(Core.Photos)) { }
+    public MainWindow() : this(new ImageWindowSession(Core.Photos, Core.InputImagePathFromArgs, Core.ImageTransform)) { }
 
     public MainWindow(ImageWindowSession session)
     {
@@ -347,7 +348,7 @@ public partial class MainWindow : PhWindow
         };
         PART_ResizeHandles.IsVisible = WindowState == WindowState.Normal && CanResize;
         StartupTrace.Mark("MainWindow:InitComponent:end");
-        _status = new AppStatusInfo(PART_MainView.PART_Viewer);
+        _status = new AppStatusInfo(PART_MainView.PART_Viewer, Session.Photos, Session.ImageTransform);
 
 
         // load window size & position
@@ -367,8 +368,6 @@ public partial class MainWindow : PhWindow
             PART_MainView.PART_Viewer.ZoomFactor = Core.Config.ZoomLockValue / 100f;
         }
 
-        // events
-        Core.AppInstance.InstanceInvoked += AppInstance_InstanceInvoked;
     }
 
 
@@ -378,6 +377,7 @@ public partial class MainWindow : PhWindow
 
     protected override async void OnOpened(EventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         StartupTrace.Mark("MainWindow:opened");
         base.OnOpened(e);
 
@@ -403,6 +403,7 @@ public partial class MainWindow : PhWindow
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         base.OnLoaded(e);
 
         // register app hotkeys
@@ -426,6 +427,7 @@ public partial class MainWindow : PhWindow
 
     protected override async void OnClosing(WindowClosingEventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         // allow the close through on the second pass after async work is done
         if (_isClosingHandled)
         {
@@ -436,11 +438,12 @@ public partial class MainWindow : PhWindow
         // cancel the close so async work can complete before the app tears down
         e.Cancel = true;
         _isClosingHandled = true;
+        var isLastWindowClosing = Application.Current is not App app || app.BeginImageWindowClose(this);
 
         // let a save the user just triggered finish writing before anything is torn down
         if (Photo.PendingSaveCount > 0)
         {
-            _ = PART_MainView.PART_Message.ShowAsync(Core.Photos.CurrentFilePath,
+            _ = PART_MainView.PART_Message.ShowAsync(Session.Photos.CurrentFilePath,
                 Core.Lang[LangId.Menu_MnuSave_Saving], durationMs: 0);
 
             await Photo.WaitForPendingSavesAsync(TimeSpan.FromMinutes(2));
@@ -457,17 +460,20 @@ public partial class MainWindow : PhWindow
         // this pass already accepted the close, so nothing below may escape and keep the window open
         try
         {
-            // stop slideshow so pre-slideshow config values are restored before saving
-            Core.API?.IG_ToggleSlideshow(false);
+            if (isLastWindowClosing)
+            {
+                // Shared services belong to the process and must outlive other image windows.
+                Core.API?.IG_ToggleSlideshow(false);
 
             // the projectors mirror this window; their settings are already in the config
-            ProjectorToolControl.Manager?.CloseAll();
+                ProjectorToolControl.Manager?.CloseAll();
 
             // stop all external tool processes before saving config
-            await Core.ToolRegistry.ExternalTools.StopAllAsync();
+                await Core.ToolRegistry.ExternalTools.StopAllAsync();
 
             // only save config here, do NOT dispose resources yet
-            await SaveConfigOnClosingAsync();
+                await SaveConfigOnClosingAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -488,13 +494,19 @@ public partial class MainWindow : PhWindow
         _diagonalResizeCursor?.Dispose();
         _oppositeDiagonalResizeCursor?.Dispose();
 
-        // Dispose after the window (and its render loop) is fully closed
-        Core.Dispose();
+        // Shared services are disposed only after the final image window is closed.
+        if (Application.Current is App app && app.ReleaseImageWindow(this))
+        {
+            Core.Dispose();
+            if (app.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.Shutdown();
+        }
     }
 
 
     protected override async void OnKeyDown(KeyEventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         base.OnKeyDown(e);
         if (e.Handled) return;
 
@@ -539,7 +551,7 @@ public partial class MainWindow : PhWindow
             return;
         }
 
-        if (new Hotkey(e).IsSame(Key.Escape) && Core.Config.EnableFullScreen)
+        if (new Hotkey(e).IsSame(Key.Escape) && WindowState == WindowState.FullScreen)
         {
             e.Handled = true;
             await Core.API.RunApiAsync(API.IG_ToggleFullScreen, "false");
@@ -600,42 +612,15 @@ public partial class MainWindow : PhWindow
 
     #region Control Events
 
-    private async void AppInstance_InstanceInvoked(AppInstance sender, InstanceInvokedEventArgs e)
-    {
-        // handle single instance command
-        if (e.Command.Equals(AppCmds.SINGLE_INSTANCE))
-        {
-            // un-minimize back to the pre-minimize state, so a maximized window stays maximized
-            RestoreAndActivate();
-
-            // set instance arguments
-            var modulePath = Core.Args.ElementAtOrDefault(0) ?? string.Empty;
-            Core.Args = [modulePath, .. e.Arguments];
-            Core.UpdateInitImagePath();
-
-            // apply any -p: config overrides from the forwarded args
-            Config.ApplyCliOverrides(Core.Config, e.Arguments);
-
-            // Refresh lock manager after CLI overrides
-            ServiceProviders.FeatureManager.Refresh();
-
-            // load image path
-            _ = await Core.API.RunApiAsync(API.IG_OpenPath, Core.InputImagePathFromArgs);
-
-            Activate();
-            Topmost = true;
-            Topmost = Core.Config.EnableWindowTopMost;
-        }
-    }
-
 
     private void Status_Changed(object? sender, EventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         var items = _status.GetItems();
 
         var name = Core.ClipboardImage is not null
             ? Core.Lang[LangId._ClipboardImage]
-            : Path.GetFileName(Core.Photos.CurrentFilePath);
+            : Path.GetFileName(Session.Photos.CurrentFilePath);
         VM.Title = name ?? string.Empty;
         PART_MainView.PART_CustomTitle.Text = VM.Title;
         PART_MainView.PART_ImageInfoOverlay.SetItems(items);
@@ -651,6 +636,7 @@ public partial class MainWindow : PhWindow
 
     private async void PART_Toolbar_ItemClicked(object sender, ToolbarItemClickEventArgs e)
     {
+        using var windowScope = App.UseWindow(this);
         await Core.API.RunActionAsync(e.VM.OnClick);
         // Persist explicit toolbar choices immediately. Full screen uses a temporary
         // layout and is saved from its windowed snapshot on close instead.
@@ -664,7 +650,8 @@ public partial class MainWindow : PhWindow
 
     private async void PART_Gallery_ItemClicked(GalleryItem sender, GalleryItemClickEventArgs e)
     {
-        var photoIndex = Core.Photos.IndexOf(sender.VM.FilePath);
+        using var windowScope = App.UseWindow(this);
+        var photoIndex = Session.Photos.IndexOf(sender.VM.FilePath);
         _ = await Core.API.RunApiAsync(API.IG_ViewByIndex, photoIndex.ToString());
     }
 
@@ -719,7 +706,7 @@ public partial class MainWindow : PhWindow
 
         Core.Config.ZoomLockValue = PART_MainView.PART_Viewer.ZoomFactor * 100f;
         Core.Config.LastSeenImagePath = Core.Config.EnableLastSeenImage
-            ? Core.Photos.CurrentFilePath
+            ? Session.Photos.CurrentFilePath
             : string.Empty;
 
 

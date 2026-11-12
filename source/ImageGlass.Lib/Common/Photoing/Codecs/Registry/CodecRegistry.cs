@@ -211,10 +211,13 @@ public sealed class CodecRegistry : PhDisposable
         ArgumentNullException.ThrowIfNull(context);
 
         var ext = metadata.FileExtension ?? string.Empty;
+        // Windows on different monitors may have different profile support at the same time.
+        // Do not reuse a lower-priority fallback selected for another window's profile.
+        var cacheKey = string.IsNullOrEmpty(ext) ? ext : $"{ext}|profile:{context.IsDestColorProfileSupported}";
 
         lock (_lock)
         {
-            return SelectWithCache(_decodeCodecByExt, _decodeCodecs, ext,
+            return SelectWithCache(_decodeCodecByExt, _decodeCodecs, cacheKey,
                 c => c.CanDecode(metadata, context), nameof(SelectDecodeCodec));
         }
     }

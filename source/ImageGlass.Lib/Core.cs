@@ -74,7 +74,16 @@ public static class Core
     /// <summary>
     /// Provides a singleton instance to detect color profile of monitor.
     /// </summary>
-    public static IWindowColorProfileProvider? ColorProfileProvider { get; set; } = null;
+    private static IWindowColorProfileProvider? _colorProfileProvider;
+    public static IWindowColorProfileProvider? ColorProfileProvider
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow) is { } window ? window.Session.ColorProfileProvider : _colorProfileProvider;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.ColorProfileProvider = value;
+            else _colorProfileProvider = value;
+        }
+    }
 
 
     /// <summary>
@@ -122,7 +131,12 @@ public static class Core
     /// <summary>
     /// Provides a singleton instance to access app APIs.
     /// </summary>
-    public static AppAPIProvider API { get; set; } = null!;
+    private static AppAPIProvider _api = null!;
+    public static AppAPIProvider API
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.Api ?? _api;
+        set => _api = value;
+    }
 
 
     /// <summary>
@@ -178,13 +192,28 @@ public static class Core
     /// <summary>
     /// Gets the photo manager.
     /// </summary>
-    public static PhotoManager Photos { get; set; } = new();
+    private static PhotoManager _photos = new();
+    internal static PhotoManager DefaultPhotos => _photos;
+    public static PhotoManager Photos
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.Photos ?? _photos;
+        set => _photos = value;
+    }
 
 
     /// <summary>
     /// Gets, sets app busy state.
     /// </summary>
-    public static bool IsBusy { get; set; } = false;
+    private static bool _isBusy;
+    public static bool IsBusy
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.IsBusy ?? _isBusy;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.IsBusy = value;
+            else _isBusy = value;
+        }
+    }
 
 
     /// <summary>
@@ -269,7 +298,12 @@ public static class Core
     /// <summary>
     /// Gets, sets the changes of the current viewing image.
     /// </summary>
-    public static PhotoTransform ImageTransform { get; set; } = new();
+    private static PhotoTransform _imageTransform = new();
+    public static PhotoTransform ImageTransform
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.ImageTransform ?? _imageTransform;
+        set => _imageTransform = value;
+    }
 
 
     /// <summary>
@@ -281,31 +315,76 @@ public static class Core
     /// <summary>
     /// Gets, sets the clipboard photo.
     /// </summary>
-    public static Photo? ClipboardImage { get; set; }
+    private static Photo? _clipboardImage;
+    public static Photo? ClipboardImage
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow) is { } window ? window.Session.ClipboardImage : _clipboardImage;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.ClipboardImage = value;
+            else _clipboardImage = value;
+        }
+    }
 
 
     /// <summary>
     /// Gets, sets the path of the temporary image (clipboard image, temp image for printing, background,...)
     /// </summary>
-    public static string? TempImagePath { get; set; }
+    private static string? _tempImagePath;
+    public static string? TempImagePath
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow) is { } window ? window.Session.TempImagePath : _tempImagePath;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.TempImagePath = value;
+            else _tempImagePath = value;
+        }
+    }
 
 
     /// <summary>
     /// Gets the color profile of current photo.
     /// </summary>
-    public static SKColorSpace? DestColorProfile { get; private set; }
+    private static SKColorSpace? _destColorProfile;
+    public static SKColorSpace? DestColorProfile
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow) is { } window ? window.Session.DestColorProfile : _destColorProfile;
+        private set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.DestColorProfile = value;
+            else _destColorProfile = value;
+        }
+    }
 
 
     /// <summary>
     /// Checks if the current color profile is supported by Skia.
     /// </summary>
-    public static bool IsDestColorProfileSupported { get; private set; } = true;
+    private static bool _isDestColorProfileSupported = true;
+    public static bool IsDestColorProfileSupported
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.IsDestColorProfileSupported ?? _isDestColorProfileSupported;
+        private set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.IsDestColorProfileSupported = value;
+            else _isDestColorProfileSupported = value;
+        }
+    }
 
 
     /// <summary>
     /// Gets the color channels setting.
     /// </summary>
-    public static ColorChannels ColorChannels { get; set; } = ColorChannels.RGBA;
+    private static ColorChannels _colorChannels = ColorChannels.RGBA;
+    public static ColorChannels ColorChannels
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.ColorChannels ?? _colorChannels;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.ColorChannels = value;
+            else _colorChannels = value;
+        }
+    }
 
     #endregion // Public Properties
 
@@ -333,9 +412,11 @@ public static class Core
 
         ProjectorToolControl.DisposeManager();
 
-        Core.Photos.Dispose();
-        Core.ColorProfileProvider?.Dispose();
-        Core.ColorProfileProvider = null;
+        _photos.Dispose();
+        _colorProfileProvider?.Dispose();
+        _colorProfileProvider = null;
+        _destColorProfile?.Dispose();
+        _destColorProfile = null;
 
         Core.FileSearchProvider?.Dispose();
         Core.FileSearchProvider = null!;
@@ -995,7 +1076,7 @@ public static class Core
         var state = new TempImageState(photo, Core.ImageTransform.Orientation, Core.ImageTransform.IsColorInverted);
 
         // 1. reuse the temp file only when it was written for this photo in this exact state
-        if (File.Exists(Core.TempImagePath) && state == _tempImageState)
+        if (File.Exists(Core.TempImagePath) && state == CurrentTempImageState)
         {
             var extension = Path.GetExtension(Core.TempImagePath);
 
@@ -1007,7 +1088,7 @@ public static class Core
 
 
         // 2. create temp file path
-        var tempFilePath = BHelper.ConfigDir(Dir.Temporary, $"ig_temp_{DateTime.UtcNow:yyyy-MM-dd-hh-mm-ss}{ext}");
+        var tempFilePath = BHelper.ConfigDir(Dir.Temporary, $"ig_temp_{Guid.NewGuid():N}{ext}");
 
 
         // 3. save the photo to file
@@ -1022,7 +1103,7 @@ public static class Core
                 await photo.SaveAsAsync(tempFilePath, Core.ImageTransform, quality);
 
                 Core.TempImagePath = tempFilePath;
-                _tempImageState = state;
+                CurrentTempImageState = state;
             }
             catch
             {
@@ -1036,7 +1117,16 @@ public static class Core
 
     // the photo and transform the temp file was written with
     private static TempImageState _tempImageState;
-    private readonly record struct TempImageState(Photo? Photo, ImageOrientation Orientation, bool IsColorInverted);
+    internal readonly record struct TempImageState(Photo? Photo, ImageOrientation Orientation, bool IsColorInverted);
+    private static TempImageState CurrentTempImageState
+    {
+        get => (App.CommandWindow ?? App.PrimaryWindow)?.Session.TempImageState ?? _tempImageState;
+        set
+        {
+            if ((App.CommandWindow ?? App.PrimaryWindow) is { } window) window.Session.TempImageState = value;
+            else _tempImageState = value;
+        }
+    }
 
 
     /// <summary>
@@ -1057,7 +1147,7 @@ public static class Core
     /// Pass <see langword="false"/> when the profile changed only because the window moved to
     /// another monitor, so the on-screen photo is left alone instead of flashing through a reload.
     /// </param>
-    public static void UpdateDestColorProfile(bool requiresPhotoReload = true)
+    public static void UpdateDestColorProfile(bool requiresPhotoReload = true, bool notify = true)
     {
         var results = SkiaCodec.GetColorProfileByName(Core.Config.ColorProfile);
         Core.IsDestColorProfileSupported = results.IsSupported;
@@ -1071,7 +1161,7 @@ public static class Core
         Core.DestColorProfile = results.ColorSpace;
         if (!ReferenceEquals(oldProfile, results.ColorSpace)) oldProfile?.Dispose();
 
-        Core.OnColorProfileChanged(requiresPhotoReload);
+        if (notify) Core.OnColorProfileChanged(requiresPhotoReload);
     }
 
 

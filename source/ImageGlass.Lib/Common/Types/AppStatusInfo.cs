@@ -1,4 +1,4 @@
-/*
+﻿/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -42,6 +42,8 @@ public partial class AppStatusInfo : PhDisposable
     /// </summary>
     public const string TEXT_SEPARATOR = "  ︱  ";
 
+    private readonly ImageGlass.Common.Photoing.PhotoManager _photos;
+    private readonly ImageGlass.Common.Photoing.PhotoTransform _imageTransform;
     private ViewerControl _viewer;
     private string? _filePath = null;
 
@@ -73,7 +75,7 @@ public partial class AppStatusInfo : PhDisposable
 
             if (Core.Config.ImageInfoTags.Contains(nameof(Name)))
             {
-                var askterisk = Core.ImageTransform.HasChanges ? "*" : string.Empty;
+                var askterisk = _imageTransform.HasChanges ? "*" : string.Empty;
                 return $"{System.IO.Path.GetFileName(_filePath)}{askterisk}";
             }
 
@@ -91,7 +93,7 @@ public partial class AppStatusInfo : PhDisposable
 
             if (Core.Config.ImageInfoTags.Contains(nameof(Path)))
             {
-                var askterisk = Core.ImageTransform.HasChanges ? "*" : string.Empty;
+                var askterisk = _imageTransform.HasChanges ? "*" : string.Empty;
                 return $"{_filePath}{askterisk}";
             }
 
@@ -108,9 +110,9 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(FileSize))
-                && Core.Photos.CurrentMetadata != null)
+                && _photos.CurrentMetadata != null)
             {
-                return Core.Photos.CurrentMetadata.FileSizeFormatted;
+                return _photos.CurrentMetadata.FileSizeFormatted;
             }
 
             return null;
@@ -127,9 +129,9 @@ public partial class AppStatusInfo : PhDisposable
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ModifiedDateTime))
                 || Core.Config.ImageInfoTags.Contains(nameof(DateTimeAuto)))
-                && Core.Photos.CurrentMetadata != null)
+                && _photos.CurrentMetadata != null)
             {
-                return Core.Photos.CurrentMetadata.FileLastWriteTimeFormatted + " (m)";
+                return _photos.CurrentMetadata.FileLastWriteTimeFormatted + " (m)";
             }
 
             return null;
@@ -153,7 +155,7 @@ public partial class AppStatusInfo : PhDisposable
 
                     // the file is bigger than what could be decoded
                     var scale = _viewer.Photo?.DecodeScale ?? 1;
-                    if (scale < 1 && Core.Photos.CurrentMetadata is { } meta)
+                    if (scale < 1 && _photos.CurrentMetadata is { } meta)
                     {
                         dimension += $" ({meta.Width:n0}×{meta.Height:n0}) – {Math.Round(scale * 100):n0}%";
                     }
@@ -175,13 +177,13 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(FrameCount))
-                && Core.Photos.CurrentMetadata != null
-                && Core.Photos.CurrentMetadata.FrameCount > 1)
+                && _photos.CurrentMetadata != null
+                && _photos.CurrentMetadata.FrameCount > 1)
             {
                 var frameInfo = new StringBuilder();
                 frameInfo.Append((_viewer.Photo?.FrameIndex ?? 0) + 1);
                 frameInfo.Append('/');
-                frameInfo.Append(Core.Photos.CurrentMetadata.FrameCount);
+                frameInfo.Append(_photos.CurrentMetadata.FrameCount);
 
                 return Core.Lang[LangId._ImageInfo_FrameCount, frameInfo];
             }
@@ -199,12 +201,12 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ListCount))
-                && Core.Photos.Count > 0)
+                && _photos.Count > 0)
             {
                 var listInfo = new StringBuilder();
-                listInfo.Append(Core.Photos.CurrentIndex + 1);
+                listInfo.Append(_photos.CurrentIndex + 1);
                 listInfo.Append('/');
-                listInfo.Append(Core.Photos.Count);
+                listInfo.Append(_photos.Count);
 
                 return Core.Lang[LangId._ImageInfo_ListCount, listInfo.ToString()];
             }
@@ -218,7 +220,7 @@ public partial class AppStatusInfo : PhDisposable
     {
         get
         {
-            if (Core.Config.ImageInfoTags.Contains(nameof(Zoom)) && Core.Photos.Count > 0)
+            if (Core.Config.ImageInfoTags.Contains(nameof(Zoom)) && _photos.Count > 0)
             {
                 return $"{Math.Round(_viewer.ZoomFactor * 100, 2):n2}%";
             }
@@ -236,9 +238,9 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ExifRating))
-                && Core.Photos.CurrentMetadata != null)
+                && _photos.CurrentMetadata != null)
             {
-                return Core.Photos.CurrentMetadata.ExifRatingFormatted;
+                return _photos.CurrentMetadata.ExifRatingFormatted;
             }
 
             return null;
@@ -255,10 +257,10 @@ public partial class AppStatusInfo : PhDisposable
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ExifDateTime))
                 || Core.Config.ImageInfoTags.Contains(nameof(DateTimeAuto)))
-                && Core.Photos.CurrentMetadata != null
-                && Core.Photos.CurrentMetadata.ExifDateTime != null)
+                && _photos.CurrentMetadata != null
+                && _photos.CurrentMetadata.ExifDateTime != null)
             {
-                return BHelper.FormatDateTime(Core.Photos.CurrentMetadata.ExifDateTime) + " (e)";
+                return BHelper.FormatDateTime(_photos.CurrentMetadata.ExifDateTime) + " (e)";
             }
 
             return null;
@@ -275,10 +277,10 @@ public partial class AppStatusInfo : PhDisposable
 
             if ((Core.Config.ImageInfoTags.Contains(nameof(ExifDateTimeOriginal))
                 || Core.Config.ImageInfoTags.Contains(nameof(DateTimeAuto)))
-                && Core.Photos.CurrentMetadata != null
-                && Core.Photos.CurrentMetadata.ExifDateTimeOriginal != null)
+                && _photos.CurrentMetadata != null
+                && _photos.CurrentMetadata.ExifDateTimeOriginal != null)
             {
-                return BHelper.FormatDateTime(Core.Photos.CurrentMetadata.ExifDateTimeOriginal) + " (o)";
+                return BHelper.FormatDateTime(_photos.CurrentMetadata.ExifDateTimeOriginal) + " (o)";
             }
 
             return null;
@@ -294,14 +296,14 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(DateTimeAuto))
-                && Core.Photos.CurrentMetadata != null)
+                && _photos.CurrentMetadata != null)
             {
-                if (Core.Photos.CurrentMetadata.ExifDateTimeOriginal != null)
+                if (_photos.CurrentMetadata.ExifDateTimeOriginal != null)
                 {
                     return ExifDateTimeOriginal;
                 }
 
-                if (Core.Photos.CurrentMetadata.ExifDateTime != null)
+                if (_photos.CurrentMetadata.ExifDateTime != null)
                 {
                     return ExifDateTime;
                 }
@@ -322,7 +324,7 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(HdrInfo))
-                && Core.Photos.CurrentMetadata is { } meta
+                && _photos.CurrentMetadata is { } meta
                 && (meta.IsHdr || meta.IsWideGamut))
             {
                 var parts = new System.Collections.Generic.List<string>(4);
@@ -370,12 +372,12 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(ColorSpace))
-                && Core.Photos.CurrentMetadata != null
-                && Core.Photos.CurrentMetadata.ColorSpace != ImageMagick.ColorSpace.Undefined)
+                && _photos.CurrentMetadata != null
+                && _photos.CurrentMetadata.ColorSpace != ImageMagick.ColorSpace.Undefined)
             {
-                var colorSpace = Core.Photos.CurrentMetadata.ColorSpace.ToString();
-                var colorProfile = !string.IsNullOrEmpty(Core.Photos.CurrentMetadata.ColorProfileName)
-                    ? Core.Photos.CurrentMetadata.ColorProfileName
+                var colorSpace = _photos.CurrentMetadata.ColorSpace.ToString();
+                var colorProfile = !string.IsNullOrEmpty(_photos.CurrentMetadata.ColorProfileName)
+                    ? _photos.CurrentMetadata.ColorProfileName
                     : "-";
 
                 if (colorSpace.Equals(colorProfile, StringComparison.OrdinalIgnoreCase))
@@ -399,11 +401,11 @@ public partial class AppStatusInfo : PhDisposable
             if (Core.ClipboardImage is not null) return null;
 
             if (Core.Config.ImageInfoTags.Contains(nameof(DPI))
-                && Core.Photos.CurrentMetadata != null
-                && Core.Photos.CurrentMetadata.DpiX > 0
-                && Core.Photos.CurrentMetadata.DpiY > 0)
+                && _photos.CurrentMetadata != null
+                && _photos.CurrentMetadata.DpiX > 0
+                && _photos.CurrentMetadata.DpiY > 0)
             {
-                return $"{Core.Photos.CurrentMetadata.DpiX:n0}×{Core.Photos.CurrentMetadata.DpiY:n0} DPI";
+                return $"{_photos.CurrentMetadata.DpiX:n0}×{_photos.CurrentMetadata.DpiY:n0} DPI";
             }
 
             return null;
@@ -488,12 +490,14 @@ public partial class AppStatusInfo : PhDisposable
     };
 
 
-    public AppStatusInfo(ViewerControl viewer)
+    public AppStatusInfo(ViewerControl viewer, ImageGlass.Common.Photoing.PhotoManager photos, ImageGlass.Common.Photoing.PhotoTransform imageTransform)
     {
         _viewer = viewer;
+        _photos = photos;
+        _imageTransform = imageTransform;
 
-        Core.Photos.PropertyChanged += Photos_PropertyChanged;
-        Core.ImageTransform.Changed += ImageTransform_Changed;
+        _photos.PropertyChanged += Photos_PropertyChanged;
+        _imageTransform.Changed += ImageTransform_Changed;
         Core.Config.PropertyChanged += Config_PropertyChanged;
         Core.LanguageChanged += Core_LanguageChanged;
         _viewer.ZoomChanged += Viewer_ZoomChanged;
@@ -505,8 +509,8 @@ public partial class AppStatusInfo : PhDisposable
     {
         base.OnDisposing();
 
-        Core.Photos.PropertyChanged -= Photos_PropertyChanged;
-        Core.ImageTransform.Changed -= ImageTransform_Changed;
+        _photos.PropertyChanged -= Photos_PropertyChanged;
+        _imageTransform.Changed -= ImageTransform_Changed;
         Core.Config.PropertyChanged -= Config_PropertyChanged;
         Core.LanguageChanged -= Core_LanguageChanged;
         _viewer.ZoomChanged -= Viewer_ZoomChanged;
@@ -535,11 +539,11 @@ public partial class AppStatusInfo : PhDisposable
 
     private void Photos_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Core.Photos.CurrentFilePath))
+        if (e.PropertyName == nameof(_photos.CurrentFilePath))
         {
-            _filePath = string.IsNullOrEmpty(Core.Photos.CurrentFilePath)
-                ? Core.Photos.GetFilePath(Core.Photos.CurrentIndex)
-                : BHelper.ResolvePath(Core.Photos.CurrentFilePath);
+            _filePath = string.IsNullOrEmpty(_photos.CurrentFilePath)
+                ? _photos.GetFilePath(_photos.CurrentIndex)
+                : BHelper.ResolvePath(_photos.CurrentFilePath);
         }
 
 

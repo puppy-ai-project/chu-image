@@ -163,6 +163,8 @@ public partial class ViewerControl : PhControl
 
     private void Core_ColorProfileChanged(object? sender, DestColorProfileChangedEventArgs e)
     {
+        using var windowScope = Avalonia.Controls.TopLevel.GetTopLevel(this) is ImageGlass.Common.Windows.MainWindow window
+            ? App.UseWindow(window) : null;
         // a monitor change only re-targets later loads; reloading here would flash the viewer
         if (!e.RequiresPhotoReload) return;
 
@@ -1338,7 +1340,8 @@ public partial class ViewerControl : PhControl
     private void Animator_FrameChanged(AnimatorImpl sender, AnimatorFrameChangedEventArgs e)
     {
         // pause animation when app is busy
-        if (Core.IsBusy) return;
+        var owner = Avalonia.Controls.TopLevel.GetTopLevel(this) as ImageGlass.Common.Windows.MainWindow;
+        if (owner?.Session.IsBusy ?? Core.IsBusy) return;
 
         // SVG animation: _svgPicture and InvalidateVisual() are already
         // handled by SvgAnimator.OnTimerTicked() under _lock.

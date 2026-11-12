@@ -25,11 +25,13 @@ using ImageGlass.Common.Types;
 using ImageGlass.Common.Windows;
 using ImageGlass.Win32.Common;
 using ImageGlass.Win32.Common.ServiceProviders;
+using System;
 
 namespace ImageGlass.Win32.Windows;
 
 public partial class MainWindow32 : MainWindow
 {
+    private Win32ColorProfileProvider? _colorProfileProvider;
 
     public override bool UseCustomBackdrop => true; // use Win32 API for the backdrop
 
@@ -39,6 +41,8 @@ public partial class MainWindow32 : MainWindow
 
     }
 
+    public MainWindow32(ImageWindowSession session) : base(session) { }
+
 
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -46,17 +50,23 @@ public partial class MainWindow32 : MainWindow
         base.OnLoaded(e);
 
         // initialize Windows color profile service
-        Core.ColorProfileProvider = new Win32ColorProfileProvider();
-        Core.ColorProfileProvider.Changed += ColorProfileProvider_Changed;
-        Core.ColorProfileProvider.Initialize(this);
+        _colorProfileProvider = new Win32ColorProfileProvider();
+        Session.ColorProfileProvider = _colorProfileProvider;
+        _colorProfileProvider.Changed += ColorProfileProvider_Changed;
+        using (EnterWindowContext()) _colorProfileProvider.Initialize(this);
     }
 
 
-    protected override void OnClosing(WindowClosingEventArgs e)
+    protected override void OnClosed(EventArgs e)
     {
-        base.OnClosing(e);
-
-        Core.ColorProfileProvider?.Changed -= ColorProfileProvider_Changed;
+        if (_colorProfileProvider is { } provider)
+        {
+            provider.Changed -= ColorProfileProvider_Changed;
+            Session.ColorProfileProvider = null;
+            provider.Dispose();
+            _colorProfileProvider = null;
+        }
+        base.OnClosed(e);
     }
 
 
@@ -91,6 +101,7 @@ public partial class MainWindow32 : MainWindow
     {
         // Update the profile for later loads only. Re-decoding the on-screen photo here would
         // flash the viewer every time the window is dragged to another monitor.
+        using var windowScope = EnterWindowContext();
         if (Core.Config.ColorProfile == nameof(ColorProfileOption.CurrentMonitorProfile))
         {
             Core.UpdateDestColorProfile(requiresPhotoReload: false);

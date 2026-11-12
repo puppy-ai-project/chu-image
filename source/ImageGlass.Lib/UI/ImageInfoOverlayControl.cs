@@ -98,11 +98,11 @@ public class ImageInfoOverlayControl : PhOverlay
     /// <summary>
     /// Gets whether the window hides its title bar, so the image info shows nowhere else.
     /// </summary>
-    public static bool IsTitleBarHidden
+    public bool IsTitleBarHidden
     {
         get
         {
-            var isFullScreen = Core.Config.EnableFullScreen;
+            var isFullScreen = (_topLevel as Window)?.WindowState == WindowState.FullScreen;
             if (isFullScreen) return true;
 
             var isFrameless = Core.Config.EnableFrameless;
@@ -156,6 +156,7 @@ public class ImageInfoOverlayControl : PhOverlay
         _topLevel?.AddHandler(PointerMovedEvent, TopLevel_PointerMoved, RoutingStrategies.Tunnel, true);
         _topLevel?.AddHandler(PointerPressedEvent, TopLevel_PointerPressed, RoutingStrategies.Tunnel, true);
         _topLevel?.PointerExited += TopLevel_PointerExited;
+        if (_topLevel is Window window) window.PropertyChanged += Window_PropertyChanged;
 
         Core.Config.PropertyChanged += Config_PropertyChanged;
 
@@ -170,6 +171,7 @@ public class ImageInfoOverlayControl : PhOverlay
         _topLevel?.RemoveHandler(PointerMovedEvent, TopLevel_PointerMoved);
         _topLevel?.RemoveHandler(PointerPressedEvent, TopLevel_PointerPressed);
         _topLevel?.PointerExited -= TopLevel_PointerExited;
+        if (_topLevel is Window window) window.PropertyChanged -= Window_PropertyChanged;
         _topLevel = null;
 
         Core.Config.PropertyChanged -= Config_PropertyChanged;
@@ -313,11 +315,11 @@ public class ImageInfoOverlayControl : PhOverlay
     /// <summary>
     /// Gets whether the overlay mode lets the bar show in the window as it is now.
     /// </summary>
-    private static bool IsModeActive
+    private bool IsModeActive
     {
         get
         {
-            if (Core.Config.EnableFullScreen) return false;
+            if ((_topLevel as Window)?.WindowState == WindowState.FullScreen) return false;
             var mode = Core.Config.ImageInfoOverlayMode;
             if (mode == ImageInfoOverlayMode.Hidden) return false;
 
@@ -327,6 +329,11 @@ public class ImageInfoOverlayControl : PhOverlay
             var isTitleBarHidden = IsTitleBarHidden;
             return isTitleBarHidden;
         }
+    }
+
+    private void Window_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == Window.WindowStateProperty) UpdateVisibility();
     }
 
 

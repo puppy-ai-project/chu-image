@@ -136,7 +136,12 @@ public sealed class SettingsViewModel : PhReactive
         // selection cache, then re-applies via the ColorProfileChanged event (also keeping zoom).
         if (changedIds.Contains(ConfigId.ColorProfile))
         {
-            Core.UpdateDestColorProfile();
+            if (Avalonia.Application.Current is App appForProfiles)
+            {
+                appForProfiles.ForEachImageWindow(_ => Core.UpdateDestColorProfile(notify: false));
+                Core.OnColorProfileChanged();
+            }
+            else Core.UpdateDestColorProfile();
         }
 
         // these flip which codec decodes an extension; drop the sticky per-extension selection cache
@@ -178,7 +183,10 @@ public sealed class SettingsViewModel : PhReactive
         }
 
 
-        if (reloadList) AppAPIProvider.IG_ReloadList();
-        if (reloadPhoto) AppAPIProvider.IG_Reload(false);
+        if (Avalonia.Application.Current is App currentApp)
+        {
+            if (reloadList) currentApp.ReloadAllImageLists();
+            if (reloadPhoto) currentApp.ReloadAllImages();
+        }
     }
 }

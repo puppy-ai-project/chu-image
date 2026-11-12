@@ -216,7 +216,8 @@ public partial class ViewerControl
     {
         if (!EnableDebug) return;
 
-        var cacheIndexes = Core.Photos.CachedIndexSnapshot;
+        var photos = (Avalonia.Controls.TopLevel.GetTopLevel(this) as ImageGlass.Common.Windows.MainWindow)?.Session.Photos ?? Core.Photos;
+        var cacheIndexes = photos.CachedIndexSnapshot;
         var cacheIndexStr = cacheIndexes.Length > 0
             ? string.Join(", ", cacheIndexes)
             : "(none)";
@@ -236,7 +237,7 @@ public partial class ViewerControl
             SourceRect = {_selection.SourceRect}
             ClientSelection = {ClientSelection}
 
-            Cache: {Core.Photos.CachedCount} photos, {Core.Photos.CachedMemoryMb} MB
+            Cache: {photos.CachedCount} photos, {photos.CachedMemoryMb} MB
             Cached indexes = [{cacheIndexStr}]
             """;
 

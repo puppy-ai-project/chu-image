@@ -37,6 +37,7 @@ using ImageGlass.UI.Windowing;
 using ImageGlass.ViewModels;
 using ImageGlass.Windows;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +49,10 @@ namespace ImageGlass.Common;
 public partial class App : Application
 {
     private static MainWindow? _mainWindow = null;
+    private static MainWindow? _activeImageWindow;
+    private static readonly AsyncLocal<MainWindow?> _commandWindow = new();
+    private readonly HashSet<MainWindow> _imageWindows = [];
+    private readonly HashSet<MainWindow> _closingImageWindows = [];
     private static Task _updateReconcileTask = Task.CompletedTask;
     private TaskCompletionSource _taskUi = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -63,7 +68,33 @@ public partial class App : Application
     /// <summary>
     /// Gets the main window.
     /// </summary>
-    public static MainWindow MainWindow => _mainWindow!;
+    public static MainWindow MainWindow => _commandWindow.Value ?? _mainWindow!;
+
+    /// <summary>The window explicitly associated with the current asynchronous operation.</summary>
+    internal static MainWindow? CommandWindow => _commandWindow.Value;
+    internal static MainWindow? PrimaryWindow => _mainWindow;
+
+    /// <summary>Associates an operation and its asynchronous continuations with its originating window.</summary>
+    internal static IDisposable UseWindow(MainWindow window) => new WindowScope(window);
+
+    private sealed class WindowScope : IDisposable
+    {
+        private readonly MainWindow? _previous;
+        private bool _disposed;
+
+        public WindowScope(MainWindow window)
+        {
+            _previous = _commandWindow.Value;
+            _commandWindow.Value = window;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            _commandWindow.Value = _previous;
+        }
+    }
 
 
     /// <summary>
@@ -75,7 +106,7 @@ public partial class App : Application
     /// <summary>
     /// Gets or sets the delegate used to create a new instance of the main application window.
     /// </summary>
-    public Func<MainWindow>? CreateMainWindowFn = null;
+    public Func<ImageWindowSession, MainWindow>? CreateMainWindowFn = null;
 
     #endregion // Public Properties
 
@@ -132,7 +163,7 @@ public partial class App : Application
             }
 
             // set shutdown mode
-            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             // get foreground shell; always captured, since a search window is the only source of its own result list
             Core.ShellProvider?.ForegroundShell = Core.ShellProvider.GetForegroundWindowView();
@@ -213,19 +244,16 @@ public partial class App : Application
                 if (MainWindow is not null && !MainWindow.IsVisible)
                 {
                     Core.UpdateInitImagePath(filePath);
+                    MainWindow.Session.InitialImagePath = Core.InputImagePathFromArgs;
                     StartupTrace.Mark("FileActivation:startup-path");
                     return;
                 }
 
-                Dispatcher.UIThread.Post(async () =>
+                Dispatcher.UIThread.Post(() =>
                 {
                     StartupTrace.Mark("FileActivation:dispatch");
-                    Core.UpdateInitImagePath(filePath);
-
-                    if (Core.API is not null)
-                        _ = Core.API.RunApiAsync(API.IG_OpenPath, filePath);
-
-                    MainWindow?.Activate();
+                    var source = _activeImageWindow ?? _mainWindow;
+                    if (source is not null) OpenImageWindow(filePath, source);
                 });
             }
         }
@@ -255,6 +283,7 @@ public partial class App : Application
     /// </summary>
     private static void RunAppMenuAction(LangId menuKey)
     {
+        using var scope = (_activeImageWindow ?? _mainWindow) is { } window ? UseWindow(window) : null;
         var action = AppAPIProvider.GetMenuAction(menuKey);
         if (Core.API is not null) _ = Core.API.RunActionAsync(action);
     }
@@ -411,7 +440,7 @@ public partial class App : Application
 
         // 5. handle single instance; keep starting if the running instance never took the args,
         // otherwise a failed hand-off would exit here and the user would see nothing happen
-        if (!Core.Config.EnableMultiInstances && !Core.AppInstance.IsFirstInstance)
+        if (!Core.AppInstance.IsFirstInstance)
         {
             if (Core.AppInstance.SendArgsToExistingInstances(AppCmds.SINGLE_INSTANCE, args))
             {
@@ -576,24 +605,13 @@ public partial class App : Application
     {
         if (_mainWindow is not null) return;
 
-
-        // create custom main window
-        if (CreateMainWindowFn is not null)
-        {
-            _mainWindow = CreateMainWindowFn();
-        }
-        // create default main window
-        else
-        {
-            var mainWin = new MainWindow();
-            mainWin.DataContext = new MainWindowModel(mainWin);
-
-            _mainWindow = mainWin;
-        }
+        _mainWindow = CreateImageWindow(new ImageWindowSession(Core.Photos, Core.InputImagePathFromArgs, Core.ImageTransform));
 
 
         // initialize service providers
         Core.API = new AppAPIProvider();
+        _mainWindow.Session.Api = Core.API;
+        Core.AppInstance.InstanceInvoked += AppInstance_InstanceInvoked;
 
 
         // reconcile first and keep the task: the startup UI reports a failed install from it
@@ -602,6 +620,107 @@ public partial class App : Application
 
         // an app update can invalidate the launch path baked into an existing registration
         if (Core.ShellProvider is { } shell) _ = Task.Run(shell.RepairDefaultViewerRegistration);
+    }
+
+    /// <summary>Creates the same platform window for any image session.</summary>
+    internal MainWindow CreateImageWindow(ImageWindowSession session)
+    {
+        if (_mainWindow is not null) session.Api = new AppAPIProvider(registerTools: false);
+        var window = CreateMainWindowFn?.Invoke(session) ?? new MainWindow(session);
+        window.DataContext ??= new MainWindowModel(window);
+        window.Activated += (_, _) => _activeImageWindow = window;
+        _imageWindows.Add(window);
+        return window;
+    }
+
+    /// <summary>Opens another instance of the shared image window in this process.</summary>
+    internal MainWindow OpenImageWindow(string? path, MainWindow? source = null)
+    {
+        var window = CreateImageWindow(new ImageWindowSession(new PhotoManager(), path));
+        if (source is not null)
+            window.Position = new PixelPoint(source.Position.X + 24, source.Position.Y + 24);
+        try
+        {
+            window.Show();
+        }
+        catch
+        {
+            _imageWindows.Remove(window);
+            window.Session.Photos.Dispose();
+            throw;
+        }
+        return window;
+    }
+
+    /// <summary>Runs a shared-setting follow-up in each window's own command context.</summary>
+    internal void ForEachImageWindow(Action<MainWindow> action)
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => ForEachImageWindow(action));
+            return;
+        }
+        foreach (var window in _imageWindows.ToArray())
+        {
+            if (_closingImageWindows.Contains(window)) continue;
+            using var scope = UseWindow(window);
+            action(window);
+        }
+    }
+
+    internal void ReloadAllImageLists()
+        => ForEachImageWindow(window =>
+        {
+            if (window.Session.Photos.DistinctDirs.Count > 0) AppAPIProvider.IG_ReloadList();
+        });
+
+    internal void ReloadAllImages()
+        => ForEachImageWindow(_ => AppAPIProvider.IG_Reload(false));
+
+    /// <summary>Marks a window as closing and returns whether all image windows are closing.</summary>
+    internal bool BeginImageWindowClose(MainWindow window)
+    {
+        _closingImageWindows.Add(window);
+        return _imageWindows.All(_closingImageWindows.Contains);
+    }
+
+    /// <summary>Releases window-owned state and reports whether the process has any image windows left.</summary>
+    internal bool ReleaseImageWindow(MainWindow window)
+    {
+        _closingImageWindows.Remove(window);
+        if (!_imageWindows.Remove(window)) return false;
+        window.Session.ClipboardImage?.Dispose();
+        window.Session.ClipboardImage = null;
+        window.Session.DestColorProfile?.Dispose();
+        window.Session.DestColorProfile = null;
+        if (ReferenceEquals(_activeImageWindow, window)) _activeImageWindow = _imageWindows.FirstOrDefault();
+        window.Session.Photos.Dispose();
+        if (ReferenceEquals(_mainWindow, window))
+        {
+            _mainWindow = _imageWindows.FirstOrDefault();
+            if (_mainWindow is not null && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.MainWindow = _mainWindow;
+        }
+        if (_imageWindows.Count != 0) return false;
+        Core.AppInstance.InstanceInvoked -= AppInstance_InstanceInvoked;
+        return true;
+    }
+
+    private void AppInstance_InstanceInvoked(AppInstance sender, InstanceInvokedEventArgs e)
+    {
+        if (e.Command != AppCmds.SINGLE_INSTANCE || (_activeImageWindow ?? _mainWindow) is not { } window) return;
+        using var scope = UseWindow(window);
+        var modulePath = Core.Args.ElementAtOrDefault(0) ?? string.Empty;
+        Core.Args = [modulePath, .. e.Arguments];
+        Core.UpdateInitImagePath();
+        Config.ApplyCliOverrides(Core.Config, e.Arguments);
+        ServiceProviders.FeatureManager.Refresh();
+        if (string.IsNullOrEmpty(Core.InputImagePathFromArgs))
+        {
+            window.RestoreAndActivate();
+            return;
+        }
+        OpenImageWindow(Core.InputImagePathFromArgs, window);
     }
 
 
