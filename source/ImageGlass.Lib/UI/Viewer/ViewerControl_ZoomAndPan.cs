@@ -1242,6 +1242,8 @@ public partial class ViewerControl
         // emit panning event
         Panning?.Invoke(this, new ViewerPanEventArgs(oldSrcRect, SrcRect));
 
+        _hasAnchoredPosition = true;
+
         // update drawing regions
         CalculateDrawingRegion();
 

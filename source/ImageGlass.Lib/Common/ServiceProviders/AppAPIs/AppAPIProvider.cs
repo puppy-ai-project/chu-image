@@ -2383,26 +2383,31 @@ public partial class AppAPIProvider
 
         // 2. get the size
         var dpi = App.MainWindow.Dpi;
-        var toolbarPos = Config.GetControlLayout(LayoutControl.Toolbar);
         var galleryPos = Config.GetControlLayout(LayoutControl.Gallery);
 
         var frameSize = Core.Config.EnableFrameless ? new() : new Size(2, 32);
-        var gapW = 0d;
-        var gapH = Toolbar.Bounds.Height;
+        var chromeW = Math.Max(0, App.MainWindow.ClientSize.Width - Viewer.DrawingArea.Width);
+        var chromeH = Math.Max(0, App.MainWindow.ClientSize.Height - Viewer.DrawingArea.Height);
+        var gapW = chromeW;
+        var gapH = Math.Max(chromeH, Toolbar.Bounds.Height + 32);
 
         if (galleryPos is LayoutPosition.Left or LayoutPosition.Right)
         {
-            gapW += Gallery.Bounds.Width + GalleryResizer.Bounds.Width;
+            gapW = Math.Max(gapW, Gallery.Bounds.Width + GalleryResizer.Bounds.Width);
         }
-        else
+        else if (Core.Config.ShowGallery && Gallery.IsVisible && Gallery.IsContentVisible)
         {
-            gapH += Gallery.Bounds.Height + GalleryResizer.Bounds.Height;
+            var galleryH = (Gallery.Bounds.Height > 0 ? Gallery.Bounds.Height : Gallery.MinContentSize.Height)
+                           + Gallery.Margin.Top + Gallery.Margin.Bottom;
+            gapH += Math.Max(0, galleryH);
         }
 
 
-        // get current screen workarea
-        var screen = App.MainWindow.Screens.ScreenFromWindow(App.MainWindow)!;
-        var workArea = screen.GetActualWorkingArea().ToRect(dpi);
+        // get current screen workarea (macOS 下 Position/WorkingArea 使用 screen.Scaling=1，而非 RenderScaling)
+        var screen = App.MainWindow.Screens.ScreenFromWindow(App.MainWindow)
+                     ?? App.MainWindow.Screens.Primary!;
+        var screenScale = screen.Scaling > 0 ? screen.Scaling : 1d;
+        var workArea = screen.GetActualWorkingArea().ToRect(screenScale);
 
         // get source image size
         var srcImgW = Viewer.BitmapSize.Width;
@@ -2419,8 +2424,8 @@ public partial class AppAPIProvider
             }
             else
             {
-                var maxViewerWidth = workArea.Width - gapW;
-                var maxViewerHeight = workArea.Height - gapH;
+                var maxViewerWidth = Math.Max(1, workArea.Width - gapW);
+                var maxViewerHeight = Math.Max(1, workArea.Height - gapH);
 
                 // recalculate zoom factor for the new size
                 zoomFactor = Viewer.CalculateZoomFactor(Core.Config.ZoomMode, srcImgW, srcImgH, maxViewerWidth, maxViewerHeight);
@@ -2436,14 +2441,14 @@ public partial class AppAPIProvider
         // 5. adjust the viewer size to fit the entire image
         // but not larger than desktop working area.
         var viewerBounds = new Rect(0, 0,
-            Math.Min(zoomImgW, workArea.Width - gapW),
-            Math.Min(zoomImgH, workArea.Height - gapH));
+            Math.Min(zoomImgW, Math.Max(1, workArea.Width - gapW)),
+            Math.Min(zoomImgH, Math.Max(1, workArea.Height - gapH)));
 
         var workAreaWithoutFrame = new Rect(
             workArea.X + gapW / 2 + frameSize.Width / 2,
             workArea.Y + gapH / 2 + frameSize.Height / 2,
-            workArea.Width - gapW - frameSize.Width,
-            workArea.Height - gapH - frameSize.Height);
+            Math.Max(1, workArea.Width - gapW - frameSize.Width),
+            Math.Max(1, workArea.Height - gapH - frameSize.Height));
 
         // adjust viewer size and position to the desktop working area
         viewerBounds = workAreaWithoutFrame.CenterRectEx(viewerBounds, true);
@@ -2459,9 +2464,14 @@ public partial class AppAPIProvider
         // check center window to screen option
         if (!Core.Config.EnableCenterWindowFit)
         {
-            winBounds = winBounds.WithX(App.MainWindow.Position.X / dpi);
-            winBounds = winBounds.WithY(App.MainWindow.Position.Y / dpi);
+            winBounds = winBounds.WithX(App.MainWindow.Position.X / screenScale);
+            winBounds = winBounds.WithY(App.MainWindow.Position.Y / screenScale);
         }
+
+        // 确保窗口（含底部工具栏）始终留在工作区内
+        winBounds = winBounds
+            .WithX(Math.Clamp(winBounds.X, workArea.X, Math.Max(workArea.X, workArea.Right - winBounds.Width)))
+            .WithY(Math.Clamp(winBounds.Y, workArea.Y, Math.Max(workArea.Y, workArea.Bottom - winBounds.Height)));
 
 
         // 6. set min size for window
@@ -2469,7 +2479,7 @@ public partial class AppAPIProvider
         App.MainWindow.MinHeight = gapH + 50;
 
         // update window position and size
-        App.MainWindow.Position = new((int)(winBounds.X * dpi), (int)(winBounds.Y * dpi));
+        App.MainWindow.Position = new((int)Math.Round(winBounds.X * screenScale), (int)Math.Round(winBounds.Y * screenScale));
         App.MainWindow.Width = winBounds.Width;
         App.MainWindow.Height = winBounds.Height;
 

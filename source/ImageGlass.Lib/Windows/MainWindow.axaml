@@ -24,19 +24,20 @@
         </Border>
         <Border x:Name="PART_WindowOutline" CornerRadius="12" BorderBrush="{DynamicResource IgDarkBrush4B505C}"
                 BorderThickness="1" IsHitTestVisible="False" ZIndex="1999" />
-        <Grid x:Name="PART_ResizeHandles" ZIndex="2000"
-              PointerMoved="ResizeHandle_PointerMoved"
-              PointerReleased="ResizeHandle_PointerReleased"
-              PointerCaptureLost="ResizeHandle_PointerCaptureLost">
-            <Border Height="6" Margin="12,0" VerticalAlignment="Top" Background="Transparent" Cursor="SizeNorthSouth" Tag="North" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border Height="6" Margin="12,0" VerticalAlignment="Bottom" Background="Transparent" Cursor="SizeNorthSouth" Tag="South" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border Width="6" Margin="0,12" HorizontalAlignment="Left" Background="Transparent" Cursor="SizeWestEast" Tag="West" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border Width="6" Margin="0,12" HorizontalAlignment="Right" Background="Transparent" Cursor="SizeWestEast" Tag="East" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border x:Name="PART_ResizeTopLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Background="Transparent" Cursor="TopLeftCorner" Tag="NorthWest" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border x:Name="PART_ResizeTopRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Background="Transparent" Cursor="TopRightCorner" Tag="NorthEast" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border x:Name="PART_ResizeBottomLeft" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="Transparent" Cursor="BottomLeftCorner" Tag="SouthWest" PointerPressed="ResizeHandle_PointerPressed" />
-            <Border x:Name="PART_ResizeBottomRight" Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="Transparent" Cursor="BottomRightCorner" Tag="SouthEast" PointerPressed="ResizeHandle_PointerPressed" />
-        </Grid>
+        <Border x:Name="PART_ResizeHandles" CornerRadius="12" ClipToBounds="True" ZIndex="2000">
+            <Grid PointerMoved="ResizeHandle_PointerMoved"
+                  PointerReleased="ResizeHandle_PointerReleased"
+                  PointerCaptureLost="ResizeHandle_PointerCaptureLost">
+                <Border Height="6" Margin="16,0" VerticalAlignment="Top" Background="#02000000" Cursor="SizeNorthSouth" Tag="North" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border Height="7" Margin="16,0" VerticalAlignment="Bottom" Background="#02000000" Cursor="SizeNorthSouth" Tag="South" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border Width="8" Margin="0,16" HorizontalAlignment="Left" Background="#02000000" Cursor="SizeWestEast" Tag="West" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border Width="8" Margin="0,16" HorizontalAlignment="Right" Background="#02000000" Cursor="SizeWestEast" Tag="East" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border x:Name="PART_ResizeTopLeft" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#02000000" Cursor="TopLeftCorner" Tag="NorthWest" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border x:Name="PART_ResizeTopRight" Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Top" Background="#02000000" Cursor="TopRightCorner" Tag="NorthEast" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border x:Name="PART_ResizeBottomLeft" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Bottom" Background="#02000000" Cursor="BottomLeftCorner" Tag="SouthWest" PointerPressed="ResizeHandle_PointerPressed" />
+                <Border x:Name="PART_ResizeBottomRight" Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom" Background="#02000000" Cursor="BottomRightCorner" Tag="SouthEast" PointerPressed="ResizeHandle_PointerPressed" />
+            </Grid>
+        </Border>
     </Grid>
 
 </uiw:PhWindow>

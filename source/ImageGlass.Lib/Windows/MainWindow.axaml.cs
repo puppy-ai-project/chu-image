@@ -128,6 +128,55 @@ public partial class MainWindow : PhWindow
 
     public MainWindowModel VM => (MainWindowModel)DataContext!;
 
+    private bool TryGetScreenMetrics(out PixelRect workArea, out double screenScale, out Size frameDelta)
+    {
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+        if (screen is null)
+        {
+            workArea = default;
+            screenScale = 1d;
+            frameDelta = default;
+            return false;
+        }
+
+        // 屏幕坐标 (Position / WorkingArea / PointToScreen) 使用 screen.Scaling；
+        // macOS Retina 下 screen.Scaling 为 1，而 RenderScaling 为 2
+        screenScale = screen.Scaling > 0 ? screen.Scaling : 1d;
+        workArea = screen.GetActualWorkingArea();
+        var currentFrame = FrameSize is { Width: > 0, Height: > 0 } frame ? frame : ClientSize;
+        frameDelta = new Size(
+            Math.Max(0, currentFrame.Width - ClientSize.Width),
+            Math.Max(0, currentFrame.Height - ClientSize.Height));
+        return true;
+    }
+
+    private static PixelPoint ClampPositionToWorkArea(
+        PixelPoint pos, Size clientSize, PixelRect workArea, double screenScale, Size frameDelta)
+    {
+        var frameW = (clientSize.Width + frameDelta.Width) * screenScale;
+        var frameH = (clientSize.Height + frameDelta.Height) * screenScale;
+        var maxX = Math.Max(workArea.X, (int)Math.Floor(workArea.Right - frameW));
+        var maxY = Math.Max(workArea.Y, (int)Math.Floor(workArea.Bottom - frameH));
+        return new PixelPoint(
+            Math.Clamp(pos.X, workArea.X, maxX),
+            Math.Clamp(pos.Y, workArea.Y, maxY));
+    }
+
+    private void ApplyWindowBounds(PixelPoint targetPos, Size targetSize, bool movePosition = true)
+    {
+        var isGrowing = targetSize.Width > ClientSize.Width || targetSize.Height > ClientSize.Height;
+        if (movePosition && isGrowing)
+        {
+            // 放大窗口前先将左上角移向目标位置，避免 macOS 下先扩高导致底部越界被裁切
+            var prePos = new PixelPoint(Math.Min(Position.X, targetPos.X), Math.Min(Position.Y, targetPos.Y));
+            if (prePos != Position) Position = prePos;
+        }
+
+        Width = targetSize.Width;
+        Height = targetSize.Height;
+        if (movePosition && Position != targetPos) Position = targetPos;
+    }
+
     private bool TryGetImageFitBounds(out Size windowSize, out PixelRect workArea, out double screenScale, out Size frameDelta)
     {
         windowSize = default;
@@ -159,29 +208,33 @@ public partial class MainWindow : PhWindow
         var chromeW = Math.Max(0, ClientSize.Width - area.Width);
         var chromeH = Math.Max(0, ClientSize.Height - area.Height);
 
-        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
-        if (screen is null) return false;
-
-        // 屏幕坐标 (Position / WorkingArea) 使用 screen.Scaling；macOS Retina 下 screen.Scaling 为 1，而 RenderScaling 为 2
-        screenScale = screen.Scaling > 0 ? screen.Scaling : 1d;
-        workArea = screen.GetActualWorkingArea();
-        var currentFrame = FrameSize is { Width: > 0, Height: > 0 } frame ? frame : ClientSize;
-        frameDelta = new Size(
-            Math.Max(0, currentFrame.Width - ClientSize.Width),
-            Math.Max(0, currentFrame.Height - ClientSize.Height));
+        if (!TryGetScreenMetrics(out workArea, out screenScale, out frameDelta)) return false;
 
         var maxWorkW = Math.Min(MaxWidth, Math.Max(1, Math.Floor(workArea.Width / screenScale) - frameDelta.Width));
         var maxWorkH = Math.Min(MaxHeight, Math.Max(1, Math.Floor(workArea.Height / screenScale) - frameDelta.Height));
-        var minAllowedW = Math.Min(maxWorkW, Math.Max(MinWidth, 160));
-        var minAllowedH = Math.Min(maxWorkH, Math.Max(MinHeight, 120));
+        var minAllowedW = Math.Min(maxWorkW, Math.Max(MinWidth, MIN_RESTORE_WIDTH));
+        var minAllowedH = Math.Min(maxWorkH, Math.Max(MinHeight, MIN_RESTORE_HEIGHT));
         if (maxWorkW < 1 || maxWorkH < 1) return false;
 
+        var galleryOverlayH = GetBottomOverlayGalleryHeight();
         const double fitMargin = 10;
         var fitPadding = fitMargin * 2;
         windowSize = new Size(
             Math.Clamp(Math.Ceiling(chromeW + rotatedWidth + fitPadding), minAllowedW, maxWorkW),
-            Math.Clamp(Math.Ceiling(chromeH + rotatedHeight + fitPadding), minAllowedH, maxWorkH));
+            Math.Clamp(Math.Ceiling(chromeH + rotatedHeight + fitPadding + galleryOverlayH), minAllowedH, maxWorkH));
         return true;
+    }
+
+    private double GetBottomOverlayGalleryHeight()
+    {
+        if (!Core.Config.ShowGallery) return 0;
+        if (Config.GetControlLayout(LayoutControl.Gallery) != LayoutPosition.Bottom) return 0;
+
+        var gallery = PART_MainView.PART_Gallery;
+        if (!gallery.IsVisible || !gallery.IsContentVisible) return 0;
+
+        var height = gallery.Bounds.Height > 0 ? gallery.Bounds.Height : gallery.MinContentSize.Height;
+        return Math.Max(0, height + gallery.Margin.Top + gallery.Margin.Bottom);
     }
 
     public bool CanFitWindowToImage => TryGetImageFitBounds(out _, out _, out _, out _);
@@ -195,22 +248,19 @@ public partial class MainWindow : PhWindow
         var currentCenterX = Position.X + currentFrame.Width * screenScale / 2.0;
         var currentCenterY = Position.Y + currentFrame.Height * screenScale / 2.0;
 
-        var targetFrameW = windowSize.Width + frameDelta.Width;
-        var targetFrameH = windowSize.Height + frameDelta.Height;
-        var maxX = Math.Max(workArea.X, workArea.Right - targetFrameW * screenScale);
-        var maxY = Math.Max(workArea.Y, workArea.Bottom - targetFrameH * screenScale);
-        var targetPos = new PixelPoint(
-            (int)Math.Round(Math.Clamp(currentCenterX - targetFrameW * screenScale / 2.0, workArea.X, maxX)),
-            (int)Math.Round(Math.Clamp(currentCenterY - targetFrameH * screenScale / 2.0, workArea.Y, maxY)));
+        var targetFrameW = (windowSize.Width + frameDelta.Width) * screenScale;
+        var targetFrameH = (windowSize.Height + frameDelta.Height) * screenScale;
+        var desiredPos = new PixelPoint(
+            (int)Math.Round(currentCenterX - targetFrameW / 2.0),
+            (int)Math.Round(currentCenterY - targetFrameH / 2.0));
+        var targetPos = ClampPositionToWorkArea(desiredPos, windowSize, workArea, screenScale, frameDelta);
 
         var zoom = viewer.ZoomFactor;
         if (WindowState == WindowState.Maximized) WindowState = WindowState.Normal;
         Core.Config.EnableWindowFit = false;
         viewer.SetZoomFactor(zoom, true);
 
-        Width = windowSize.Width;
-        Height = windowSize.Height;
-        Position = targetPos;
+        ApplyWindowBounds(targetPos, windowSize);
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -220,7 +270,8 @@ public partial class MainWindow : PhWindow
             {
                 if (Math.Abs(Width - windowSize.Width) > 0.5) Width = windowSize.Width;
                 if (Math.Abs(Height - windowSize.Height) > 0.5) Height = windowSize.Height;
-                Position = targetPos;
+                var clampedPos = ClampPositionToWorkArea(targetPos, ClientSize, workArea, screenScale, frameDelta);
+                if (Position != clampedPos) Position = clampedPos;
             }
             Dispatcher.UIThread.Post(() =>
             {
@@ -228,7 +279,10 @@ public partial class MainWindow : PhWindow
                 var factor = viewer.ZoomFactor / viewer.Dpi;
                 var current = new Point(viewer.DestRect.X + (viewer.BitmapSize.Width / 2 - viewer.SrcRect.X) * factor,
                                         viewer.DestRect.Y + (viewer.BitmapSize.Height / 2 - viewer.SrcRect.Y) * factor);
-                var desired = viewer.DrawingArea.Center;
+                var galleryOverlayH = GetBottomOverlayGalleryHeight();
+                var desired = new Point(
+                    viewer.DrawingArea.Center.X,
+                    viewer.DrawingArea.Top + Math.Max(0, viewer.DrawingArea.Height - galleryOverlayH) / 2.0);
                 viewer.PanTo(current.X - desired.X, current.Y - desired.Y, null);
                 ScheduleWindowSizeSave();
             }, DispatcherPriority.Background);
@@ -264,23 +318,51 @@ public partial class MainWindow : PhWindow
         if (_resizeEdge is not { } edge || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
 
         var pointer = this.PointToScreen(e.GetPosition(this));
-        var scale = RenderScaling;
-        // A modest multiplier makes resizing cover more distance per drag.
-        const double resizeSensitivity = 1.5;
-        var dx = (pointer.X - _resizeStartPointer.X) / scale * resizeSensitivity;
-        var dy = (pointer.Y - _resizeStartPointer.Y) / scale * resizeSensitivity;
+        var hasScreen = TryGetScreenMetrics(out var workArea, out var scale, out var frameDelta);
+        var dx = (pointer.X - _resizeStartPointer.X) / scale;
+        var dy = (pointer.Y - _resizeStartPointer.Y) / scale;
+
         var left = edge is WindowEdge.West or WindowEdge.NorthWest or WindowEdge.SouthWest;
         var right = edge is WindowEdge.East or WindowEdge.NorthEast or WindowEdge.SouthEast;
         var top = edge is WindowEdge.North or WindowEdge.NorthEast or WindowEdge.NorthWest;
         var bottom = edge is WindowEdge.South or WindowEdge.SouthEast or WindowEdge.SouthWest;
-        var width = Math.Clamp(_resizeStartSize.Width + (left ? -dx : right ? dx : 0), MinWidth, MaxWidth);
-        var height = Math.Clamp(_resizeStartSize.Height + (top ? -dy : bottom ? dy : 0), MinHeight, MaxHeight);
-        var x = _resizeStartPosition.X + (left ? (int)Math.Round((_resizeStartSize.Width - width) * scale) : 0);
-        var y = _resizeStartPosition.Y + (top ? (int)Math.Round((_resizeStartSize.Height - height) * scale) : 0);
 
-        Width = width;
-        Height = height;
-        if (left || top) Position = new PixelPoint(x, y);
+        var minW = Math.Max(MinWidth, MIN_RESTORE_WIDTH);
+        var minH = Math.Max(MinHeight, MIN_RESTORE_HEIGHT);
+        var startW = _resizeStartSize.Width;
+        var startH = _resizeStartSize.Height;
+        var width = startW;
+        var height = startH;
+        var x = _resizeStartPosition.X;
+        var y = _resizeStartPosition.Y;
+
+        if (left)
+        {
+            var startRight = _resizeStartPosition.X + startW * scale;
+            var maxW = hasScreen ? Math.Min(MaxWidth, (startRight - workArea.X) / scale) : MaxWidth;
+            width = Math.Clamp(startW - dx, minW, Math.Max(minW, maxW));
+            x = (int)Math.Round(startRight - width * scale);
+        }
+        else if (right)
+        {
+            var maxW = hasScreen ? Math.Min(MaxWidth, (workArea.Right - _resizeStartPosition.X) / scale - frameDelta.Width) : MaxWidth;
+            width = Math.Clamp(startW + dx, minW, Math.Max(minW, maxW));
+        }
+
+        if (top)
+        {
+            var startBottom = _resizeStartPosition.Y + startH * scale;
+            var maxH = hasScreen ? Math.Min(MaxHeight, (startBottom - workArea.Y) / scale) : MaxHeight;
+            height = Math.Clamp(startH - dy, minH, Math.Max(minH, maxH));
+            y = (int)Math.Round(startBottom - height * scale);
+        }
+        else if (bottom)
+        {
+            var maxH = hasScreen ? Math.Min(MaxHeight, (workArea.Bottom - _resizeStartPosition.Y) / scale - frameDelta.Height) : MaxHeight;
+            height = Math.Clamp(startH + dy, minH, Math.Max(minH, maxH));
+        }
+
+        ApplyWindowBounds(new PixelPoint(x, y), new Size(width, height), movePosition: left || top);
         e.Handled = true;
     }
 
