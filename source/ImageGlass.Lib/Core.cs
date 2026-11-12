@@ -26,6 +26,7 @@ using ImageGlass.Common.Localization;
 using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
+using ImageGlass.Common.ServiceProviders.FileSearchService;
 using ImageGlass.Common.ServiceProviders.Licensing;
 using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
@@ -56,6 +57,7 @@ public static class Core
     public static event EventHandler<DestColorProfileChangedEventArgs>? ColorProfileChanged;
 
     private static string _initImagePathFromArgs = string.Empty;
+    private static IReadOnlyList<string> _initImagePathsFromArgs = [];
 
 
 
@@ -96,6 +98,15 @@ public static class Core
     /// Provides a singleton instance to search photo files.
     /// </summary>
     public static IFileSearchProvider FileSearchProvider { get; set; } = null!;
+
+    /// <summary>
+    /// Creates an isolated <see cref="IFileSearchProvider"/> per window/session so concurrent windows
+    /// never cancel each other's directory searches.
+    /// </summary>
+    public static Func<IFileSearchProvider>? CreateFileSearchProviderFn { get; set; }
+
+    public static IFileSearchProvider CreateFileSearchProvider()
+        => CreateFileSearchProviderFn?.Invoke() ?? new FileSearchProvider();
 
 
     /// <summary>
@@ -294,6 +305,11 @@ public static class Core
     /// </summary>
     public static string InputImagePathFromArgs => _initImagePathFromArgs;
 
+    /// <summary>
+    /// Gets all resolved image/directory paths passed via command-line arguments.
+    /// </summary>
+    public static IReadOnlyList<string> InputImagePathsFromArgs => _initImagePathsFromArgs;
+
 
     /// <summary>
     /// Gets, sets the changes of the current viewing image.
@@ -425,6 +441,8 @@ public static class Core
         SleepGuard.ReleaseAll();
         Core.ShellProvider?.Dispose();
         Core.ShellProvider = null;
+
+        AppInstance.Dispose();
     }
 
 
@@ -1040,30 +1058,85 @@ public static class Core
     }
 
 
+    private static bool IsOptionArg(string? arg)
+    {
+        if (string.IsNullOrWhiteSpace(arg)) return true;
+        if (arg.StartsWith(Const.CONFIG_CMD_PREFIX, StringComparison.OrdinalIgnoreCase)
+            || arg.StartsWith("--", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (arg.StartsWith('-'))
+        {
+            // Preserve genuine files/folders whose names start with '-', while filtering platform flags.
+            return BHelper.CheckPath(BHelper.ResolvePath(arg)) == PathType.Unknown;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Normalizes path arguments against the entry process working directory before IPC forwarding.
+    /// </summary>
+    public static string[] PrepareForwardedArgs(string[]? args)
+    {
+        if (args is null || args.Length == 0) return [];
+
+        var result = new string[args.Length];
+        for (var i = 0; i < args.Length; i++)
+        {
+            var arg = args[i];
+            result[i] = IsOptionArg(arg) ? arg : BHelper.ResolvePath(arg);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Parses and resolves all input image/folder paths from the provided CLI argument list.
+    /// </summary>
+    public static List<string> ParseInputImagePathsFromArgs(IReadOnlyList<string>? args, bool skipFirstExecutableArg)
+    {
+        if (args is null || args.Count == 0) return [];
+
+        var startIndex = skipFirstExecutableArg ? 1 : 0;
+        if (startIndex >= args.Count) return [];
+
+        var comparer = BHelper.OS == OSType.Linux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+        var seen = new HashSet<string>(comparer);
+        var paths = new List<string>();
+
+        for (var i = startIndex; i < args.Count; i++)
+        {
+            var raw = args[i];
+            if (IsOptionArg(raw)) continue;
+
+            var resolved = BHelper.ResolvePath(raw);
+            if (string.IsNullOrWhiteSpace(resolved)) continue;
+            if (seen.Add(resolved)) paths.Add(resolved);
+        }
+
+        return paths;
+    }
+
     /// <summary>
     /// Update input path from arguments.
     /// </summary>
     public static void UpdateInitImagePath(string? path = null)
     {
-        var pathToLoad = path;
-
-        if (string.IsNullOrWhiteSpace(pathToLoad) && Core.Args.Length >= 2)
+        if (!string.IsNullOrWhiteSpace(path))
         {
-            // get path from params, skipping "-p:" config overrides and "--" flags
-            // (e.g. --ig-startup-trace) so a flag is never taken as the image path
-            var cmdPath = Core.Args
-                .Skip(1)
-                .FirstOrDefault(i => !i.StartsWith(Const.CONFIG_CMD_PREFIX, StringComparison.Ordinal)
-                    && !i.StartsWith("--", StringComparison.Ordinal));
-
-            if (!string.IsNullOrEmpty(cmdPath))
-            {
-                pathToLoad = cmdPath;
-            }
+            // store resolved: a shortcut's own folder must never pass as the folder being opened
+            var resolved = BHelper.ResolvePath(path);
+            _initImagePathFromArgs = resolved;
+            _initImagePathsFromArgs = string.IsNullOrEmpty(resolved) ? [] : [resolved];
+            return;
         }
 
-        // store resolved: a shortcut's own folder must never pass as the folder being opened
-        _initImagePathFromArgs = BHelper.ResolvePath(pathToLoad);
+        var parsed = ParseInputImagePathsFromArgs(Core.Args, skipFirstExecutableArg: true);
+        _initImagePathsFromArgs = parsed;
+        _initImagePathFromArgs = parsed.Count > 0 ? parsed[0] : string.Empty;
     }
 
 

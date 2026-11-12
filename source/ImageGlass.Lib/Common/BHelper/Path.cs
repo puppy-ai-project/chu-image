@@ -552,6 +552,12 @@ public partial class BHelper
             path = path[1..^1];
         }
 
+        // convert file:// URI to local filesystem path
+        if (Uri.TryCreate(path, UriKind.Absolute, out var fileUri) && fileUri.IsFile)
+        {
+            path = fileUri.LocalPath;
+        }
+
         // skip expansion when the literal path exists: a filename containing "%TEMP%" must survive
         if (!File.Exists(path) && !Directory.Exists(path))
         {

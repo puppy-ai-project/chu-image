@@ -709,13 +709,13 @@ public partial class Config
 
 
     /// <summary>
-    /// Applies CLI config overrides (<c>-p:Key=Value</c>) to the current config instance.
+    /// Applies CLI config overrides (<c>-p:Key=Value</c>) to the current config instance and returns the changed IDs.
     /// Used when the first instance receives forwarded args from a second instance.
     /// </summary>
-    public static void ApplyCliOverrides(Config config, string[]? cliArgs)
+    public static IReadOnlyList<ConfigId> ApplyCliOverrides(Config config, string[]? cliArgs)
     {
         var overrides = ParseCliConfigArgs(cliArgs);
-        if (overrides.Count == 0) return;
+        if (overrides.Count == 0) return [];
 
         try
         {
@@ -731,17 +731,33 @@ public partial class Config
 
             // deserialize back into a new Config
             var updated = JsonSerializer.Deserialize(mergedJson, jsonContext.Config);
-            if (updated == null) return;
+            if (updated == null) return [];
 
-            // copy all values, but never let a forwarded CLI override mutate an admin-locked setting
-            // (preserves the admin > CLI precedence of Load; mirrors SettingsViewModel.CommitAsync)
-            foreach (var kvp in updated._values)
+            // copy ONLY the requested CLI override keys, never mutating admin-locked or unrelated settings
+            // (mirrors ApplyJsonOverrides & SettingsViewModel.CommitAsync)
+            var targetIds = new List<ConfigId>(overrides.Count);
+            foreach (var key in overrides.Keys)
             {
-                if (IsConfigLocked(kvp.Key)) continue;
-                config.Set(kvp.Key, kvp.Value);
+                if (!Enum.TryParse<ConfigId>(key, ignoreCase: true, out var id)) continue;
+                if (IsConfigLocked(id) || IsConfigProGated(id)) continue;
+                targetIds.Add(id);
             }
+
+            var changedIds = new List<ConfigId>(targetIds.Count);
+            foreach (var id in targetIds)
+            {
+                if (!updated._values.TryGetValue(id, out var value)) continue;
+
+                config.Set(id, value);
+                changedIds.Add(id);
+            }
+
+            return changedIds;
         }
-        catch { }
+        catch
+        {
+            return [];
+        }
     }
 
 

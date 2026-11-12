@@ -245,13 +245,16 @@ public partial class AppAPIProvider
             ?? [];
         var mainMenuHotkeyText = string.Empty;
 
-        // Use the shared static toolbar VM directly
-        MainWindowViewModel.ToolbarVM.ButtonMenuVM = new ToolbarItemModel()
+        // Update the active/primary window's own toolbar VM rather than a global shared instance.
+        if ((App.CommandWindow ?? App.PrimaryWindow)?.VM is { } windowVm)
         {
-            Image = nameof(IgThemeIcon.MainMenu),
-            Text = nameof(LangId.Menu_MnuMain),
-            HotkeyText = mainMenuHotkeyText,
-        };
+            windowVm.ToolbarVM.ButtonMenuVM = new ToolbarItemModel()
+            {
+                Image = nameof(IgThemeIcon.MainMenu),
+                Text = nameof(LangId.Menu_MnuMain),
+                HotkeyText = mainMenuHotkeyText,
+            };
+        }
 
 
         // 1. register toolbar hotkeys from user-config

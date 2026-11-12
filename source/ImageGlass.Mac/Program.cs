@@ -44,7 +44,8 @@ sealed class Program
         var isHandled = App.InitializeAppInstance(args, () =>
         {
             // initialize service providers
-            Core.FileSearchProvider = new FileSearchProvider();
+            Core.CreateFileSearchProviderFn = static () => new FileSearchProvider();
+            Core.FileSearchProvider = Core.CreateFileSearchProvider();
             Core.PreviewProvider = new PhotoPreviewProvider();
             Core.ShellProvider = new MacShellProvider();
             Core.PrintProvider = new MacPrintProvider();

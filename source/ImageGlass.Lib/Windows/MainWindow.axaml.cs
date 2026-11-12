@@ -465,14 +465,27 @@ public partial class MainWindow : PhWindow
                 // Shared services belong to the process and must outlive other image windows.
                 Core.API?.IG_ToggleSlideshow(false);
 
-            // the projectors mirror this window; their settings are already in the config
+                // the projectors mirror this window; their settings are already in the config
                 ProjectorToolControl.Manager?.CloseAll();
 
-            // stop all external tool processes before saving config
+                // stop all external tool processes before saving config
                 await Core.ToolRegistry.ExternalTools.StopAllAsync();
 
-            // only save config here, do NOT dispose resources yet
+                // only save config here, do NOT dispose resources yet
                 await SaveConfigOnClosingAsync();
+            }
+            else
+            {
+                if (Session.Api?.IsOwningSlideshow == true)
+                {
+                    Session.Api.IG_ToggleSlideshow(false);
+                }
+
+                if (PART_MainView.PART_ToolHost.Tool is ITool hostedTool)
+                {
+                    ToolRegistry.SaveToolSettings(hostedTool);
+                    PART_MainView.PART_ToolHost.CloseCurrentTool();
+                }
             }
         }
         catch (Exception ex)

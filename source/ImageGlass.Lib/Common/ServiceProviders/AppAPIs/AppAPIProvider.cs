@@ -63,9 +63,11 @@ public partial class AppAPIProvider
     private WindowLayoutSnapshot? _preFullScreenLayout;
 
     // shows the folder switch message once the new folder's photo loads; null when none is pending
-    private static TEventHandler<ViewerControl, PhotoLoadingEventArgs>? _siblingDirAnnouncer;
+    private TEventHandler<ViewerControl, PhotoLoadingEventArgs>? _siblingDirAnnouncer;
 
     // slideshow state backup
+    private static AppAPIProvider? _slideshowOwnerApi;
+    private MainWindow? _slideshowOwnerWindow;
     private bool _isFullScreenBeforeSlideshow;
     private bool _isFramelessBeforeSlideshow;
     private bool _isWindowFitBeforeSlideshow;
@@ -74,6 +76,8 @@ public partial class AppAPIProvider
     private bool _windowMaximizedBeforeSlideshow;
     private DispatcherTimer? _slideshowCountdownTimer;
     private IdleCursorHider? _slideshowCursorHider;
+
+    internal bool IsOwningSlideshow => ReferenceEquals(_slideshowOwnerApi, this);
 
     // set once the user runs a check-for-update with UI; the startup silent check then completes
     // its work without popping its own window on top of what the user already asked for
@@ -159,10 +163,16 @@ public partial class AppAPIProvider
 
 
     /// <summary>
-    /// Exit the app.
+    /// Closes the active image window (which exits the process when it is the last window).
     /// </summary>
     public static void IG_Exit()
     {
+        if ((App.CommandWindow ?? App.PrimaryWindow) is { } window)
+        {
+            window.Close();
+            return;
+        }
+
         BHelper.ExitApp(false);
     }
 
@@ -1043,6 +1053,8 @@ public partial class AppAPIProvider
 
         // announce the switch once the new photo has loaded; showing it earlier would be wiped
         // by the load pipeline, which clears the in-app message on PhotoState.Loaded
+        var ownerApi = Core.API;
+        var targetViewer = Viewer;
         void OnPhotoLoaded(ViewerControl s, PhotoLoadingEventArgs e)
         {
             // a photo of the folder being left can still finish loading after the switch
@@ -1050,8 +1062,8 @@ public partial class AppAPIProvider
             if (!isSiblingDirPhoto) return;
             if (e.State != PhotoState.Loaded && e.Photo.Error is null) return;
 
-            Viewer.PhotoLoading -= OnPhotoLoaded;
-            _siblingDirAnnouncer = null;
+            targetViewer.PhotoLoading -= OnPhotoLoaded;
+            if (ownerApi is not null) ownerApi._siblingDirAnnouncer = null;
             if (e.Photo.Error is not null) return;
 
             _ = Message.ShowAsync(Core.Lang[direction < 0
@@ -1060,9 +1072,9 @@ public partial class AppAPIProvider
         }
 
         // a quicker switch drops the message of one whose folder never got to load
-        if (_siblingDirAnnouncer is not null) Viewer.PhotoLoading -= _siblingDirAnnouncer;
-        _siblingDirAnnouncer = OnPhotoLoaded;
-        Viewer.PhotoLoading += _siblingDirAnnouncer;
+        if (ownerApi?._siblingDirAnnouncer is not null) targetViewer.PhotoLoading -= ownerApi._siblingDirAnnouncer;
+        if (ownerApi is not null) ownerApi._siblingDirAnnouncer = OnPhotoLoaded;
+        targetViewer.PhotoLoading += OnPhotoLoaded;
 
         // the first/last photo is picked once the search builds the list, so it follows Explorer view order too
         App.MainWindow.PART_MainView.PrepareLoadPhotoList([siblingDir],
@@ -2715,12 +2727,25 @@ public partial class AppAPIProvider
         _slideshowCursorHider?.Dispose();
         _slideshowCursorHider = new IdleCursorHider(App.MainWindow, Viewer);
         _slideshowCursorHider.Start();
+        _slideshowOwnerApi = this;
+        _slideshowOwnerWindow = App.MainWindow;
     }
 
     private void StopSlideshow__()
     {
         if (!Core.Config.EnableSlideshow) return;
 
+        // If another window started the slideshow, forward teardown to its own API instance so
+        // timers, cursor hider, and window state restore run on the owning window.
+        if (_slideshowOwnerApi is { } owner && !ReferenceEquals(owner, this))
+        {
+            using var ownerScope = owner._slideshowOwnerWindow is { } ownerWin ? App.UseWindow(ownerWin) : null;
+            owner.StopSlideshow__();
+            return;
+        }
+
+        _slideshowOwnerApi = null;
+        _slideshowOwnerWindow = null;
         Core.Config.EnableSlideshow = false;
 
         // 1. stop countdown timer and bring the mouse cursor back

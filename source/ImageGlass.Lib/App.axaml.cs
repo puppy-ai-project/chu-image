@@ -53,6 +53,11 @@ public partial class App : Application
     private static readonly AsyncLocal<MainWindow?> _commandWindow = new();
     private readonly HashSet<MainWindow> _imageWindows = [];
     private readonly HashSet<MainWindow> _closingImageWindows = [];
+    private readonly List<string> _earlyActivatedPaths = [];
+    private readonly TaskCompletionSource _startupUiReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _isStartupCompleted;
+    private bool _isShuttingDown;
+    private int _pendingWindowOpens;
     private static Task _updateReconcileTask = Task.CompletedTask;
     private TaskCompletionSource _taskUi = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -71,8 +76,8 @@ public partial class App : Application
     public static MainWindow MainWindow => _commandWindow.Value ?? _mainWindow!;
 
     /// <summary>The window explicitly associated with the current asynchronous operation.</summary>
-    internal static MainWindow? CommandWindow => _commandWindow.Value;
-    internal static MainWindow? PrimaryWindow => _mainWindow;
+    public static MainWindow? CommandWindow => _commandWindow.Value;
+    public static MainWindow? PrimaryWindow => _mainWindow;
 
     /// <summary>Associates an operation and its asynchronous continuations with its originating window.</summary>
     internal static IDisposable UseWindow(MainWindow window) => new WindowScope(window);
@@ -157,6 +162,7 @@ public partial class App : Application
             // so the app never falls back to the app data dir
             if (ConfigMode.PortableError is not null)
             {
+                MarkStartupAborted();
                 await _taskUi.Task;
                 await ShowPortableModeErrorAsync();
                 return;
@@ -196,12 +202,20 @@ public partial class App : Application
                 var isContinue = await ModalWindow.ShowUnhandledErrorAsync(
                     Config.LoadingException, null,
                     "IGE: There was an error while loading user settings");
-                if (!isContinue) return;
+                if (!isContinue)
+                {
+                    MarkStartupAborted();
+                    return;
+                }
             }
 
             // if an incompatible user config was found and reset, warn before continuing;
             // on No we exit without writing config, on Yes we fall through to Quick Setup
-            if (!await ConfirmIncompatibleConfigResetAsync()) return;
+            if (!await ConfirmIncompatibleConfigResetAsync())
+            {
+                MarkStartupAborted();
+                return;
+            }
 
             // force Quick Setup on first run; false = app is exiting/restarting
             // ChuImage starts directly with the configured defaults, without the setup wizard.
@@ -210,6 +224,10 @@ public partial class App : Application
             // show main window
             MainWindow.Show();
             StartupTrace.Mark("MainWindow:show");
+
+            _isStartupCompleted = true;
+            _startupUiReadyTcs.TrySetResult();
+            OpenPendingStartupWindows();
 
             // an expired license leaves the app in Classic: say so and offer the ways out
             ShowExpiredLicenseNotice();
@@ -233,29 +251,48 @@ public partial class App : Application
         if (e is FileActivatedEventArgs fileArgs && fileArgs.Files.Count > 0)
         {
             StartupTrace.Mark("FileActivation:received");
-            var filePath = fileArgs.Files[0].TryGetLocalPath();
             var modulePath = Core.Args.FirstOrDefault();
-            var isModulePath = filePath?.Equals(modulePath, StringComparison.OrdinalIgnoreCase) ?? false;
+            var comparer = PathComparer;
+            var resolvedPaths = new List<string>(fileArgs.Files.Count);
 
-            if (!string.IsNullOrEmpty(filePath) && !isModulePath)
+            foreach (var file in fileArgs.Files)
             {
-                // The first file activation can arrive before the window is shown. Feed that
-                // path to the normal startup loader instead of opening the same file twice.
-                if (MainWindow is not null && !MainWindow.IsVisible)
+                var filePath = file.TryGetLocalPath();
+                if (string.IsNullOrEmpty(filePath)) continue;
+
+                var resolved = BHelper.ResolvePath(filePath);
+                if (string.IsNullOrEmpty(resolved)) continue;
+                if (modulePath is not null && comparer.Equals(resolved, modulePath)) continue;
+                if (!resolvedPaths.Contains(resolved, comparer))
                 {
-                    Core.UpdateInitImagePath(filePath);
-                    MainWindow.Session.InitialImagePath = Core.InputImagePathFromArgs;
-                    StartupTrace.Mark("FileActivation:startup-path");
+                    resolvedPaths.Add(resolved);
+                }
+            }
+
+            if (resolvedPaths.Count == 0) return;
+
+            // The first file activation can arrive before the window is shown. Feed the first
+            // path to the startup window (if empty) and queue additional paths until MainWindow.Show().
+            if (!_isStartupCompleted && MainWindow is not null && !MainWindow.IsVisible)
+            {
+                HandlePreStartupActivatedPaths(resolvedPaths);
+                return;
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_isShuttingDown) return;
+
+                if (!_isStartupCompleted && MainWindow is not null && !MainWindow.IsVisible)
+                {
+                    HandlePreStartupActivatedPaths(resolvedPaths);
                     return;
                 }
 
-                Dispatcher.UIThread.Post(() =>
-                {
-                    StartupTrace.Mark("FileActivation:dispatch");
-                    var source = _activeImageWindow ?? _mainWindow;
-                    if (source is not null) OpenImageWindow(filePath, source);
-                });
-            }
+                StartupTrace.Mark("FileActivation:dispatch");
+                var source = _activeImageWindow ?? _mainWindow;
+                if (source is not null) OpenImagePathsInNewWindows(resolvedPaths, source);
+            });
         }
 
         // When the user reopens the app from the dock on macOS
@@ -263,7 +300,7 @@ public partial class App : Application
         {
             Dispatcher.UIThread.Post(() =>
             {
-                MainWindow?.Activate();
+                (_activeImageWindow ?? _mainWindow)?.RestoreAndActivate();
             });
         }
     }
@@ -438,11 +475,12 @@ public partial class App : Application
         }
 
 
-        // 5. handle single instance; keep starting if the running instance never took the args,
-        // otherwise a failed hand-off would exit here and the user would see nothing happen
+        // 5. handle single instance; resolve relative paths in the entry process CWD before forwarding,
+        // and promote to primary if the running instance has already entered shutdown.
         if (!Core.AppInstance.IsFirstInstance)
         {
-            if (Core.AppInstance.SendArgsToExistingInstances(AppCmds.SINGLE_INSTANCE, args))
+            var forwardedArgs = Core.PrepareForwardedArgs(args);
+            if (Core.AppInstance.SendArgsOrPromoteToPrimary(AppCmds.SINGLE_INSTANCE, forwardedArgs))
             {
                 return true;
             }
@@ -612,6 +650,7 @@ public partial class App : Application
         Core.API = new AppAPIProvider();
         _mainWindow.Session.Api = Core.API;
         Core.AppInstance.InstanceInvoked += AppInstance_InstanceInvoked;
+        Core.AppInstance.MarkReady();
 
 
         // reconcile first and keep the task: the startup UI reports a failed install from it
@@ -637,7 +676,7 @@ public partial class App : Application
     internal MainWindow OpenImageWindow(string? path, MainWindow? source = null)
     {
         var window = CreateImageWindow(new ImageWindowSession(new PhotoManager(), path));
-        if (source is not null)
+        if (source is { IsVisible: true })
             window.Position = new PixelPoint(source.Position.X + 24, source.Position.Y + 24);
         try
         {
@@ -650,6 +689,93 @@ public partial class App : Application
             throw;
         }
         return window;
+    }
+
+    private MainWindow? OpenImagePathsInNewWindows(IReadOnlyList<string> paths, MainWindow? anchor)
+    {
+        var currentAnchor = anchor ?? _activeImageWindow ?? _mainWindow;
+        MainWindow? lastOpened = null;
+
+        foreach (var path in paths)
+        {
+            if (string.IsNullOrWhiteSpace(path)) continue;
+            currentAnchor = OpenImageWindow(path, currentAnchor);
+            lastOpened = currentAnchor;
+        }
+
+        return lastOpened;
+    }
+
+    private void HandlePreStartupActivatedPaths(IReadOnlyList<string> resolvedPaths)
+    {
+        if (MainWindow is null) return;
+
+        var startIndex = 0;
+        if (string.IsNullOrEmpty(MainWindow.Session.InitialImagePath))
+        {
+            Core.UpdateInitImagePath(resolvedPaths[0]);
+            MainWindow.Session.InitialImagePath = Core.InputImagePathFromArgs;
+            StartupTrace.Mark("FileActivation:startup-path");
+            startIndex = 1;
+        }
+
+        for (var i = startIndex; i < resolvedPaths.Count; i++)
+        {
+            QueueStartupActivatedPath(resolvedPaths[i]);
+        }
+    }
+
+    private static StringComparer PathComparer => BHelper.OS == OSType.Linux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
+
+    private void QueueStartupActivatedPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return;
+
+        var comparer = PathComparer;
+        if (MainWindow?.Session.InitialImagePath is { } initPath && comparer.Equals(initPath, path))
+        {
+            return;
+        }
+
+        if (!_earlyActivatedPaths.Contains(path, comparer))
+        {
+            _earlyActivatedPaths.Add(path);
+        }
+    }
+
+    private void OpenPendingStartupWindows()
+    {
+        if (_isShuttingDown) return;
+
+        var comparer = PathComparer;
+        var pendingPaths = new List<string>();
+        var extraCliPaths = Core.InputImagePathsFromArgs;
+        for (var i = 1; i < extraCliPaths.Count; i++)
+        {
+            pendingPaths.Add(extraCliPaths[i]);
+        }
+
+        foreach (var path in _earlyActivatedPaths)
+        {
+            if (!pendingPaths.Contains(path, comparer))
+            {
+                pendingPaths.Add(path);
+            }
+        }
+        _earlyActivatedPaths.Clear();
+
+        if (pendingPaths.Count > 0)
+        {
+            OpenImagePathsInNewWindows(pendingPaths, MainWindow);
+        }
+    }
+
+    private void MarkStartupAborted()
+    {
+        _isShuttingDown = true;
+        _earlyActivatedPaths.Clear();
+        Core.AppInstance.StopAccepting();
+        _startupUiReadyTcs.TrySetResult();
     }
 
     /// <summary>Runs a shared-setting follow-up in each window's own command context.</summary>
@@ -681,7 +807,14 @@ public partial class App : Application
     internal bool BeginImageWindowClose(MainWindow window)
     {
         _closingImageWindows.Add(window);
-        return _imageWindows.All(_closingImageWindows.Contains);
+        if (_pendingWindowOpens > 0 || !_imageWindows.All(_closingImageWindows.Contains))
+        {
+            return false;
+        }
+
+        _isShuttingDown = true;
+        Core.AppInstance.StopAccepting();
+        return true;
     }
 
     /// <summary>Releases window-owned state and reports whether the process has any image windows left.</summary>
@@ -701,26 +834,82 @@ public partial class App : Application
             if (_mainWindow is not null && ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
                 desktop.MainWindow = _mainWindow;
         }
-        if (_imageWindows.Count != 0) return false;
+        if (_imageWindows.Count != 0 || _pendingWindowOpens > 0) return false;
+        _isShuttingDown = true;
+        Core.AppInstance.StopAccepting();
         Core.AppInstance.InstanceInvoked -= AppInstance_InstanceInvoked;
         return true;
     }
 
+    private void ShutdownIfNoWindowsRemain()
+    {
+        if (_imageWindows.Count != 0 || _pendingWindowOpens > 0) return;
+
+        _isShuttingDown = true;
+        Core.AppInstance.StopAccepting();
+        Core.AppInstance.InstanceInvoked -= AppInstance_InstanceInvoked;
+        Core.Dispose();
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
     private void AppInstance_InstanceInvoked(AppInstance sender, InstanceInvokedEventArgs e)
     {
-        if (e.Command != AppCmds.SINGLE_INSTANCE || (_activeImageWindow ?? _mainWindow) is not { } window) return;
-        using var scope = UseWindow(window);
-        var modulePath = Core.Args.ElementAtOrDefault(0) ?? string.Empty;
-        Core.Args = [modulePath, .. e.Arguments];
-        Core.UpdateInitImagePath();
-        Config.ApplyCliOverrides(Core.Config, e.Arguments);
-        ServiceProviders.FeatureManager.Refresh();
-        if (string.IsNullOrEmpty(Core.InputImagePathFromArgs))
+        if (e.Command != AppCmds.SINGLE_INSTANCE || _isShuttingDown || !Core.AppInstance.IsAccepting) return;
+        if (!_isStartupCompleted && _mainWindow is null) return;
+        if (_imageWindows.Count > 0 && _imageWindows.All(_closingImageWindows.Contains)) return;
+
+        e.Accepted = true;
+        _pendingWindowOpens++;
+        _ = HandleInstanceInvokedAsync(e.Arguments);
+    }
+
+    private async Task HandleInstanceInvokedAsync(string[] forwardedArgs)
+    {
+        try
         {
-            window.RestoreAndActivate();
-            return;
+            await _taskUi.Task;
+            await _startupUiReadyTcs.Task;
+            if (_isShuttingDown) return;
+
+            var window = _activeImageWindow ?? _mainWindow;
+            if (window is null) return;
+
+            using var scope = UseWindow(window);
+            var modulePath = Core.Args.ElementAtOrDefault(0) ?? string.Empty;
+            Core.Args = [modulePath, .. forwardedArgs];
+            Core.UpdateInitImagePath();
+
+            var changedIds = Config.ApplyCliOverrides(Core.Config, forwardedArgs);
+            ServiceProviders.FeatureManager.Refresh();
+            if (changedIds.Count > 0)
+            {
+                SettingsViewModel.RunApplyActions(changedIds);
+            }
+
+            var paths = Core.InputImagePathsFromArgs;
+            if (paths.Count == 0)
+            {
+                if (!_closingImageWindows.Contains(window))
+                {
+                    window.RestoreAndActivate();
+                }
+                else if (_imageWindows.FirstOrDefault(w => !_closingImageWindows.Contains(w)) is { } fallback)
+                {
+                    fallback.RestoreAndActivate();
+                }
+                return;
+            }
+
+            OpenImagePathsInNewWindows(paths, window);
         }
-        OpenImageWindow(Core.InputImagePathFromArgs, window);
+        finally
+        {
+            _pendingWindowOpens = Math.Max(0, _pendingWindowOpens - 1);
+            ShutdownIfNoWindowsRemain();
+        }
     }
 
 

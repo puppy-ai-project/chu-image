@@ -18,8 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using Avalonia.Threading;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,18 +29,33 @@ namespace ImageGlass.Common.Types;
 
 public partial class AppInstance : PhDisposable
 {
+    private const string ACK_ACCEPTED = "OK";
+    private const string ACK_REJECTED = "REJECT";
+    private static readonly UTF8Encoding _utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
+
     private readonly string _id;
     private readonly string _pipeName;
 
     // Windows uses a named mutex; Unix cannot, so it locks a file instead (see TryLockFile)
-    private readonly Mutex? _mutex;
-    private readonly FileStream? _lockFile;
+    private Mutex? _mutex;
+    private FileStream? _lockFile;
+    private volatile bool _isAccepting = true;
+    private int _pipeStarted;
+    private Task? _pipeServerTask;
+    private readonly CancellationTokenSource _pipeStopCts = new();
+    private readonly TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _stoppedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 
     /// <summary>
     /// Indicates whether this is the first instance of this app.
     /// </summary>
-    public bool IsFirstInstance { get; }
+    public bool IsFirstInstance { get; private set; }
+
+    /// <summary>
+    /// Indicates whether this primary instance is still accepting forwarded invocations.
+    /// </summary>
+    public bool IsAccepting => _isAccepting && !IsDisposed;
 
 
     /// <summary>
@@ -56,21 +73,47 @@ public partial class AppInstance : PhDisposable
             ? id
             : $"{id}-{Environment.UserName}";
 
-        if (OperatingSystem.IsWindows())
-        {
-            _mutex = new Mutex(true, id, out var isFirstInstance);
-            IsFirstInstance = isFirstInstance;
-        }
-        else
-        {
-            IsFirstInstance = TryLockFile(_pipeName, out _lockFile);
-        }
+        IsFirstInstance = TryAcquireLock();
 
         // start the pipe server
         if (IsFirstInstance)
         {
             StartPipeServer();
         }
+    }
+
+
+    private bool TryAcquireLock()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            var mutex = new Mutex(true, _id, out var isFirstInstance);
+            if (isFirstInstance)
+            {
+                _mutex = mutex;
+                return true;
+            }
+
+            mutex.Dispose();
+            return false;
+        }
+
+        return TryLockFile(_pipeName, out _lockFile);
+    }
+
+
+    /// <summary>
+    /// Marks the primary instance ready to dispatch forwarded arguments to <see cref="InstanceInvoked"/>.
+    /// </summary>
+    public void MarkReady() => _readyTcs.TrySetResult();
+
+    /// <summary>
+    /// Stops accepting new forwarded invocations so closing instances reject clients immediately instead of dropping arguments.
+    /// </summary>
+    public void StopAccepting()
+    {
+        _isAccepting = false;
+        _stoppedTcs.TrySetResult();
     }
 
 
@@ -107,14 +150,58 @@ public partial class AppInstance : PhDisposable
     {
         base.OnDisposing();
 
+        StopAccepting();
+        _pipeStopCts.Cancel();
+        try { _pipeServerTask?.Wait(500); } catch { }
+        _pipeStopCts.Dispose();
+
         if (_mutex is not null && IsFirstInstance)
         {
-            _mutex.ReleaseMutex();
+            try { _mutex.ReleaseMutex(); } catch { }
             _mutex.Dispose();
+            _mutex = null;
         }
 
         // releases the lock; the empty file is left behind for the next instance to re-lock
         _lockFile?.Dispose();
+        _lockFile = null;
+    }
+
+
+    /// <summary>
+    /// Sends arguments to an existing instance, or promotes this process to primary if the existing one is shutting down.
+    /// </summary>
+    /// <returns><c>true</c> if an existing instance accepted the arguments; <c>false</c> if this process should run as primary.</returns>
+    public bool SendArgsOrPromoteToPrimary(string cmd, string[] args, int retryTimeoutMs = 2500)
+    {
+        if (IsFirstInstance) return false;
+
+        var sw = Stopwatch.StartNew();
+        var connectTimeoutMs = 5000;
+
+        while (true)
+        {
+            if (TrySendArgsOnce(cmd, args, connectTimeoutMs, out var wasRejected))
+            {
+                return true;
+            }
+
+            if (TryAcquireLock())
+            {
+                IsFirstInstance = true;
+                StartPipeServer();
+                return false;
+            }
+
+            if (sw.ElapsedMilliseconds >= retryTimeoutMs)
+            {
+                return false;
+            }
+
+            // Once rejected (or after first connect attempt), use short retries while the exiting primary releases its lock.
+            connectTimeoutMs = wasRejected ? 150 : 500;
+            Thread.Sleep(25);
+        }
     }
 
 
@@ -127,30 +214,47 @@ public partial class AppInstance : PhDisposable
         // only send if this is NOT the first instance
         if (IsFirstInstance) return false;
 
+        return TrySendArgsOnce(cmd, args, connectTimeoutMs: 5000, out _);
+    }
+
+
+    private bool TrySendArgsOnce(string cmd, string[] args, int connectTimeoutMs, out bool wasRejected)
+    {
+        wasRejected = false;
+
         try
         {
-            // create and try to connect to the first instance's pipe server,
-            // Allow a starting primary process time to create and accept the pipe.
-            using var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out);
-            client.Connect(5000);
+            // Allow a starting primary process time to create and accept the pipe, then wait for ACK/REJECT.
+            using var client = new NamedPipeClientStream(".", _pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            client.Connect(connectTimeoutMs);
 
-            // send the argument count first so receiver knows how many lines to read
-            using var writer = new StreamWriter(client);
+            using var writer = new StreamWriter(client, _utf8NoBom, leaveOpen: true);
             writer.WriteLine(args.Length + 1); // args count + cmd
-
-            // send the command
             writer.WriteLine(cmd);
 
-            // send each argument on a separate line
             foreach (var arg in args)
             {
                 writer.WriteLine(arg);
             }
 
             writer.Flush();
-            return true;
+
+            using var reader = new StreamReader(client, _utf8NoBom, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
+            using var ackCts = new CancellationTokenSource(5000);
+            var ack = reader.ReadLineAsync(ackCts.Token).AsTask().GetAwaiter().GetResult();
+
+            if (string.Equals(ack, ACK_ACCEPTED, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            wasRejected = string.Equals(ack, ACK_REJECTED, StringComparison.Ordinal);
+            return false;
         }
-        catch { return false; }
+        catch
+        {
+            return false;
+        }
     }
 
 
@@ -159,7 +263,8 @@ public partial class AppInstance : PhDisposable
     /// </summary>
     private void StartPipeServer()
     {
-        _ = Task.Run(() => StartPipeServerAsync__());
+        if (Interlocked.CompareExchange(ref _pipeStarted, 1, 0) != 0) return;
+        _pipeServerTask = Task.Run(() => StartPipeServerAsync__());
     }
 
 
@@ -168,44 +273,86 @@ public partial class AppInstance : PhDisposable
     /// </summary>
     private async Task StartPipeServerAsync__()
     {
-        while (!IsDisposed)
+        while (!IsDisposed && !_pipeStopCts.IsCancellationRequested)
         {
             try
             {
-                // create pipe server & reader
                 using var server = new NamedPipeServerStream(_pipeName,
-                    PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                using var reader = new StreamReader(server);
+                    PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
                 // wait for connection
-                await server.WaitForConnectionAsync();
+                await server.WaitForConnectionAsync(_pipeStopCts.Token);
 
+                using var reader = new StreamReader(server, _utf8NoBom, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
 
                 // read first line which contains the number of arguments
-                var countStr = await reader.ReadLineAsync();
+                var countStr = await reader.ReadLineAsync(_pipeStopCts.Token);
                 if (!int.TryParse(countStr, out var argsCount) || argsCount is < 1 or > 128) continue;
 
-
                 // create array to hold the arguments
-                var args = new string[argsCount - 1]; // exclude cmd (first args)
+                var args = new string[argsCount - 1]; // exclude cmd (first arg)
                 var cmd = string.Empty;
 
-
                 // read each argument line by line
-                for (int i = 0; i < argsCount; i++)
+                for (var i = 0; i < argsCount; i++)
                 {
-                    var text = await reader.ReadLineAsync() ?? string.Empty;
+                    var text = await reader.ReadLineAsync(_pipeStopCts.Token) ?? string.Empty;
 
                     if (i == 0) cmd = text;
                     else args[i - 1] = text;
                 }
 
-
-                // trigger event
-                Dispatcher.UIThread.Post(() =>
+                var accepted = false;
+                if (_isAccepting && !IsDisposed)
                 {
-                    InstanceInvoked?.Invoke(this, new InstanceInvokedEventArgs(_id, cmd, args));
-                });
+                    if (!_readyTcs.Task.IsCompleted)
+                    {
+                        var completed = await Task.WhenAny(_readyTcs.Task, _stoppedTcs.Task).WaitAsync(_pipeStopCts.Token);
+                        if (completed != _readyTcs.Task) _isAccepting = false;
+                    }
+
+                    if (_isAccepting && !IsDisposed && InstanceInvoked is not null)
+                    {
+                        var invokeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                        using (_pipeStopCts.Token.Register(static s => ((TaskCompletionSource<bool>)s!).TrySetResult(false), invokeTcs))
+                        {
+                            Dispatcher.UIThread.Post(() =>
+                            {
+                                if (!_isAccepting || IsDisposed || _pipeStopCts.IsCancellationRequested || InstanceInvoked is not { } handler)
+                                {
+                                    _ = invokeTcs.TrySetResult(false);
+                                    return;
+                                }
+
+                                try
+                                {
+                                    var eventArgs = new InstanceInvokedEventArgs(_id, cmd, args);
+                                    handler.Invoke(this, eventArgs);
+                                    _ = invokeTcs.TrySetResult(eventArgs.Accepted);
+                                }
+                                catch
+                                {
+                                    _ = invokeTcs.TrySetResult(false);
+                                }
+                            });
+
+                            accepted = await invokeTcs.Task;
+                        }
+                    }
+                }
+
+                using var writer = new StreamWriter(server, _utf8NoBom, leaveOpen: true);
+                await writer.WriteLineAsync(accepted ? ACK_ACCEPTED : ACK_REJECTED);
+                await writer.FlushAsync();
+
+                if (OperatingSystem.IsWindows())
+                {
+                    try { server.WaitForPipeDrain(); } catch { }
+                }
+            }
+            catch (OperationCanceledException) when (_pipeStopCts.IsCancellationRequested || IsDisposed)
+            {
+                break;
             }
             catch { }
         }
@@ -224,5 +371,6 @@ public class InstanceInvokedEventArgs(string id, string cmd, string[] args) : Ev
     public string Id { get; set; } = id;
     public string Command { get; set; } = cmd;
     public string[] Arguments { get; set; } = args;
+    public bool Accepted { get; set; }
 }
 

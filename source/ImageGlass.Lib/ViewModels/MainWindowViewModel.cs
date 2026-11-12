@@ -31,7 +31,7 @@ public partial class MainWindowViewModel : PhReactive
     /// <summary>
     /// Gets view model of toolbar control.
     /// </summary>
-    public static ToolbarControlModel ToolbarVM { get; } = new();
+    public ToolbarControlModel ToolbarVM { get; } = new();
 
 
     /// <summary>

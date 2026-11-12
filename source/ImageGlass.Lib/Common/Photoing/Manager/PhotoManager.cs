@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using Avalonia.Collections;
+using ImageGlass.Common.ServiceProviders;
 using ImageGlass.Common.Types;
 using System;
 using System.Collections.Concurrent;
@@ -34,6 +35,9 @@ public partial class PhotoManager : PhDisposable
     protected AvaloniaList<Photo> _items = [];
     protected readonly ConcurrentDictionary<string, int> _dict = new(StringComparer.OrdinalIgnoreCase);
     protected readonly Lock _lock = new();
+    private IFileSearchProvider? _fileSearchProvider;
+
+    private IFileSearchProvider FileSearch => _fileSearchProvider ??= Core.CreateFileSearchProvider();
 
 
 
@@ -95,6 +99,8 @@ public partial class PhotoManager : PhDisposable
     {
         base.OnDisposing();
 
+        _fileSearchProvider?.Dispose();
+        _fileSearchProvider = null;
         CancelCaching();
         DisposeFileWatcher();
         Clear();

@@ -82,8 +82,8 @@ public partial class PhotoManager
         FileSearchOptions searchOptions, Action<FileSearchingEventArgs> progressFn,
         bool reloadInitPhoto)
     {
-        // 1. stop any ongoing search
-        Core.FileSearchProvider.CancelSearching();
+        // 1. stop any ongoing search on this window/session
+        FileSearch.CancelSearching();
 
         // enumeration emits absolute paths; inputs must match or the init photo never resolves
         var absPaths = paths.Select(BHelper.ResolvePath).ToList();
@@ -127,7 +127,7 @@ public partial class PhotoManager
 
 
         // 6. start searching files in a new thread
-        _ = Core.FileSearchProvider.SearchAsync(DistinctDirs, searchOptions, progressFn);
+        _ = FileSearch.SearchAsync(DistinctDirs, searchOptions, progressFn);
 
         return InitPhoto;
     }

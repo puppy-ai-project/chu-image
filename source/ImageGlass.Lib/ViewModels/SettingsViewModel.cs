@@ -170,7 +170,14 @@ public sealed class SettingsViewModel : PhReactive
             || changedIds.Contains(ConfigId.MenuHotkeys)
             || changedIds.Contains(ConfigId.Tools))
         {
-            Core.API.RegisterHotkeys();
+            if (Avalonia.Application.Current is App appForHotkeys)
+            {
+                appForHotkeys.ForEachImageWindow(_ => Core.API?.RegisterHotkeys());
+            }
+            else
+            {
+                Core.API?.RegisterHotkeys();
+            }
         }
 
         // theme pack changed -> re-apply live. omit the accent so ApplyThemePackAsync reads the live

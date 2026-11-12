@@ -98,7 +98,10 @@ public class Win32ShellProvider : PhDisposable, IShellProvider
     public bool CanUseForegroundShell()
     {
         // check if we should load images from foreground window
-        var inputImageDirPath = Path.GetDirectoryName(Core.InputImagePathFromArgs) ?? string.Empty;
+        var initPath = (App.CommandWindow ?? App.PrimaryWindow)?.Session.InitialImagePath;
+        if (string.IsNullOrEmpty(initPath)) initPath = Core.InputImagePathFromArgs;
+
+        var inputImageDirPath = Path.GetDirectoryName(initPath) ?? string.Empty;
         var isFromSearchWindow = _foregroundShellPath.StartsWith(EggShell.SEARCH_MS_PROTOCOL, StringComparison.OrdinalIgnoreCase);
         var isFromSavedSearch = _foregroundShellPath.EndsWith(Win32SearchFileExtension, StringComparison.OrdinalIgnoreCase);
         var isFromSameDir = inputImageDirPath.Equals(_foregroundShellPath, StringComparison.OrdinalIgnoreCase);
@@ -107,7 +110,7 @@ public class Win32ShellProvider : PhDisposable, IShellProvider
         var isShellOnlyList = isFromSearchWindow || isFromSavedSearch;
 
         var useForegroundWindow = _foregroundShell is not null
-            && !string.IsNullOrEmpty(Core.InputImagePathFromArgs)
+            && !string.IsNullOrEmpty(initPath)
             // a plain folder is enumerable without the shell, so it follows Explorer only when asked to
             && (isShellOnlyList || (isFromSameDir && Core.Config.EnableExplorerSortOrder));
 
