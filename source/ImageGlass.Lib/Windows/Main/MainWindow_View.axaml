@@ -283,8 +283,9 @@
                 ColumnDefinitions="Auto,*,Auto"
                 PointerPressed="TitleBar_PointerPressed">
 
-                <!--  Left Group: macOS Traffic Lights OR Windows App Icon + Title  -->
+                <!--  Left Group: macOS Traffic Lights OR Windows App Icon  -->
                 <StackPanel
+                    x:Name="PART_TitleBarLeftGroup"
                     Grid.Column="0"
                     Orientation="Horizontal"
                     VerticalAlignment="Center">
@@ -344,37 +345,39 @@
                         Margin="12,0,8,0"
                         VerticalAlignment="Center"
                         Source="avares://ImageGlass.Lib/Assets/icon256.ico" />
-
-                    <!-- Window Title / Current File Name -->
-                    <Border Background="Transparent" VerticalAlignment="Stretch">
-                    <TextBlock
-                        x:Name="PART_CustomTitle"
-                        VerticalAlignment="Center"
-                        Margin="4,0,12,0"
-                        FontSize="12"
-                        FontWeight="Medium"
-                        Foreground="{DynamicResource IgDarkBrushE5E7EB}"
-                        Opacity="0.92"
-                        TextTrimming="CharacterEllipsis"
-                        MaxWidth="280"
-                        IsHitTestVisible="False" />
-                    </Border>
                 </StackPanel>
 
-                <!-- Column 1: Embedded Modern Toolbar (Expanded, full buttons visible) -->
-                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto"
-                              HorizontalContentAlignment="Right"
-                              VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
-                <ui:ToolbarControl
-                    x:Name="PART_Toolbar"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Background="{x:Null}"
-                    DataContext="{CompiledBinding ToolbarVM}"
-                    IsContentVisible="{CompiledBinding ShowToolbar, Source={x:Static cm:Core.Config}}"
-                    ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"
-                    Margin="0,0,10,0" />
-                </ScrollViewer>
+                <!-- Column 1: 工具栏靠左，窗口标题在右侧剩余空间 -->
+                <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+                    <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto"
+                                  HorizontalContentAlignment="Left"
+                                  VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
+                        <ui:ToolbarControl
+                            x:Name="PART_Toolbar"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Background="{x:Null}"
+                            DataContext="{CompiledBinding ToolbarVM}"
+                            IsContentVisible="{CompiledBinding ShowToolbar, Source={x:Static cm:Core.Config}}"
+                            ItemsSource="{CompiledBinding ToolbarButtons, Source={x:Static cm:Core.Config}}"
+                            Margin="2,0,8,0" />
+                    </ScrollViewer>
+
+                    <Border Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch" IsHitTestVisible="False">
+                        <TextBlock
+                            x:Name="PART_CustomTitle"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="8,0,14,0"
+                            FontSize="12"
+                            FontWeight="Medium"
+                            Foreground="{DynamicResource IgDarkBrushE5E7EB}"
+                            Opacity="0.92"
+                            TextTrimming="CharacterEllipsis"
+                            MaxWidth="280"
+                            IsHitTestVisible="False" />
+                    </Border>
+                </Grid>
 
                 <!-- Column 2: Windows Caption Buttons (Minimize, Maximize/Restore, Close) -->
                 <StackPanel

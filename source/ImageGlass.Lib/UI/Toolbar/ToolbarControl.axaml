@@ -51,7 +51,7 @@
 
     <Border
         x:Name="PART_Root"
-        Margin="0,0,6,0"
+        Margin="0,0,4,0"
         Background="{x:Null}">
         <!--  Single Unified Toolbar Container (轻盈磨砂微雕胶囊)  -->
         <Border
@@ -66,33 +66,10 @@
                 x:Name="PART_RootGrid"
                 Orientation="Horizontal"
                 Spacing="2"
-                HorizontalAlignment="Right"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center">
 
-                <!--  Toolbar: Primary Items Island  -->
-                <Border
-                    x:Name="PART_PrimaryIsland"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Padding="0">
-                    <StackPanel
-                        x:Name="PART_PrimaryGroup"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="2" />
-                </Border>
-
-                <Border
-                    Width="1"
-                    Height="15"
-                    Margin="2,0"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource IgDarkBrush18FFFFFF}" />
-
-                <!--  Toolbar: Right column Island  -->
+                <!--  左侧常用工具组：设置、打开图像、图片信息、窗口适应图片、新窗口打开  -->
                 <Border
                     x:Name="PART_RightIsland"
                     HorizontalAlignment="Left"
@@ -107,6 +84,101 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="2">
+
+                        <!--  设置  -->
+                        <ui:PhToolButton
+                            x:Name="PART_BtnSettings"
+                            Width="28"
+                            Height="28"
+                            Padding="0"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            CornerRadius="5.5"
+                            Focusable="False"
+                            ToolTip.Tip="设置"
+                            Click="SettingsButton_Click">
+                            <Path Width="15.5" Height="15.5" Data="{StaticResource IconSettings}"
+                                  Fill="{DynamicResource IgIconIndigoBrush}" Stretch="Uniform" />
+                        </ui:PhToolButton>
+
+                        <!--  Toolbar: Secondary Items (打开图像等)  -->
+                        <StackPanel
+                            x:Name="PART_SecondaryGroup"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Spacing="2" />
+
+                        <!--  图片信息  -->
+                        <ui:PhToolButton
+                            x:Name="PART_BtnImageInfo"
+                            Click="ImageInfo_Click"
+                            ToolTip.Tip="图片信息"
+                            Width="28"
+                            Height="28"
+                            Padding="0"
+                            BorderThickness="0"
+                            CornerRadius="5.5"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Focusable="False">
+                            <Panel Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path
+                                    Width="15"
+                                    Height="15"
+                                    Data="{StaticResource IconInfo}"
+                                    Fill="{DynamicResource IgIconCyanBrush}"
+                                    Stretch="Uniform"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center" />
+                            </Panel>
+                        </ui:PhToolButton>
+
+                        <!--  窗口适应图片  -->
+                        <ui:PhToolButton x:Name="PART_BtnFitWindow" Click="FitWindow_Click"
+                            ToolTip.Tip="窗口适应图片" Width="28" Height="28" Padding="0" BorderThickness="0"
+                            CornerRadius="5.5" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="False" IsEnabled="False">
+                            <Viewbox
+                                Width="19"
+                                Height="19"
+                                Opacity="0.92"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Rectangle
+                                        Canvas.Left="6.4"
+                                        Canvas.Top="7.6"
+                                        Width="11.2"
+                                        Height="8.8"
+                                        RadiusX="2.2"
+                                        RadiusY="2.2"
+                                        Fill="{DynamicResource IgIconBlueSoftBrush}"
+                                        Stroke="{DynamicResource IgIconNeutralBrush}"
+                                        StrokeThickness="1.65" />
+                                    <Ellipse
+                                        Canvas.Left="8.3"
+                                        Canvas.Top="9.4"
+                                        Width="2.0"
+                                        Height="2.0"
+                                        Fill="{DynamicResource IgIconAmberBrush}" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconTealBrush}"
+                                        StrokeThickness="1.45"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 8.3,14.5 L 10.6,12.3 C 11.0,11.9 11.5,11.9 11.9,12.3 L 13.3,13.7 L 14.1,12.9 C 14.4,12.6 14.9,12.6 15.2,12.9 L 15.7,13.5" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconCyanBrush}"
+                                        StrokeThickness="1.9"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 3.0,9.0 V 6.7 A 2.2,2.2 0 0 1 5.2,4.5 H 7.8 M 16.2,4.5 H 18.8 A 2.2,2.2 0 0 1 21.0,6.7 V 9.0 M 3.0,15.0 V 17.3 A 2.2,2.2 0 0 0 5.2,19.5 H 7.8 M 16.2,19.5 H 18.8 A 2.2,2.2 0 0 0 21.0,17.3 V 15.0" />
+                                </Canvas>
+                            </Viewbox>
+                        </ui:PhToolButton>
 
                         <!--  新窗口打开当前图片  -->
                         <ui:PhToolButton
@@ -161,76 +233,6 @@
                                 </Canvas>
                             </Viewbox>
                         </ui:PhToolButton>
-                        <!--  窗口适应图片  -->
-                        <ui:PhToolButton x:Name="PART_BtnFitWindow" Click="FitWindow_Click"
-                            ToolTip.Tip="窗口适应图片" Width="28" Height="28" Padding="0" BorderThickness="0"
-                            CornerRadius="5.5" HorizontalAlignment="Center" VerticalAlignment="Center"
-                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="False" IsEnabled="False">
-                            <Viewbox
-                                Width="19"
-                                Height="19"
-                                Opacity="0.92"
-                                IsHitTestVisible="False"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                                <Canvas Width="24" Height="24">
-                                    <Rectangle
-                                        Canvas.Left="6.4"
-                                        Canvas.Top="7.6"
-                                        Width="11.2"
-                                        Height="8.8"
-                                        RadiusX="2.2"
-                                        RadiusY="2.2"
-                                        Fill="{DynamicResource IgIconBlueSoftBrush}"
-                                        Stroke="{DynamicResource IgIconNeutralBrush}"
-                                        StrokeThickness="1.65" />
-                                    <Ellipse
-                                        Canvas.Left="8.3"
-                                        Canvas.Top="9.4"
-                                        Width="2.0"
-                                        Height="2.0"
-                                        Fill="{DynamicResource IgIconAmberBrush}" />
-                                    <Path
-                                        Stroke="{DynamicResource IgIconTealBrush}"
-                                        StrokeThickness="1.45"
-                                        StrokeLineCap="Round"
-                                        StrokeJoin="Round"
-                                        Data="M 8.3,14.5 L 10.6,12.3 C 11.0,11.9 11.5,11.9 11.9,12.3 L 13.3,13.7 L 14.1,12.9 C 14.4,12.6 14.9,12.6 15.2,12.9 L 15.7,13.5" />
-                                    <Path
-                                        Stroke="{DynamicResource IgIconCyanBrush}"
-                                        StrokeThickness="1.9"
-                                        StrokeLineCap="Round"
-                                        StrokeJoin="Round"
-                                        Data="M 3.0,9.0 V 6.7 A 2.2,2.2 0 0 1 5.2,4.5 H 7.8 M 16.2,4.5 H 18.8 A 2.2,2.2 0 0 1 21.0,6.7 V 9.0 M 3.0,15.0 V 17.3 A 2.2,2.2 0 0 0 5.2,19.5 H 7.8 M 16.2,19.5 H 18.8 A 2.2,2.2 0 0 0 21.0,17.3 V 15.0" />
-                                </Canvas>
-                            </Viewbox>
-                        </ui:PhToolButton>
-                        <!--  Image Information Button  -->
-                        <ui:PhToolButton
-                            x:Name="PART_BtnImageInfo"
-                            Click="ImageInfo_Click"
-                            ToolTip.Tip="图片信息"
-                            Width="28"
-                            Height="28"
-                            Padding="0"
-                            BorderThickness="0"
-                            CornerRadius="5.5"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            Focusable="False">
-                            <Panel Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Path
-                                    Width="15"
-                                    Height="15"
-                                    Data="{StaticResource IconInfo}"
-                                    Fill="{DynamicResource IgIconCyanBrush}"
-                                    Stretch="Uniform"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center" />
-                            </Panel>
-                        </ui:PhToolButton>
 
                     <!--  Toolbar: Overflow button  -->
                     <ui:ToolbarButton
@@ -265,14 +267,6 @@
                                 Placement="BottomEdgeAlignedRight" />
                         </ui:ToolbarButton.DropdownMenu>
                     </ui:ToolbarButton>
-
-
-                    <!--  Toolbar: Secondary Items  -->
-                    <StackPanel
-                        x:Name="PART_SecondaryGroup"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        Spacing="2" />
 
 
                     <!--  Main Menu button  -->
@@ -849,22 +843,30 @@
                     </ui:ToolbarButton>
                 </Panel>
 
-                    <ui:PhToolButton
-                        x:Name="PART_BtnSettings"
-                        Width="28"
-                        Height="28"
-                        Padding="0"
-                        BorderThickness="0"
-                        Background="Transparent"
-                        CornerRadius="5.5"
-                        Focusable="False"
-                        ToolTip.Tip="设置"
-                        Click="SettingsButton_Click">
-                        <Path Width="15.5" Height="15.5" Data="{StaticResource IconSettings}"
-                              Fill="{DynamicResource IgIconIndigoBrush}" Stretch="Uniform" />
-                    </ui:PhToolButton>
-
             </StackPanel>
+            </Border>
+
+            <Border
+                Width="1"
+                Height="15"
+                Margin="2,0"
+                VerticalAlignment="Center"
+                Background="{DynamicResource IgDarkBrush18FFFFFF}" />
+
+            <!--  Toolbar: Primary Items Island  -->
+            <Border
+                x:Name="PART_PrimaryIsland"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0">
+                <StackPanel
+                    x:Name="PART_PrimaryGroup"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="2" />
             </Border>
 
         </StackPanel>

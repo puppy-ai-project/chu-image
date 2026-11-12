@@ -343,10 +343,42 @@ public partial class MainWindowView : PhControl
         PART_WinAppIcon.IsVisible = BHelper.OS == OSType.Windows;
 
         UpdateWindowStateButtons();
+        PART_CustomTitleBar.SizeChanged += TitleBarLayout_SizeChanged;
+        PART_Toolbar.SizeChanged += TitleBarLayout_SizeChanged;
+        UpdateTitleBarTitleWidth();
 
         if (OwnerWindow is not null)
         {
             OwnerWindow.PropertyChanged += MainWindow_PropertyChanged;
+        }
+    }
+
+    private void TitleBarLayout_SizeChanged(object? sender, SizeChangedEventArgs e) => UpdateTitleBarTitleWidth();
+
+    /// <summary>
+    /// 标题栏宽度受限时优先保证左侧工具栏完整显示，剩余空间足够时再在右侧显示文件名。
+    /// </summary>
+    private void UpdateTitleBarTitleWidth()
+    {
+        var barW = PART_CustomTitleBar.Bounds.Width;
+        if (barW <= 0) return;
+
+        var leftW = PART_TitleBarLeftGroup.Bounds.Width;
+        var rightW = PART_WinButtons.IsVisible ? PART_WinButtons.Bounds.Width : 0;
+        var toolbarVisible = PART_Toolbar.IsVisible && Core.Config.ShowToolbar;
+        var toolbarW = toolbarVisible
+            ? Math.Max(PART_Toolbar.Bounds.Width, PART_Toolbar.DesiredSize.Width) + 10
+            : 0;
+        var available = barW - leftW - rightW - toolbarW - 22;
+
+        if (available < 40)
+        {
+            PART_CustomTitle.IsVisible = false;
+        }
+        else
+        {
+            PART_CustomTitle.IsVisible = true;
+            PART_CustomTitle.MaxWidth = Math.Min(280, available);
         }
     }
 
@@ -757,6 +789,8 @@ public partial class MainWindowView : PhControl
         {
             OwnerWindow.PropertyChanged -= MainWindow_PropertyChanged;
         }
+        PART_CustomTitleBar.SizeChanged -= TitleBarLayout_SizeChanged;
+        PART_Toolbar.SizeChanged -= TitleBarLayout_SizeChanged;
         _ownerWindow = null;
 
         // drag-drop events
@@ -1825,6 +1859,7 @@ public partial class MainWindowView : PhControl
         // 3. update gallery initial width
         UpdateGalleryWidth();
         ApplyFullscreenVisibility();
+        UpdateTitleBarTitleWidth();
     }
 
     internal void SetFullscreenVisibility(bool hideToolbar, bool hideGallery)
