@@ -2,8 +2,10 @@
 set -euo pipefail
 
 WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+APP_NAME="ChuImage"
 PUBLISH_DIR="$WORKSPACE_DIR/__artifacts/publish/osx-arm64"
-APP_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64/ImageGlass.app"
+LEGACY_APP_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64/ImageGlass.app"
+APP_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64/${APP_NAME}.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 INFO_PLIST="$CONTENTS_DIR/Info.plist"
 BUILD_PROPS_FILE="$WORKSPACE_DIR/Directory.Build.props"
@@ -36,16 +38,18 @@ fi
 # Remove any previous bundle. If a prior run created it as root (e.g. a task was
 # run with sudo), the user-level rm fails on every nested file — surface a single
 # actionable message instead of a wall of "Permission denied" lines.
-if [[ -d "$APP_DIR" ]]; then
-	if ! rm -rf "$APP_DIR" 2>/dev/null || [[ -d "$APP_DIR" ]]; then
-		echo "Error: could not remove the existing bundle at:" >&2
-		echo "       $APP_DIR" >&2
-		echo "       It is likely owned by root from a previous sudo run. Remove it with:" >&2
-		echo "         sudo rm -rf \"$APP_DIR\"" >&2
-		echo "       Then re-run this task WITHOUT sudo." >&2
-		exit 1
+for prev_bundle in "$LEGACY_APP_DIR" "$APP_DIR"; do
+	if [[ -d "$prev_bundle" ]]; then
+		if ! rm -rf "$prev_bundle" 2>/dev/null || [[ -d "$prev_bundle" ]]; then
+			echo "Error: could not remove the existing bundle at:" >&2
+			echo "       $prev_bundle" >&2
+			echo "       It is likely owned by root from a previous sudo run. Remove it with:" >&2
+			echo "         sudo rm -rf \"$prev_bundle\"" >&2
+			echo "       Then re-run this task WITHOUT sudo." >&2
+			exit 1
+		fi
 	fi
-fi
+done
 
 mkdir -p "$CONTENTS_DIR/MacOS" "$CONTENTS_DIR/Resources"
 cp -R "$PUBLISH_DIR/." "$CONTENTS_DIR/MacOS/"
@@ -67,7 +71,7 @@ sed -e "s/\${IG_VERSION}/$IG_VERSION/g" \
     -e "s/\${IG_BUILD}/$IG_BUILD/g" \
     "$INFO_PLIST_TEMPLATE" > "$INFO_PLIST"
 
-chmod +x "$CONTENTS_DIR/MacOS/ImageGlass"
+chmod +x "$CONTENTS_DIR/MacOS/${APP_NAME}"
 
 # codesign rejects any non-Mach-O file or folder left in Contents/MacOS/ ("code object is
 # not signed at all"), so stage every __assets/__app/ item — loose files included — under

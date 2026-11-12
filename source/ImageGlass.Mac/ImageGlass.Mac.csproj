@@ -28,8 +28,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>icon256.ico</ApplicationIcon>
-    <AssemblyName>ImageGlass</AssemblyName>
-    <AssemblyTitle>ImageGlass $(Version)</AssemblyTitle>
+    <AssemblyName>ChuImage</AssemblyName>
+    <AssemblyTitle>ChuImage $(Version)</AssemblyTitle>
+    <Product>ChuImage</Product>
     <PublishAot>True</PublishAot>
     <AnalysisLevel>latest</AnalysisLevel>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>

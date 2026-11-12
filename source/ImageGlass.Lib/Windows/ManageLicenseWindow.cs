@@ -48,7 +48,7 @@ public partial class ManageLicenseWindow : DialogWindow
         DefaultFocus = DialogFocus.Button1;
         ShowInTaskbar = true;
 
-        Title = "ImageGlass Pro";
+        Title = "ChuImage Pro";
         DialogContent = new ManageLicenseView();
         DialogFooterLeftContent = _btnHelp = CreateHelpButton();
     }

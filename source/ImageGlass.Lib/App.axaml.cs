@@ -40,6 +40,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -380,12 +381,37 @@ public partial class App : Application
 
     #region Unhandled Exception Handlers
 
+    private static readonly Lock _unhandledLogLock = new();
+
+    /// <summary>
+    /// 将未捕获异常写入标准错误流和本地日志目录，便于排查启动或交互期异常。
+    /// </summary>
+    internal static void LogUnhandledException(Exception ex, string source)
+    {
+        try
+        {
+            var details = $"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss.fff zzz}] [{source}]{Environment.NewLine}"
+                + $"{BHelper.GetExceptionDetails(ex)}{Environment.NewLine}{Environment.NewLine}";
+            Console.Error.WriteLine(details);
+
+            var logPath = BHelper.ConfigDir(Dir.Logs, "unhandled_exception.log");
+            var dir = Path.GetDirectoryName(logPath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+            lock (_unhandledLogLock)
+            {
+                File.AppendAllText(logPath, details);
+            }
+        }
+        catch { }
+    }
+
     private static void UIThread_UnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         // must be set synchronously: awaiting first returns with Handled = false, and the
         // dispatcher then rethrows, which kills the UI message loop (app freezes).
         e.Handled = true;
         var ex = e.Exception;
+        LogUnhandledException(ex, nameof(UIThread_UnhandledException));
 
         Dispatcher.UIThread.Post(async () =>
         {
@@ -402,6 +428,7 @@ public partial class App : Application
     {
         e.SetObserved();
         var ex = e.Exception;
+        LogUnhandledException(ex, nameof(TaskScheduler_UnobservedTaskException));
 
         Dispatcher.UIThread.Post(async () =>
         {
@@ -417,12 +444,12 @@ public partial class App : Application
     private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         var ex = (Exception)e.ExceptionObject;
+        LogUnhandledException(ex, nameof(CurrentDomain_UnhandledException));
 
         // When terminating, the runtime tears the process down as soon as we return, so the
         // posted dialog below would never render: write synchronously or the crash is silent.
         if (e.IsTerminating)
         {
-            Console.Error.WriteLine($"Unhandled exception: {BHelper.GetExceptionDetails(ex)}");
             return;
         }
 
@@ -1046,8 +1073,8 @@ public partial class App : Application
             // initialize Magick decoder on background thread
             _ = Task.Run(MagickCodec.Initialize);
 
-            // load app language
-            _ = Core.Config.LoadCurrentLanguageAsync();
+            // 等待语言包加载完成，确保主窗口及弹窗首次渲染时即可使用目标语言
+            await Core.Config.LoadCurrentLanguageAsync();
         }
         finally
         {

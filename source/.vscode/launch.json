@@ -20,7 +20,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build-mac-arm64",
-      "program": "${workspaceFolder}/ImageGlass.Mac/bin/ARM64/Debug/net11.0/osx-arm64/ImageGlass.dll",
+      "program": "${workspaceFolder}/ImageGlass.Mac/bin/ARM64/Debug/net11.0/osx-arm64/ChuImage.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       "stopAtEntry": false,

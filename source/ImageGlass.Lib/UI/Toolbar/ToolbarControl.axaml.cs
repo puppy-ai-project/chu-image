@@ -614,6 +614,11 @@ public partial class ToolbarControl : PhControl
     /// </summary>
     private void RefreshLanguage()
     {
+        // 工具栏按钮绑定的是 LoadItems 生成的 _windowItems 副本，必须刷新副本列表才能更新提示文本
+        foreach (var vm in _windowItems)
+        {
+            vm.RefreshLanguage();
+        }
         foreach (var vm in ItemsSource)
         {
             vm.RefreshLanguage();

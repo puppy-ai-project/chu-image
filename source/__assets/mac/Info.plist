@@ -29,11 +29,11 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.photography</string>
 	<key>CFBundleName</key>
-	<string>ImageGlass</string>
+	<string>ChuImage</string>
 	<key>CFBundleDisplayName</key>
-	<string>ImageGlass</string>
+	<string>ChuImage</string>
 	<key>CFBundleExecutable</key>
-	<string>ImageGlass</string>
+	<string>ChuImage</string>
 	<key>CFBundleVersion</key>
 	<string>${IG_BUILD}</string>
 	<key>CFBundleShortVersionString</key>

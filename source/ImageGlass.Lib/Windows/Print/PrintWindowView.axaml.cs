@@ -1153,7 +1153,7 @@ public partial class PrintWindowView : PhControl
         if (TopLevel.GetTopLevel(this) is not { } top) return null;
 
         var photoPath = _session.State.Photo.FilePath;
-        var name = string.IsNullOrEmpty(photoPath) ? "ImageGlass" : Path.GetFileNameWithoutExtension(photoPath);
+        var name = string.IsNullOrEmpty(photoPath) ? BHelper.AppName : Path.GetFileNameWithoutExtension(photoPath);
         var folder = string.IsNullOrEmpty(photoPath) ? null : await top.StorageProvider.TryGetFolderFromPathAsync(Path.GetDirectoryName(photoPath)!);
 
         var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions

@@ -164,7 +164,7 @@ public partial class AboutOverlayControl : UserControl
         PART_LblFullVersionLine.Text = $"{magickFull}  ·  {osDesc} ({arch})";
 
         _fullVersionClipboardText = $"""
-            ImageGlass 10 {(Core.IsProEnabled ? "Pro" : "Classic")}
+            {BHelper.AppDisplayName} {(Core.IsProEnabled ? "Pro" : "Classic")}
             {Core.Lang[LangId._AboutVersion]} {appVer}
             {magickFull}
             {runtime}

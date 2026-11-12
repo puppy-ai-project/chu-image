@@ -559,8 +559,11 @@ public partial class DialogWindow : PhWindow
     /// </summary>
     protected virtual void ApplyTheme()
     {
-        var isDarkMode = Core.Theme.Settings.IsDarkMode;
-        var bg = AppThemeColors.BgBrush.Color.NoAlpha();
+        var hasThemeBg = AppThemeColors.BgBrush.Color.A > 0;
+        var isDarkMode = hasThemeBg ? Core.Theme.Settings.IsDarkMode : Core.IsSystemDarkMode;
+        var bg = hasThemeBg
+            ? AppThemeColors.BgBrush.Color.NoAlpha()
+            : (isDarkMode ? AppThemeColors.BackgroundActivateDark : AppThemeColors.BackgroundActivateLight);
 
         // content bg
         var contentAlpha = Math.Max(isDarkMode ? 180 : 220, bg.A);

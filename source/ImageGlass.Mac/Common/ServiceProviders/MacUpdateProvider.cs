@@ -80,7 +80,7 @@ public partial class MacUpdateProvider : UpdateProvider
     {
         if (_bundle.Value is not { } bundle)
         {
-            return UpdateOpResult.Fail("IGE: This ImageGlass build cannot install its own updates.");
+            return UpdateOpResult.Fail("IGE: This ChuImage build cannot install its own updates.");
         }
 
         if (!File.Exists(packageFilePath))
@@ -277,7 +277,7 @@ public partial class MacUpdateProvider : UpdateProvider
     private static UpdateOpResult RollBack(string bundleDir, string backup, UpdateReleaseInfo release,
         UpdateOpResult relaunch)
     {
-        var heading = $"IGE: ImageGlass {release.Version} could not start on this Mac";
+        var heading = $"IGE: ChuImage {release.Version} could not start on this Mac";
         var details = $"App: {bundleDir}{Environment.NewLine}"
             + $"{relaunch.ErrorMessage}{Environment.NewLine}{relaunch.ErrorDetails}";
 

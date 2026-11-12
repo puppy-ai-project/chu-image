@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -51,6 +52,13 @@ public partial class ViewerControl : PhControl
     private Cursor? _cursorBeforeMousePan;
     private Point? _lockZoomSavedSrcPoint; // saved pan position for LockZoom
     private Point? _mouseClickDownPoint = null; // track press point for click action
+
+    // 以屏幕 DIP 记录宿主窗口位置，用于在拖动左/上边缘缩放时保持图片在屏幕上的位置不变
+    private Window? _attachedWindow;
+    private Point _lastViewerScreenOriginDip;
+    private Size _lastAttachedWinSize;
+    private bool _hasViewerScreenOrigin;
+    private bool _positionSyncPosted;
 
 
     // events
@@ -220,6 +228,91 @@ public partial class ViewerControl : PhControl
     }
 
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        AttachWindowTracking();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        DetachWindowTracking();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void AttachWindowTracking()
+    {
+        DetachWindowTracking();
+        _attachedWindow = TopLevel.GetTopLevel(this) as Window;
+        if (_attachedWindow is null) return;
+
+        _attachedWindow.PositionChanged += AttachedWindow_PositionChanged;
+        SyncWindowViewportTracking();
+    }
+
+    private void DetachWindowTracking()
+    {
+        if (_attachedWindow is not null)
+        {
+            _attachedWindow.PositionChanged -= AttachedWindow_PositionChanged;
+            _attachedWindow = null;
+        }
+
+        _hasViewerScreenOrigin = false;
+        _lastAttachedWinSize = default;
+    }
+
+    private void AttachedWindow_PositionChanged(object? sender, PixelPointEventArgs e)
+    {
+        if (_positionSyncPosted) return;
+        _positionSyncPosted = true;
+
+        // 使用 Background 优先级投递，确保同时发生窗口缩放时的布局与位置重算先读取缩放前的窗口坐标
+        Dispatcher.UIThread.Post(() =>
+        {
+            _positionSyncPosted = false;
+            if (_attachedWindow is { } win
+                && win.ClientSize == _lastAttachedWinSize
+                && DrawingArea == _lastViewportArea)
+            {
+                SyncWindowViewportTracking();
+            }
+        }, DispatcherPriority.Background);
+    }
+
+    internal bool TryGetViewerScreenOriginDip(out Point originDip)
+    {
+        if (_attachedWindow is { } win && win.PlatformImpl is not null && TopLevel.GetTopLevel(this) == win)
+        {
+            var scale = win.RenderScaling > 0 ? win.RenderScaling : 1d;
+            var rel = this.TranslatePoint(new Point(0, 0), win);
+            if (rel is { } offset)
+            {
+                originDip = new Point(
+                    win.Position.X / scale + offset.X,
+                    win.Position.Y / scale + offset.Y);
+                return true;
+            }
+        }
+
+        originDip = default;
+        return false;
+    }
+
+    internal void SyncWindowViewportTracking()
+    {
+        if (_attachedWindow is { } win && TryGetViewerScreenOriginDip(out var originDip))
+        {
+            _lastViewerScreenOriginDip = originDip;
+            _lastAttachedWinSize = win.ClientSize;
+            _hasViewerScreenOrigin = true;
+        }
+        else
+        {
+            _hasViewerScreenOrigin = false;
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
@@ -237,7 +330,7 @@ public partial class ViewerControl : PhControl
             Dispatcher.UIThread.Post(() =>
             {
                 DrawingArea = Bounds.Deflate(Padding);
-                CalculateDrawingRegion();
+                CalculateDrawingRegionCore(preservePositionOnResize: true);
 
                 // Keep the current zoom and pan when the viewport changes size.
                 Refresh(false, false, true);
@@ -748,6 +841,9 @@ public partial class ViewerControl : PhControl
             _enablePanningVelocity = false;
             CancelMousePan();
             _mousePanPositionEnabled = false;
+            _hasAnchoredPosition = false;
+            _lastViewportArea = default;
+            _virtualImgOrigin = default;
             SetSourceSelection(new Rect(), false);
             BitmapSize = new();
 

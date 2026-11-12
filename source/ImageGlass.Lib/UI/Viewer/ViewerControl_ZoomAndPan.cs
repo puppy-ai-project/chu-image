@@ -39,6 +39,11 @@ public partial class ViewerControl
     /// </summary>
     private Point _logicalSrcPoint = new();
 
+    // 记录上次绘制区域与图片左上角基准，用于在缩放窗口时保持图片屏幕位置不偏移
+    private Rect _lastViewportArea;
+    private Point _virtualImgOrigin;
+    private bool _hasAnchoredPosition;
+
 
     // Public Events
     #region Public Events
@@ -257,11 +262,20 @@ public partial class ViewerControl
     /// </summary>
     public virtual void CalculateDrawingRegion()
     {
+        CalculateDrawingRegionCore(preservePositionOnResize: false);
+    }
+
+
+    private void CalculateDrawingRegionCore(bool preservePositionOnResize)
+    {
         if (DrawingArea.IsEmpty || BitmapSize.IsEmpty)
         {
             SrcRect = new();
             DestRect = new();
             _logicalSrcPoint = new();
+            _lastViewportArea = default;
+            _virtualImgOrigin = default;
+            _hasAnchoredPosition = false;
             UpdateScrollbars();
             OnRenderStateChanged();
             return;
@@ -293,6 +307,23 @@ public partial class ViewerControl
         // true when this call is a zoom-to-cursor operation (factor changed with a valid cursor point)
         var isZoomingToPoint = currentZoomFactor != oldZoomFactor && _zooming.ZoomedPoint != default;
 
+        // 仅在窗口尺寸变化且已有有效视图位置、缩放倍率未变、非窗口自适应模式下保持图片位置
+        var canPreservePosition = preservePositionOnResize
+            && !_lastViewportArea.IsEmpty
+            && !DestRect.IsEmpty
+            && !IsWindowFitMode
+            && currentZoomFactor == oldZoomFactor;
+
+        Point desiredOrigin = _virtualImgOrigin;
+        var minKeepVisiblePx = DpiScale(32);
+        if (canPreservePosition)
+        {
+            var originDelta = _hasViewerScreenOrigin && TryGetViewerScreenOriginDip(out var currentScreenOrigin)
+                ? currentScreenOrigin - _lastViewerScreenOriginDip
+                : default;
+            desiredOrigin = _virtualImgOrigin - originDelta;
+        }
+
         // initialize from the previous frame:
         //   srcX/srcY  = logical (unclipped) source position from last frame
         //   srcWidth/srcHeight, destX/destY/destWidth/destHeight = previous output rects
@@ -317,7 +348,16 @@ public partial class ViewerControl
             srcWidth = BitmapSize.Width;
             destWidth = scaledImgWidth;
 
-            if (CanUseFreePan || _mousePanPositionEnabled)
+            if (canPreservePosition)
+            {
+                PreserveAxisPositionOnResize(
+                    desiredOrigin.X, _virtualImgOrigin.X, _lastViewportArea.Left, _lastViewportArea.Width,
+                    DrawingArea.Left, controlW, scaledImgWidth, currentZoomFactor,
+                    minKeepVisiblePx,
+                    ref srcX, ref destX);
+                _hasAnchoredPosition = true;
+            }
+            else if (CanUseFreePan || _mousePanPositionEnabled || _hasAnchoredPosition)
             {
                 if (isZoomingToPoint)
                 {
@@ -328,6 +368,11 @@ public partial class ViewerControl
                     var imgX = SrcRect.X + (screenZoomX - DestRect.X) / oldZoomFactor;
                     imgX = Math.Clamp(imgX, 0, BitmapSize.Width);
                     destX = screenZoomX - imgX * currentZoomFactor;
+
+                    if (!CanUseFreePan && !_mousePanPositionEnabled)
+                    {
+                        destX = Math.Clamp(destX, DrawingArea.Left, DrawingArea.Left + controlW - scaledImgWidth);
+                    }
                 }
                 else
                 {
@@ -351,7 +396,15 @@ public partial class ViewerControl
             // --- Overflows viewport: show a viewport-width slice of the image ---
             srcWidth = controlW / currentZoomFactor;
 
-            if (isZoomingToPoint)
+            if (canPreservePosition)
+            {
+                PreserveAxisPositionOnResize(
+                    desiredOrigin.X, _virtualImgOrigin.X, _lastViewportArea.Left, _lastViewportArea.Width,
+                    DrawingArea.Left, controlW, scaledImgWidth, currentZoomFactor,
+                    minKeepVisiblePx,
+                    ref srcX, ref destX);
+            }
+            else if (isZoomingToPoint)
             {
                 // Zoom anchor: map cursor to an image coordinate, then compute the
                 // source offset so that coordinate stays under the cursor.
@@ -392,7 +445,16 @@ public partial class ViewerControl
             srcHeight = BitmapSize.Height;
             destHeight = scaledImgHeight;
 
-            if (CanUseFreePan || _mousePanPositionEnabled)
+            if (canPreservePosition)
+            {
+                PreserveAxisPositionOnResize(
+                    desiredOrigin.Y, _virtualImgOrigin.Y, _lastViewportArea.Top, _lastViewportArea.Height,
+                    DrawingArea.Top, controlH, scaledImgHeight, currentZoomFactor,
+                    minKeepVisiblePx,
+                    ref srcY, ref destY);
+                _hasAnchoredPosition = true;
+            }
+            else if (CanUseFreePan || _mousePanPositionEnabled || _hasAnchoredPosition)
             {
                 if (isZoomingToPoint)
                 {
@@ -400,6 +462,11 @@ public partial class ViewerControl
                     var imgY = SrcRect.Y + (screenZoomY - DestRect.Y) / oldZoomFactor;
                     imgY = Math.Clamp(imgY, 0, BitmapSize.Height);
                     destY = screenZoomY - imgY * currentZoomFactor;
+
+                    if (!CanUseFreePan && !_mousePanPositionEnabled)
+                    {
+                        destY = Math.Clamp(destY, DrawingArea.Top, DrawingArea.Top + controlH - scaledImgHeight);
+                    }
                 }
                 else
                 {
@@ -420,7 +487,15 @@ public partial class ViewerControl
             // --- Overflows viewport ---
             srcHeight = controlH / currentZoomFactor;
 
-            if (isZoomingToPoint)
+            if (canPreservePosition)
+            {
+                PreserveAxisPositionOnResize(
+                    desiredOrigin.Y, _virtualImgOrigin.Y, _lastViewportArea.Top, _lastViewportArea.Height,
+                    DrawingArea.Top, controlH, scaledImgHeight, currentZoomFactor,
+                    minKeepVisiblePx,
+                    ref srcY, ref destY);
+            }
+            else if (isZoomingToPoint)
             {
                 var screenZoomY = zoomY + DrawingArea.Top;
                 var rawImgY = SrcRect.Y + (screenZoomY - DestRect.Y) / oldZoomFactor;
@@ -465,7 +540,7 @@ public partial class ViewerControl
         var wasHeightFitting = BitmapSize.Height * oldZoomFactor <= controlH;
 
         // --- X-axis margin clamping ---
-        if (scaledImgWidth > controlW && !skipClampWhileZooming)
+        if (scaledImgWidth > controlW && !skipClampWhileZooming && !canPreservePosition)
         {
             var baseMarginX = _mousePanPositionEnabled ? Math.Max(0, controlW - DpiScale(32)) / currentZoomFactor
                 : isZoomingToPoint && wasWidthFitting ? 0 : panMarginSrc;
@@ -500,7 +575,7 @@ public partial class ViewerControl
         }
 
         // --- Y-axis margin clamping ---
-        if (scaledImgHeight > controlH && !skipClampWhileZooming)
+        if (scaledImgHeight > controlH && !skipClampWhileZooming && !canPreservePosition)
         {
             var baseMarginY = _mousePanPositionEnabled ? Math.Max(0, controlH - DpiScale(32)) / currentZoomFactor
                 : isZoomingToPoint && wasHeightFitting ? 0 : panMarginSrc;
@@ -544,15 +619,16 @@ public partial class ViewerControl
         //     constrains subsequent panning frames.)
 
         double logicalX;
+        var allowOverhangPan = _mousePanPositionEnabled || _hasAnchoredPosition || CanUseFreePan;
         if (scaledImgWidth > controlW)
         {
             logicalX = srcX;
         }
-        else if (CanUseFreePan || _mousePanPositionEnabled)
+        else if (CanUseFreePan || _mousePanPositionEnabled || _hasAnchoredPosition)
         {
             var halfGapX = (controlW - scaledImgWidth) / 2.0;
-            var maxPanX = _mousePanPositionEnabled
-                ? (controlW + scaledImgWidth) / 2.0 - Math.Min(Math.Min(controlW, scaledImgWidth), DpiScale(32))
+            var maxPanX = allowOverhangPan
+                ? (controlW + scaledImgWidth) / 2.0 - Math.Min(Math.Min(controlW, scaledImgWidth), minKeepVisiblePx)
                 : halfGapX;
             logicalX = Math.Clamp(
                 (halfGapX + DrawingArea.Left - destX) / currentZoomFactor,
@@ -569,11 +645,11 @@ public partial class ViewerControl
         {
             logicalY = srcY;
         }
-        else if (CanUseFreePan || _mousePanPositionEnabled)
+        else if (CanUseFreePan || _mousePanPositionEnabled || _hasAnchoredPosition)
         {
             var halfGapY = (controlH - scaledImgHeight) / 2.0;
-            var maxPanY = _mousePanPositionEnabled
-                ? (controlH + scaledImgHeight) / 2.0 - Math.Min(Math.Min(controlH, scaledImgHeight), DpiScale(32))
+            var maxPanY = allowOverhangPan
+                ? (controlH + scaledImgHeight) / 2.0 - Math.Min(Math.Min(controlH, scaledImgHeight), minKeepVisiblePx)
                 : halfGapY;
             logicalY = Math.Clamp(
                 (halfGapY + DrawingArea.Top - destY) / currentZoomFactor,
@@ -662,6 +738,12 @@ public partial class ViewerControl
         SrcRect = new(srcX, srcY, srcWidth, srcHeight);
         DestRect = new(snappedDestX, snappedDestY, destWidth, destHeight);
 
+        _lastViewportArea = DrawingArea;
+        _virtualImgOrigin = new Point(
+            scaledImgWidth <= controlW ? destX : DrawingArea.Left - logicalX * currentZoomFactor,
+            scaledImgHeight <= controlH ? destY : DrawingArea.Top - logicalY * currentZoomFactor);
+        SyncWindowViewportTracking();
+
         _zooming.OldFactor = _zooming.Factor;
 
         // 6. Sync the scrollbars with the new viewport
@@ -669,6 +751,61 @@ public partial class ViewerControl
 
         // 7. Let mirrors follow the new viewport
         OnRenderStateChanged();
+    }
+
+
+    /// <summary>
+    /// 在窗口或绘制区域缩放时按单轴计算源/目标坐标：尽量维持图片相对位置不变；
+    /// 若此前已将图片拖到画布边缘仅留局部可见，则保持当前可见宽度/高度并仅调整位置，避免把整张图片重新拉回画布内。
+    /// </summary>
+    private static void PreserveAxisPositionOnResize(
+        double desiredImgOrigin,
+        double prevImgOrigin,
+        double prevViewportOrigin,
+        double prevViewportSize,
+        double viewportOrigin,
+        double viewportSize,
+        double scaledImgSize,
+        double zoomFactor,
+        double minKeepVisiblePx,
+        ref double srcPos,
+        ref double destPos)
+    {
+        if (viewportSize <= 0 || zoomFactor <= 0) return;
+
+        var fullFitVisible = Math.Min(viewportSize, scaledImgSize);
+        var prevVisStart = Math.Max(prevImgOrigin, prevViewportOrigin);
+        var prevVisEnd = Math.Min(prevImgOrigin + scaledImgSize, prevViewportOrigin + prevViewportSize);
+        var prevVisible = Math.Max(0, prevVisEnd - prevVisStart);
+
+        // 只要当前同方向可见尺寸仍不低于最小安全留白，就不移动图片；
+        // 仅当缩小窗口将跌破安全下限（或原本留白更小）时，才顺着边缘仅保留安全可见长度并微调位置
+        var safeVisibleFloor = Math.Min(fullFitVisible, minKeepVisiblePx);
+        var keepVisible = prevVisible > 0
+            ? Math.Min(prevVisible, safeVisibleFloor)
+            : safeVisibleFloor;
+
+        var hadStartGap = prevImgOrigin > prevViewportOrigin + 0.5;
+        var hadEndGap = prevImgOrigin + scaledImgSize < prevViewportOrigin + prevViewportSize - 0.5;
+
+        // 只要缩放前在对应侧仍有留白，即允许窗口越过图片边缘而不推动图片，直到触及安全可见下限
+        var rightSideAnchor = hadEndGap ? keepVisible : fullFitVisible;
+        var leftSideAnchor = hadStartGap ? keepVisible : fullFitVisible;
+
+        var minOrigin = viewportOrigin + rightSideAnchor - scaledImgSize;
+        var maxOrigin = viewportOrigin + viewportSize - leftSideAnchor;
+        var clampedOrigin = minOrigin <= maxOrigin
+            ? Math.Clamp(desiredImgOrigin, minOrigin, maxOrigin)
+            : viewportOrigin;
+
+        if (scaledImgSize <= viewportSize)
+        {
+            destPos = clampedOrigin;
+        }
+        else
+        {
+            srcPos = (viewportOrigin - clampedOrigin) / zoomFactor;
+        }
     }
 
 
@@ -695,6 +832,7 @@ public partial class ViewerControl
             SrcRect = new();
             _logicalSrcPoint = new();
             _zooming.ZoomedPoint = new();
+            _hasAnchoredPosition = false;
         }
 
         _zooming.Factor = Math.Min(MaxZoom, Math.Max(zoomValue, MinZoom));
@@ -728,6 +866,7 @@ public partial class ViewerControl
         if (effectiveMode != ZoomMode.LockZoom)
         {
             _logicalSrcPoint = default;
+            _hasAnchoredPosition = false;
         }
         _zooming.ZoomedPoint = new();
 
@@ -764,6 +903,7 @@ public partial class ViewerControl
         // the previous frame's rects belong to a differently-sized image
         _logicalSrcPoint = default;
         _zooming.ZoomedPoint = new();
+        _hasAnchoredPosition = false;
 
         // a manual zoom factor survives; otherwise refit via the active mode
         if (!_zooming.IsManual)

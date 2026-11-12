@@ -27,7 +27,8 @@ SIGN_IDENTITY="${SIGN_IDENTITY:-Developer ID Application: Phap Duong (7DV5HBKZ58
 NOTARY_PROFILE="${NOTARY_PROFILE:-imageglass-notary}"
 
 WORKSPACE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-APP_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64/ImageGlass.app"
+APP_NAME="ChuImage"
+APP_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64/${APP_NAME}.app"
 APP_STAGE_DIR="$WORKSPACE_DIR/__artifacts/bundle/osx-arm64"
 ENTITLEMENTS_FILE="$WORKSPACE_DIR/__assets/mac/ImageGlass.entitlements"
 BUILD_PROPS_FILE="$WORKSPACE_DIR/Directory.Build.props"
@@ -70,11 +71,11 @@ IG_RELEASE_TYPE="$(sed -n 's:.*<IgReleaseType>\(.*\)</IgReleaseType>.*:\1:p' "$B
 REL_LABEL="$IG_VERSION"
 [[ -n "$IG_RELEASE_TYPE" ]] && REL_LABEL="${IG_VERSION}-${IG_RELEASE_TYPE}"
 
-DMG_NAME="ImageGlass_${REL_LABEL}_mac-arm64.dmg"
+DMG_NAME="${APP_NAME}_${REL_LABEL}_mac-arm64.dmg"
 DMG_PATH="$OUTPUT_DIR/$DMG_NAME"
-VOLUME_NAME="ImageGlass ${IG_VERSION}"
+VOLUME_NAME="${APP_NAME} ${IG_VERSION}"
 
-echo "==> Packaging ImageGlass $IG_VERSION (arm64)"
+echo "==> Packaging ${APP_NAME} $IG_VERSION (arm64)"
 echo "    Identity : $SIGN_IDENTITY"
 echo "    Profile  : $NOTARY_PROFILE"
 

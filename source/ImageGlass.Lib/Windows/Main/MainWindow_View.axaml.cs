@@ -1250,6 +1250,16 @@ public partial class MainWindowView : PhControl
             photosItem.Click += OpenInWindowsPhotos_Click;
             mnuContext.Items.Add(photosItem);
         }
+        else if (BHelper.OS == OSType.Mac)
+        {
+            var systemViewerItem = new PhMenuItem
+            {
+                Header = "使用系统查看器查看",
+                Icon = CreateContextMenuIcon(iconFolder, "#CBD5E1"),
+            };
+            systemViewerItem.Click += OpenInMacSystemViewer_Click;
+            mnuContext.Items.Add(systemViewerItem);
+        }
 
         mnuContext.Opened += (_, _) => UpdateContextMenuIconColors(mnuContext);
         UpdateContextMenuIconColors(mnuContext);
@@ -1273,6 +1283,31 @@ public partial class MainWindowView : PhControl
                 new ImageGlass.UI.Windowing.ModalWindowOptions
                 {
                     Title = "无法打开 Windows 照片",
+                    Description = ex.Message,
+                });
+        }
+    }
+
+    private async void OpenInMacSystemViewer_Click(object? sender, RoutedEventArgs e)
+    {
+        var path = Photos.CurrentFilePath;
+        if (OwnerWindow.Session.ClipboardImage is not null || !File.Exists(path)) return;
+
+        try
+        {
+            var startInfo = new ProcessStartInfo("/usr/bin/open")
+            {
+                UseShellExecute = false,
+            };
+            startInfo.ArgumentList.Add(Path.GetFullPath(path));
+            Process.Start(startInfo);
+        }
+        catch (Exception ex)
+        {
+            await ImageGlass.UI.Windowing.ModalWindow.ShowErrorAsync(OwnerWindow,
+                new ImageGlass.UI.Windowing.ModalWindowOptions
+                {
+                    Title = "无法使用系统查看器打开图片",
                     Description = ex.Message,
                 });
         }

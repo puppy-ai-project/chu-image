@@ -36,7 +36,7 @@
                         FontSize="26"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource IG_TextAccentColor}"
-                        Text="ImageGlass 10" />
+                        Text="ChuImage" />
 
                     <!--  slogan  -->
                     <TextBlock

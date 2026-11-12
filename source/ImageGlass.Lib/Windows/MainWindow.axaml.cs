@@ -411,6 +411,9 @@ public partial class MainWindow : PhWindow
         Core.API.RegisterHotkeys();
         StartupTrace.Mark("Hotkeys:register:end");
 
+        // Intercept navigation/zoom before the viewer handles arrow keys for panning.
+        AddHandler(KeyDownEvent, MainWindow_PreviewKeyDown, RoutingStrategies.Tunnel);
+
         // build the macOS menu bar (window-level) from the existing main menu;
         // the application (⌘) menu is defined in App.axaml
         if (OperatingSystem.IsMacOS())
@@ -500,6 +503,7 @@ public partial class MainWindow : PhWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        RemoveHandler(KeyDownEvent, MainWindow_PreviewKeyDown);
         _saveWindowSizeTimer.Stop();
         _saveWindowSizeTimer.Tick -= SaveWindowSizeTimer_Tick;
         base.OnClosed(e);
@@ -575,6 +579,21 @@ public partial class MainWindow : PhWindow
             or NumericUpDown
             or MaskedTextBox
             or AutoCompleteBox) return;
+
+        if (e.KeyModifiers != KeyModifiers.None
+            || PART_MainView.IsRenameModalOpen
+            || PART_MainView.IsDeleteConfirmationOpen
+            || PART_MainView.IsAboutOverlayOpen
+            || PART_MainView.IsSettingsOverlayOpen
+            || PART_MainView.IsImageInfoOverlayOpen) return;
+
+    }
+
+
+    private async void MainWindow_PreviewKeyDown(object? sender, KeyEventArgs e)
+    {
+        using var windowScope = App.UseWindow(this);
+        if (e.Handled || e.Source is TextBox or NumericUpDown or MaskedTextBox or AutoCompleteBox) return;
 
         var viewer = PART_MainView.PART_Viewer;
         if (PART_MainView.PART_ToolHost.Tool?.ToolId == CropImageToolControl.TOOL_ID

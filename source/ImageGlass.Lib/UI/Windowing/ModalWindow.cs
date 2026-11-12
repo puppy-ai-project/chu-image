@@ -841,6 +841,8 @@ public partial class ModalWindow : DialogWindow
     public static async Task<bool> ShowUnhandledErrorAsync(Exception ex, PhWindow? owner = null,
         string? heading = null, string? description = null)
     {
+        App.LogUnhandledException(ex, nameof(ShowUnhandledErrorAsync));
+
         // get error details
         var details = BHelper.GetExceptionDetails(ex);
         var isContinue = false;
