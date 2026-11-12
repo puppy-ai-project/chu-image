@@ -260,10 +260,10 @@ public partial class Config
 
         // refresh
         new() {
-            Id = $"Btn_{nameof(IgThemeIcon.Refresh)}",
-            Image = nameof(IgThemeIcon.Refresh),
-            Text = Lang.KeysMap[LangId.Menu_MnuRefresh],
-            OnClick = new(LangId.Menu_MnuRefresh, API.IG_Refresh),
+            Id = $"Btn_{nameof(IgThemeIcon.Reset)}",
+            Image = nameof(IgThemeIcon.Reset),
+            Text = Lang.KeysMap[LangId._Reset],
+            OnClick = new(LangId._Reset, API.IG_ResetView),
         },
         // toggle gallery
         new() {
@@ -282,15 +282,6 @@ public partial class Config
             ConfigBinding = nameof(Config.CheckerboardMode),
             ConfigBindingValue = $"!{nameof(CheckerboardType.None)}",
             OnClick = new(LangId.Menu_MnuToggleCheckerboard, API.IG_ToggleCheckerboard),
-        },
-        // toggle fullscreen
-        new() {
-            Id = $"Btn_{nameof(IgThemeIcon.FullScreen)}",
-            Image = nameof(IgThemeIcon.FullScreen),
-            Text = Lang.KeysMap[LangId.Menu_MnuFullScreen],
-            ConfigBinding = nameof(Config.EnableFullScreen),
-            ConfigBindingValue = "True",
-            OnClick = new(LangId.Menu_MnuFullScreen, API.IG_ToggleFullScreen),
         },
         // toggle slildeshow
         new() {
@@ -485,10 +476,10 @@ public partial class Config
 
         // View modes
         new() {
-            Id = $"Btn_{nameof(IgThemeIcon.Refresh)}",
-            Image = nameof(IgThemeIcon.Refresh),
-            Text = Lang.KeysMap[LangId.Menu_MnuRefresh],
-            OnClick = new(LangId.Menu_MnuRefresh, API.IG_Refresh),
+            Id = $"Btn_{nameof(IgThemeIcon.Reset)}",
+            Image = nameof(IgThemeIcon.Reset),
+            Text = Lang.KeysMap[LangId._Reset],
+            OnClick = new(LangId._Reset, API.IG_ResetView),
         },
         new() {
             Id = $"Btn_{nameof(IgThemeIcon.Gallery)}",

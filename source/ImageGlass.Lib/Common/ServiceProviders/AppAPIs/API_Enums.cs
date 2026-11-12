@@ -77,6 +77,7 @@ public enum API
 
     // Menu > Image
     IG_Refresh,
+    IG_ResetView,
     IG_Reload,
     IG_ReloadList,
     IG_Unload,

@@ -1542,6 +1542,16 @@ public partial class AppAPIProvider
 
 
     /// <summary>
+    /// Resets image rotation and viewport.
+    /// </summary>
+    public static void IG_ResetView()
+    {
+        Viewer.SetDisplayRotation(0);
+        Viewer.Refresh(true, false, Core.Config.EnableWindowFit);
+    }
+
+
+    /// <summary>
     /// Reloads image file.
     /// </summary>
     /// <param name="resetZoomBoolStr">Values: <c>"true"</c>, <c>"false"</c> or empty.</param>

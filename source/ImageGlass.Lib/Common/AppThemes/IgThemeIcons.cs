@@ -48,6 +48,7 @@ public enum IgThemeIcon
     Play,
     Print,
     Refresh,
+    Reset,
     RotateLeft,
     RotateRight,
     Save,

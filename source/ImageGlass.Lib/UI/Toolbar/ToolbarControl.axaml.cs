@@ -20,6 +20,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Svg.Skia;
+using ImageGlass.Common.Actions;
+using ImageGlass.Common.AppThemes;
 using ImageGlass.Common;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Photoing;
@@ -436,7 +438,19 @@ public partial class ToolbarControl : PhControl
             var delete = Config.BuiltInToolbarItems.First(item => item.Id == "Btn_Delete");
             items.Add(delete);
         }
-        items = items.Select(item => item.CreateWindowCopy()).ToList();
+        // Remove the toolbar fullscreen action, including entries from older saved layouts.
+        // Migrate the old refresh button in-place so existing user layouts get reset semantics.
+        items = items
+            .Where(item => item.Id != "Btn_FullScreen")
+            .Select(item => item.CreateWindowCopy())
+            .ToList();
+        foreach (var item in items.Where(item => item.Id == "Btn_Refresh"))
+        {
+            item.Id = "Btn_Reset";
+            item.Image = nameof(IgThemeIcon.Reset);
+            item.Text = Lang.KeysMap[LangId._Reset];
+            item.OnClick = new HotkeySingleAction(LangId._Reset, API.IG_ResetView);
+        }
         _windowItems.AddRange(items);
         foreach (var vm in items)
         {

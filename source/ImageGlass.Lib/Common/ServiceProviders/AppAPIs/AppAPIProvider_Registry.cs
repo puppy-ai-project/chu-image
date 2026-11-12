@@ -96,6 +96,7 @@ public partial class AppAPIProvider
 
         // Image
         { API.IG_Refresh,                       PhCommands.Create(IG_Refresh) },
+        { API.IG_ResetView,                     PhCommands.Create(IG_ResetView) },
         { API.IG_Reload,                        PhCommands.Create(IG_Reload) },
         { API.IG_ReloadList,                    PhCommands.Create(IG_ReloadList) },
         { API.IG_Unload,                        PhCommands.Create(IG_UnloadAsync) },
