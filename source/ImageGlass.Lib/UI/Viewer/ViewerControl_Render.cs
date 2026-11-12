@@ -358,6 +358,11 @@ public partial class ViewerControl
             var imgSize = isCurrent && !img.IsDisposed() ? $"{img.Width}x{img.Height}" : "0x0";
             PhotoTrace.Mark("render:first-draw", Photo?.FilePath,
                 $"{imgSize}, vector={IsVectorSource()}");
+            if (isCurrent || IsVectorSource())
+            {
+                StartupTrace.Mark("Viewer:first-image-draw");
+                StartupTrace.Flush();
+            }
 
             // the photo is now on screen; release anyone waiting on the first paint
             _firstDrawTcs?.TrySetResult();

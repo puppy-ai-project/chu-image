@@ -319,10 +319,16 @@ public partial class MainWindow : PhWindow
         => _resizeEdge = null;
 
 
-    public MainWindow()
+    public ImageWindowSession Session { get; }
+
+    public MainWindow() : this(new ImageWindowSession(Core.Photos)) { }
+
+    public MainWindow(ImageWindowSession session)
     {
+        Session = session ?? throw new ArgumentNullException(nameof(session));
         StartupTrace.Mark("MainWindow:InitComponent:begin");
         InitializeComponent();
+        PART_MainView.SetPhotoManager(Session.Photos);
         _saveWindowSizeTimer.Tick += SaveWindowSizeTimer_Tick;
         UseCustomBackdrop = true;
         TransparencyLevelHint = [WindowTransparencyLevel.Transparent];

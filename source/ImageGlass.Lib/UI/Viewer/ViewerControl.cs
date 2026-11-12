@@ -41,6 +41,7 @@ public partial class ViewerControl : PhControl
     internal InterlockedBool _isPreviewing = new(false);
     internal InterlockedBool _isFirstDraw = new(false);
     private InterlockedBool _isRecoveringPhoto = new(false);
+    private int _photoLoadGeneration;
     internal PhotoLoadingOptions _loadingOptions = new();
 
     // completes once the current photo is painted; null when nothing is pending
@@ -769,6 +770,8 @@ public partial class ViewerControl : PhControl
     /// </summary>
     public async Task SetPhotoAsync(Photo? inputPhoto, PhotoLoadingOptions? options = null)
     {
+        var loadGeneration = Interlocked.Increment(ref _photoLoadGeneration);
+        if (inputPhoto is not null) StartupTrace.Mark("Viewer:set-photo");
         if (!ReferenceEquals(Photo, inputPhoto)) SetDisplayRotation(0);
         PhotoTrace.Mark("viewer:set-photo", inputPhoto?.FilePath,
             $"cache={options?.UseCache ?? true}, state={inputPhoto?.State}, shouldLoadFull={ShouldLoadFullResolution}");
@@ -818,7 +821,8 @@ public partial class ViewerControl : PhControl
                 skipLoadingEvent: !_loadingOptions.ResetZoom);
         }
 
-        await RecoverIfNothingRenderedAsync(inputPhoto);
+        if (loadGeneration == Volatile.Read(ref _photoLoadGeneration))
+            await RecoverIfNothingRenderedAsync(inputPhoto);
     }
 
 
@@ -881,10 +885,12 @@ public partial class ViewerControl : PhControl
     {
         if (Photo is null) return;
         var photo = Photo;
+        var loadGeneration = Volatile.Read(ref _photoLoadGeneration);
 
         await photo.LoadAsync(useCache, OnPhotoLoadingProgressAsync, skipLoadingEvent);
 
-        await RecoverIfNothingRenderedAsync(photo);
+        if (loadGeneration == Volatile.Read(ref _photoLoadGeneration))
+            await RecoverIfNothingRenderedAsync(photo);
     }
 
 

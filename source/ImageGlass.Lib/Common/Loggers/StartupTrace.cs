@@ -47,6 +47,7 @@ public static class StartupTrace
     private static readonly List<(long Ms, string Name, int Tid)> _marks = new(32);
     private static readonly Lock _lock = new();
     private static int _flushedCount;
+    private static double? _processStartToFirstMarkMs;
 
 
     /// <summary>
@@ -83,6 +84,11 @@ public static class StartupTrace
     {
         lock (_lock)
         {
+            if (_marks.Count == 0)
+            {
+                try { _processStartToFirstMarkMs = (DateTime.Now - Process.GetCurrentProcess().StartTime).TotalMilliseconds; }
+                catch { }
+            }
             _marks.Add((_sw.ElapsedMilliseconds, name, Environment.CurrentManagedThreadId));
         }
     }
@@ -105,12 +111,8 @@ public static class StartupTrace
             if (_flushedCount == 0)
             {
                 lines.Add($"===== ImageGlass startup trace @ PID {Environment.ProcessId} =====");
-                try
-                {
-                    var startToNow = DateTime.Now - Process.GetCurrentProcess().StartTime;
-                    lines.Add($"   (process start -> first mark ~ {startToNow.TotalMilliseconds,7:0.0} ms)");
-                }
-                catch { }
+                if (_processStartToFirstMarkMs is { } elapsed)
+                    lines.Add($"   (process start -> first mark ~ {elapsed,7:0.0} ms)");
             }
 
             // delta from the last already-flushed mark

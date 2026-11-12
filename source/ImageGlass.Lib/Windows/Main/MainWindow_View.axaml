@@ -573,7 +573,6 @@
                 x:Name="PART_Gallery"
                 Grid.Row="2"
                 IsContentVisible="{CompiledBinding ShowGallery, Source={x:Static cm:Core.Config}}"
-                ItemsSource="{CompiledBinding Items, Source={x:Static cm:Core.Photos}}"
                 ViewMode="FilmStrip"
                 ZIndex="80" />
 

@@ -201,14 +201,25 @@ public partial class App : Application
         // When the user double-clicks a photo or uses "Open With" on macOS
         if (e is FileActivatedEventArgs fileArgs && fileArgs.Files.Count > 0)
         {
+            StartupTrace.Mark("FileActivation:received");
             var filePath = fileArgs.Files[0].TryGetLocalPath();
             var modulePath = Core.Args.FirstOrDefault();
             var isModulePath = filePath?.Equals(modulePath, StringComparison.OrdinalIgnoreCase) ?? false;
 
             if (!string.IsNullOrEmpty(filePath) && !isModulePath)
             {
+                // The first file activation can arrive before the window is shown. Feed that
+                // path to the normal startup loader instead of opening the same file twice.
+                if (MainWindow is not null && !MainWindow.IsVisible)
+                {
+                    Core.UpdateInitImagePath(filePath);
+                    StartupTrace.Mark("FileActivation:startup-path");
+                    return;
+                }
+
                 Dispatcher.UIThread.Post(async () =>
                 {
+                    StartupTrace.Mark("FileActivation:dispatch");
                     Core.UpdateInitImagePath(filePath);
 
                     if (Core.API is not null)

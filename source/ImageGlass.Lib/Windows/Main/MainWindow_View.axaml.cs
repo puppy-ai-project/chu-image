@@ -1,4 +1,4 @@
-/*
+﻿/*
 ImageGlass - A Fast, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
 Project homepage: https://imageglass.org
@@ -97,8 +97,8 @@ public partial class MainWindowView : PhControl
 
     public void UpdateBottomStatusBar()
     {
-        var count = Core.Photos.Count;
-        var index = Core.Photos.CurrentIndex;
+        var count = Photos.Count;
+        var index = Photos.CurrentIndex;
         if (count == 0)
         {
             PART_StatusGroup.IsVisible = false;
@@ -108,7 +108,7 @@ public partial class MainWindowView : PhControl
         PART_StatusGroup.IsVisible = true;
         PART_StatusIndex.Text = $"{index + 1} / {count}";
 
-        var meta = Core.Photos.Current?.Metadata;
+        var meta = Photos.Current?.Metadata;
         if (Core.ClipboardImage is { } clip)
         {
             PART_StatusSpecs.Text = $"{clip.Width} × {clip.Height}";
@@ -493,7 +493,7 @@ public partial class MainWindowView : PhControl
 
     private void BtnOpenFolder_Click(object? sender, RoutedEventArgs e)
     {
-        var folder = Core.Photos.Current?.Metadata?.FolderPath;
+        var folder = Photos.Current?.Metadata?.FolderPath;
         if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
         {
             BHelper.OpenFolderPath(folder);
@@ -502,7 +502,7 @@ public partial class MainWindowView : PhControl
 
     private void RefreshImageInfoContent()
     {
-        var photo = Core.Photos.Current;
+        var photo = Photos.Current;
         var meta = photo?.Metadata;
         var summary = new StringBuilder();
 
@@ -651,9 +651,22 @@ public partial class MainWindowView : PhControl
     public bool IsPhotoLoadInProgress => Volatile.Read(ref _sequentialLoadDepth) > 0;
 
 
+    /// <summary>Photo collection owned by this view's window.</summary>
+    public PhotoManager Photos { get; private set; } = Core.Photos;
+
     public MainWindowView()
     {
         InitializeComponent();
+        PART_Gallery.ItemsSource = Photos.Items;
+    }
+
+    /// <summary>Assigns the window's photo collection before the view is loaded.</summary>
+    internal void SetPhotoManager(PhotoManager photos)
+    {
+        ArgumentNullException.ThrowIfNull(photos);
+        if (IsLoaded) throw new InvalidOperationException("The photo manager must be assigned before the view is loaded.");
+        Photos = photos;
+        PART_Gallery.ItemsSource = photos.Items;
     }
 
 
@@ -677,10 +690,10 @@ public partial class MainWindowView : PhControl
         DragDrop.AddDropHandler(PART_Viewer, PART_Viewer_Drop);
 
         Core.Config.PropertyChanged += Config_PropertyChanged;
-        Core.Photos.Items.CollectionChanged += GalleryItems_CollectionChanged;
+        Photos.Items.CollectionChanged += GalleryItems_CollectionChanged;
         PART_ViewerWrapper.SizeChanged += ViewerWrapper_SizeChanged;
         UpdateGalleryOverlayWidth();
-        Core.Photos.FileWatcherChanged += Photos_FileWatcherChanged;
+        Photos.FileWatcherChanged += Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading += PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged += PART_Viewer_ZoomChanged;
         PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
@@ -732,9 +745,9 @@ public partial class MainWindowView : PhControl
         DragDrop.RemoveDropHandler(PART_Viewer, PART_Viewer_Drop);
 
         Core.Config.PropertyChanged -= Config_PropertyChanged;
-        Core.Photos.Items.CollectionChanged -= GalleryItems_CollectionChanged;
+        Photos.Items.CollectionChanged -= GalleryItems_CollectionChanged;
         PART_ViewerWrapper.SizeChanged -= ViewerWrapper_SizeChanged;
-        Core.Photos.FileWatcherChanged -= Photos_FileWatcherChanged;
+        Photos.FileWatcherChanged -= Photos_FileWatcherChanged;
         PART_Viewer.PhotoLoading -= PART_Viewer_PhotoLoading;
         PART_Viewer.ZoomChanged -= PART_Viewer_ZoomChanged;
         PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
@@ -862,7 +875,7 @@ public partial class MainWindowView : PhControl
 
     private void HandleFileWatcher_FilesAdded(FileWatcherChangedEventArgs e)
     {
-        // gallery is data-bound to Core.Photos.Items, so items are already added;
+        // gallery is data-bound to Photos.Items, so items are already added;
         // we only need to scroll/display the last added file if the user opted in.
         if (e.FilePaths.Count == 0) return;
 
@@ -870,19 +883,19 @@ public partial class MainWindowView : PhControl
         if (Core.Config.EnableAutoOpenNewAddedImage)
         {
             var lastAdded = e.FilePaths[^1];
-            var newIndex = Core.Photos.IndexOf(lastAdded);
+            var newIndex = Photos.IndexOf(lastAdded);
 
             if (newIndex >= 0)
             {
-                var photo = Core.Photos.Select(newIndex);
+                var photo = Photos.Select(newIndex);
                 _ = ViewPhotoAsync(photo);
             }
         }
         else
         {
             // re-select current photo to update its index (list shifted by inserts)
-            _ = Core.Photos.Select(Core.Photos.CurrentFilePath);
-            PART_Gallery.ScrollToItem(Core.Photos.CurrentIndex);
+            _ = Photos.Select(Photos.CurrentFilePath);
+            PART_Gallery.ScrollToItem(Photos.CurrentIndex);
         }
     }
 
@@ -899,19 +912,19 @@ public partial class MainWindowView : PhControl
         else
         {
             // re-select current photo to fix its index after list shifted
-            _ = Core.Photos.Select(Core.Photos.CurrentFilePath);
-            PART_Gallery.ScrollToItem(Core.Photos.CurrentIndex);
+            _ = Photos.Select(Photos.CurrentFilePath);
+            PART_Gallery.ScrollToItem(Photos.CurrentIndex);
         }
 
         // update init photo path if it was deleted
-        if (Core.Photos.InitPhoto is not null)
+        if (Photos.InitPhoto is not null)
         {
             for (var i = 0; i < e.FilePaths.Count; i++)
             {
-                if (string.Equals(e.FilePaths[i], Core.Photos.InitPhoto.FilePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(e.FilePaths[i], Photos.InitPhoto.FilePath, StringComparison.OrdinalIgnoreCase))
                 {
                     var dirPath = Path.GetDirectoryName(e.FilePaths[i]) ?? string.Empty;
-                    Core.Photos.InitPhoto = !string.IsNullOrEmpty(dirPath)
+                    Photos.InitPhoto = !string.IsNullOrEmpty(dirPath)
                         ? new Photo(dirPath)
                         : null;
                     break;
@@ -928,15 +941,15 @@ public partial class MainWindowView : PhControl
         for (var i = 0; i < e.FilePaths.Count; i++)
         {
             var filePath = e.FilePaths[i];
-            var photoIndex = Core.Photos.IndexOf(filePath);
-            var photo = Core.Photos.Get(photoIndex);
+            var photoIndex = Photos.IndexOf(filePath);
+            var photo = Photos.Get(photoIndex);
             if (photo is null) continue;
 
             // force thumbnail reload
             PART_Gallery.LoadThumbnail(photoIndex, false);
 
             // if it's the currently viewed photo, reload it
-            if (Core.Photos.IsSelected(filePath))
+            if (Photos.IsSelected(filePath))
             {
                 _ = PART_Viewer.SetPhotoAsync(photo, new PhotoLoadingOptions
                 {
@@ -949,7 +962,7 @@ public partial class MainWindowView : PhControl
     }
 
 
-    private static void HandleFileWatcher_FilesRenamed(FileWatcherChangedEventArgs e)
+    private void HandleFileWatcher_FilesRenamed(FileWatcherChangedEventArgs e)
     {
         if (e.FilePaths.Count == 0 || e.OldFilePaths is null) return;
 
@@ -960,15 +973,15 @@ public partial class MainWindowView : PhControl
             var oldPath = i < e.OldFilePaths.Count ? e.OldFilePaths[i] : null;
 
             // update init photo if it was renamed
-            if (Core.Photos.InitPhoto is not null
+            if (Photos.InitPhoto is not null
                 && oldPath is not null
-                && string.Equals(oldPath, Core.Photos.InitPhoto.FilePath, StringComparison.OrdinalIgnoreCase))
+                && string.Equals(oldPath, Photos.InitPhoto.FilePath, StringComparison.OrdinalIgnoreCase))
             {
-                Core.Photos.InitPhoto = new Photo(newPath);
+                Photos.InitPhoto = new Photo(newPath);
             }
 
             // check if the currently viewed photo was renamed
-            if (Core.Photos.IsSelected(newPath))
+            if (Photos.IsSelected(newPath))
             {
                 currentNeedsRefresh = true;
             }
@@ -978,7 +991,7 @@ public partial class MainWindowView : PhControl
         if (currentNeedsRefresh)
         {
             // re-select to refresh bindings for current photo name/path
-            _ = Core.Photos.Select(Core.Photos.CurrentIndex);
+            _ = Photos.Select(Photos.CurrentIndex);
         }
     }
 
@@ -1215,7 +1228,7 @@ public partial class MainWindowView : PhControl
 
     private async void OpenInWindowsPhotos_Click(object? sender, RoutedEventArgs e)
     {
-        var path = Core.Photos.CurrentFilePath;
+        var path = Photos.CurrentFilePath;
         if (Core.ClipboardImage is not null || !File.Exists(path)) return;
 
         try
@@ -1253,7 +1266,7 @@ public partial class MainWindowView : PhControl
     {
         if (sender is not ContextMenu mnuContext) return;
 
-        var hasFile = Core.ClipboardImage is null && File.Exists(Core.Photos.CurrentFilePath);
+        var hasFile = Core.ClipboardImage is null && File.Exists(Photos.CurrentFilePath);
         UpdateContextMenuIconColors(mnuContext);
 
         foreach (var obj in mnuContext.Items)
@@ -1394,7 +1407,7 @@ public partial class MainWindowView : PhControl
                 OrderBy = Core.Config.ImageLoadingOrder,
                 OrderType = Core.Config.ImageLoadingOrderType,
             };
-            var initPhoto = Core.Photos.StartLoadingFiles(resolvedPaths, resolvedCurrentPath, searchOptions, Files_Searched, reloadInitPhoto);
+            var initPhoto = Photos.StartLoadingFiles(resolvedPaths, resolvedCurrentPath, searchOptions, Files_Searched, reloadInitPhoto);
 
 
             if (reloadInitPhoto && initPhoto is not null)
@@ -1437,44 +1450,44 @@ public partial class MainWindowView : PhControl
 
     private void Files_Searched__(FileSearchingEventArgs e)
     {
-        var isEmptyList = Core.Photos.Count == 0;
+        var isEmptyList = Photos.Count == 0;
 
         // add files to list
-        Core.Photos.Add(e.Results);
+        Photos.Add(e.Results);
 
 
         // display the last file in a folder; re-applied on every batch, so it settles on the
         // real last item once the search is done
         if (_selectLastOnSearch)
         {
-            var lastIndex = (int)Core.Photos.Count - 1;
-            Core.Photos.InitPhoto = Core.Photos.Select(lastIndex);
-            _ = ViewPhotoAsync(Core.Photos.InitPhoto, true, false);
+            var lastIndex = (int)Photos.Count - 1;
+            Photos.InitPhoto = Photos.Select(lastIndex);
+            _ = ViewPhotoAsync(Photos.InitPhoto, true, false);
         }
         // the init photo owns the selection for every batch, incl. the later sub-dir ones
-        else if (Core.Photos.InitPhoto is not null)
+        else if (Photos.InitPhoto is not null)
         {
             // if we haven't found current index for the init photo yet
-            if (Core.Photos.CurrentIndex == -1)
+            if (Photos.CurrentIndex == -1)
             {
                 // find index of the init photo and select it
-                _ = Core.Photos.Select(Core.Photos.InitPhoto.FilePath);
+                _ = Photos.Select(Photos.InitPhoto.FilePath);
 
                 // save the init photo to the list
-                var initIndex = Core.Photos.CurrentIndex;
-                if (initIndex >= 0 && initIndex < Core.Photos.Items.Count)
+                var initIndex = Photos.CurrentIndex;
+                if (initIndex >= 0 && initIndex < Photos.Items.Count)
                 {
-                    Core.Photos.Items[initIndex]?.Dispose();
-                    Core.Photos.Items[initIndex] = Core.Photos.InitPhoto;
-                    Core.Photos.Items[initIndex].IsCurrent = true;
+                    Photos.Items[initIndex]?.Dispose();
+                    Photos.Items[initIndex] = Photos.InitPhoto;
+                    Photos.Items[initIndex].IsCurrent = true;
                 }
             }
         }
         // display the first file in a folder
         else
         {
-            Core.Photos.InitPhoto = Core.Photos.Select(0);
-            _ = ViewPhotoAsync(Core.Photos.InitPhoto, true, false);
+            Photos.InitPhoto = Photos.Select(0);
+            _ = ViewPhotoAsync(Photos.InitPhoto, true, false);
         }
 
 
@@ -1487,7 +1500,7 @@ public partial class MainWindowView : PhControl
             Dispatcher.UIThread.Post(() =>
             {
                 // set photo to the viewer
-                PART_Gallery.ScrollToItem(Core.Photos.CurrentIndex);
+                PART_Gallery.ScrollToItem(Photos.CurrentIndex);
             });
         }
     }
@@ -1502,7 +1515,7 @@ public partial class MainWindowView : PhControl
         if (isSequential) Interlocked.Increment(ref _sequentialLoadDepth);
 
         // the old neighborhood's cache pass would compete with this load; a new one starts once it is shown
-        Core.Photos.CancelCaching();
+        Photos.CancelCaching();
 
         // clear the current in-app message
         _ = PART_Message.ClearAsync();
@@ -1526,7 +1539,7 @@ public partial class MainWindowView : PhControl
                 if (scrollToThumbnail)
                 {
                     // set photo to the viewer
-                    PART_Gallery.ScrollToItem(Core.Photos.CurrentIndex);
+                    PART_Gallery.ScrollToItem(Photos.CurrentIndex);
                 }
 
                 await PART_Viewer.SetPhotoAsync(photo, new PhotoLoadingOptions
@@ -1551,7 +1564,7 @@ public partial class MainWindowView : PhControl
 
             // trigger background caching of adjacent photos
             // after the current photo finishes loading
-            Core.Photos.RequestCacheAround(Core.Photos.CurrentIndex);
+            Photos.RequestCacheAround(Photos.CurrentIndex);
         });
     }
 
@@ -1768,7 +1781,7 @@ public partial class MainWindowView : PhControl
             PART_Gallery.Width = double.NaN;
             return;
         }
-        var count = Core.Photos.Items.Count;
+        var count = Photos.Items.Count;
         var cellWidth = Core.Config.ThumbnailSize + GalleryControl.GalleryItemMargin.Left + GalleryControl.GalleryItemMargin.Right;
         var desiredWidth = count == 0 ? 0 : count * cellWidth + GalleryControl.GalleryPadding.Left + GalleryControl.GalleryPadding.Right;
         PART_Gallery.Width = Math.Min(desiredWidth, Math.Max(0, PART_ViewerWrapper.Bounds.Width));
