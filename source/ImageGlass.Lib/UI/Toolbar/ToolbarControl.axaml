@@ -108,7 +108,7 @@
                         Orientation="Horizontal"
                         Spacing="2">
 
-                        <!--  临时验证按钮：用当前图片打开新窗口  -->
+                        <!--  新窗口打开当前图片  -->
                         <ui:PhToolButton
                             x:Name="PART_BtnNewWindow"
                             Click="OpenImageWindow_Click"
@@ -123,26 +123,87 @@
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             Focusable="False">
-                            <Panel Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Path
-                                    Width="15"
-                                    Height="15"
-                                    Stretch="Uniform"
-                                    Fill="{DynamicResource IgIconCyanBrush}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Data="M2 2h8v2H4v8h8V6h2v8H2z M9 1h6v6h-2V4.4L8 9.4 6.6 8 11.6 3H9z" />
-                            </Panel>
+                            <Viewbox
+                                Width="19"
+                                Height="19"
+                                Opacity="0.92"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Path
+                                        Fill="{DynamicResource IgIconBlueSoftBrush}"
+                                        Data="M 11.4,5.8 H 6.4 A 3.2,3.2 0 0 0 3.2,9.0 V 17.6 A 3.2,3.2 0 0 0 6.4,20.8 H 15.0 A 3.2,3.2 0 0 0 18.2,17.6 V 12.6 L 11.4,5.8 Z" />
+                                    <Ellipse
+                                        Canvas.Left="6.2"
+                                        Canvas.Top="8.6"
+                                        Width="2.5"
+                                        Height="2.5"
+                                        Fill="{DynamicResource IgIconAmberBrush}" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconTealBrush}"
+                                        StrokeThickness="1.65"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 5.6,17.8 L 8.5,14.8 C 9.0,14.3 9.7,14.3 10.2,14.8 L 12.1,16.8 L 13.3,15.6 C 13.7,15.1 14.4,15.1 14.9,15.6 L 15.9,16.7" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconNeutralBrush}"
+                                        StrokeThickness="1.85"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 11.4,5.8 H 6.4 A 3.2,3.2 0 0 0 3.2,9.0 V 17.6 A 3.2,3.2 0 0 0 6.4,20.8 H 15.0 A 3.2,3.2 0 0 0 18.2,17.6 V 12.6" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconCyanBrush}"
+                                        StrokeThickness="1.9"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 11.8,12.2 L 19.7,4.3 M 14.6,3.7 H 19.3 A 1.0,1.0 0 0 1 20.3,4.7 V 9.4" />
+                                </Canvas>
+                            </Viewbox>
                         </ui:PhToolButton>
+                        <!--  窗口适应图片  -->
                         <ui:PhToolButton x:Name="PART_BtnFitWindow" Click="FitWindow_Click"
                             ToolTip.Tip="窗口适应图片" Width="28" Height="28" Padding="0" BorderThickness="0"
                             CornerRadius="5.5" HorizontalAlignment="Center" VerticalAlignment="Center"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Focusable="False" IsEnabled="False">
-                            <Panel Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Path Width="15" Height="15" Stretch="Uniform" Fill="{DynamicResource IgIconCyanBrush}"
-                                      HorizontalAlignment="Center" VerticalAlignment="Center"
-                                      Data="M2 6V2h4v1.5H3.5V6H2z M10 2h4v4h-1.5V3.5H10V2z M2 10h1.5v2.5H6V14H2v-4z M12.5 10H14v4h-4v-1.5h2.5V10z M5 7h6v2H5z" />
-                            </Panel>
+                            <Viewbox
+                                Width="19"
+                                Height="19"
+                                Opacity="0.92"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <Canvas Width="24" Height="24">
+                                    <Rectangle
+                                        Canvas.Left="6.4"
+                                        Canvas.Top="7.6"
+                                        Width="11.2"
+                                        Height="8.8"
+                                        RadiusX="2.2"
+                                        RadiusY="2.2"
+                                        Fill="{DynamicResource IgIconBlueSoftBrush}"
+                                        Stroke="{DynamicResource IgIconNeutralBrush}"
+                                        StrokeThickness="1.65" />
+                                    <Ellipse
+                                        Canvas.Left="8.3"
+                                        Canvas.Top="9.4"
+                                        Width="2.0"
+                                        Height="2.0"
+                                        Fill="{DynamicResource IgIconAmberBrush}" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconTealBrush}"
+                                        StrokeThickness="1.45"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 8.3,14.5 L 10.6,12.3 C 11.0,11.9 11.5,11.9 11.9,12.3 L 13.3,13.7 L 14.1,12.9 C 14.4,12.6 14.9,12.6 15.2,12.9 L 15.7,13.5" />
+                                    <Path
+                                        Stroke="{DynamicResource IgIconCyanBrush}"
+                                        StrokeThickness="1.9"
+                                        StrokeLineCap="Round"
+                                        StrokeJoin="Round"
+                                        Data="M 3.0,9.0 V 6.7 A 2.2,2.2 0 0 1 5.2,4.5 H 7.8 M 16.2,4.5 H 18.8 A 2.2,2.2 0 0 1 21.0,6.7 V 9.0 M 3.0,15.0 V 17.3 A 2.2,2.2 0 0 0 5.2,19.5 H 7.8 M 16.2,19.5 H 18.8 A 2.2,2.2 0 0 0 21.0,17.3 V 15.0" />
+                                </Canvas>
+                            </Viewbox>
                         </ui:PhToolButton>
                         <!--  Image Information Button  -->
                         <ui:PhToolButton
