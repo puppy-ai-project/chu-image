@@ -30,7 +30,6 @@ namespace ImageGlass.UI;
 public partial class GalleryItem : PhToolButton
 {
     private CancellationTokenSource? _thumbnailCts;
-    private Photo? _tooltipReadyPhoto;
     public Photo VM => (Photo)DataContext!;
 
 
@@ -38,7 +37,6 @@ public partial class GalleryItem : PhToolButton
     public GalleryItem()
     {
         InitializeComponent();
-        ToolTip.AddToolTipOpeningHandler(this, ToolTip_Opening);
     }
 
 
@@ -62,8 +60,6 @@ public partial class GalleryItem : PhToolButton
 
         if (e.Property == DataContextProperty)
         {
-            _tooltipReadyPhoto = null;
-
             // a new container is still detached here (Dpi would be 1); OnLoaded covers it
             if (DataContext is Photo && IsLoaded) LoadThumbnail();
             else CancelThumbnailLoading();
@@ -96,22 +92,6 @@ public partial class GalleryItem : PhToolButton
         _thumbnailCts?.Cancel();
         _thumbnailCts?.Dispose();
         _thumbnailCts = null;
-    }
-
-
-    private async void ToolTip_Opening(object? sender, CancelRoutedEventArgs e)
-    {
-        if (DataContext is not Photo photo) return;
-        if (ReferenceEquals(_tooltipReadyPhoto, photo) || photo.Metadata.FrameCount > 0) return;
-
-        e.Cancel = true;
-        await photo.LoadMetadataAsync(true);
-
-        // the gallery suspends the tooltip service while scrolling
-        if (!ReferenceEquals(DataContext, photo) || !IsPointerOver || !ToolTip.GetServiceEnabled(this)) return;
-
-        _tooltipReadyPhoto = photo;
-        ToolTip.SetIsOpen(this, true);
     }
 
 }

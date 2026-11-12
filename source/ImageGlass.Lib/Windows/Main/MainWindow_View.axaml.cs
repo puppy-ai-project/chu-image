@@ -1216,6 +1216,98 @@ public partial class MainWindowView : PhControl
         VerticalAlignment = VerticalAlignment.Center,
     };
 
+    private static Viewbox CreateImageInfoMenuIcon(bool isDark)
+    {
+        const string iconInfo = "M12 1.999c5.524 0 10.002 4.478 10.002 10.002 0 5.523-4.478 10.001-10.002 10.001-5.524 0-10.002-4.478-10.002-10.001C1.998 6.477 6.476 1.999 12 1.999Zm0 1.5a8.502 8.502 0 1 0 0 17.003A8.502 8.502 0 0 0 12 3.5Zm-.004 7a.75.75 0 0 1 .744.648l.007.102.003 5.502a.75.75 0 0 1-1.493.102l-.007-.101-.003-5.502a.75.75 0 0 1 .75-.751Zm.005-3.497a.999.999 0 1 1 0 1.997.999.999 0 0 1 0-1.997Z";
+        var accent = Avalonia.Media.Brush.Parse(isDark ? "#38BDF8" : "#0284C7");
+        var badgeFill = Avalonia.Media.Brush.Parse(isDark ? "#2638BDF8" : "#1A0284C7");
+
+        var canvas = new Canvas { Width = 24, Height = 24 };
+        var backdrop = new Avalonia.Controls.Shapes.Ellipse
+        {
+            Width = 18.5,
+            Height = 18.5,
+            Fill = badgeFill,
+        };
+        Canvas.SetLeft(backdrop, 2.75);
+        Canvas.SetTop(backdrop, 2.75);
+        canvas.Children.Add(backdrop);
+        canvas.Children.Add(new Avalonia.Controls.Shapes.Path
+        {
+            Data = Avalonia.Media.Geometry.Parse(iconInfo),
+            Fill = accent,
+        });
+
+        return new Viewbox
+        {
+            Width = 15,
+            Height = 15,
+            Child = canvas,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+    }
+
+    private static Viewbox CreateSystemViewerMenuIcon(bool isDark)
+    {
+        var frameFill = Avalonia.Media.Brush.Parse(isDark ? "#2838BDF8" : "#1E0284C7");
+        var frameStroke = Avalonia.Media.Brush.Parse(isDark ? "#E2E8F0" : "#334155");
+        var sunFill = Avalonia.Media.Brush.Parse(isDark ? "#FBBF24" : "#D97706");
+        var mountainStroke = Avalonia.Media.Brush.Parse(isDark ? "#34D399" : "#059669");
+        var arrowStroke = Avalonia.Media.Brush.Parse(isDark ? "#60A5FA" : "#2563EB");
+
+        var canvas = new Canvas { Width = 24, Height = 24 };
+        canvas.Children.Add(new Avalonia.Controls.Shapes.Path
+        {
+            Data = Avalonia.Media.Geometry.Parse("M 11.4,5.8 H 6.4 A 3.2,3.2 0 0 0 3.2,9.0 V 17.6 A 3.2,3.2 0 0 0 6.4,20.8 H 15.0 A 3.2,3.2 0 0 0 18.2,17.6 V 12.6 Z"),
+            Fill = frameFill,
+        });
+
+        var sun = new Avalonia.Controls.Shapes.Ellipse
+        {
+            Width = 2.6,
+            Height = 2.6,
+            Fill = sunFill,
+        };
+        Canvas.SetLeft(sun, 6.2);
+        Canvas.SetTop(sun, 8.8);
+        canvas.Children.Add(sun);
+
+        canvas.Children.Add(new Avalonia.Controls.Shapes.Path
+        {
+            Data = Avalonia.Media.Geometry.Parse("M 5.6,17.8 L 8.6,14.8 C 9.1,14.3 9.8,14.3 10.3,14.8 L 12.1,16.7 L 13.3,15.5 C 13.7,15.1 14.4,15.1 14.9,15.5 L 15.9,16.6"),
+            Stroke = mountainStroke,
+            StrokeThickness = 1.7,
+            StrokeLineCap = Avalonia.Media.PenLineCap.Round,
+            StrokeJoin = Avalonia.Media.PenLineJoin.Round,
+        });
+        canvas.Children.Add(new Avalonia.Controls.Shapes.Path
+        {
+            Data = Avalonia.Media.Geometry.Parse("M 11.4,5.8 H 6.4 A 3.2,3.2 0 0 0 3.2,9.0 V 17.6 A 3.2,3.2 0 0 0 6.4,20.8 H 15.0 A 3.2,3.2 0 0 0 18.2,17.6 V 12.6"),
+            Stroke = frameStroke,
+            StrokeThickness = 1.85,
+            StrokeLineCap = Avalonia.Media.PenLineCap.Round,
+            StrokeJoin = Avalonia.Media.PenLineJoin.Round,
+        });
+        canvas.Children.Add(new Avalonia.Controls.Shapes.Path
+        {
+            Data = Avalonia.Media.Geometry.Parse("M 12.0,12.0 L 19.8,4.2 M 14.8,3.6 H 19.4 A 1.0,1.0 0 0 1 20.4,4.6 V 9.2"),
+            Stroke = arrowStroke,
+            StrokeThickness = 1.95,
+            StrokeLineCap = Avalonia.Media.PenLineCap.Round,
+            StrokeJoin = Avalonia.Media.PenLineJoin.Round,
+        });
+
+        return new Viewbox
+        {
+            Width = 15,
+            Height = 15,
+            Child = canvas,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+    }
+
     private void InitViewerContextMenu()
     {
         if (PART_Viewer.ContextMenu is not ContextMenu mnuContext) return;
@@ -1226,6 +1318,15 @@ public partial class MainWindowView : PhControl
         const string iconRename = "M20.9519 3.0481C19.5543 1.65058 17.2885 1.65064 15.8911 3.04825L3.94103 14.9997C3.5347 15.4061 3.2491 15.9172 3.116 16.4762L2.02041 21.0777C1.96009 21.3311 2.03552 21.5976 2.21968 21.7817C2.40385 21.9659 2.67037 22.0413 2.92373 21.981L7.52498 20.8855C8.08418 20.7523 8.59546 20.4666 9.00191 20.0601L20.952 8.10861C22.3493 6.71112 22.3493 4.4455 20.9519 3.0481ZM16.9518 4.10884C17.7634 3.29709 19.0795 3.29705 19.8912 4.10876C20.7028 4.9204 20.7029 6.23632 19.8913 7.04801L19 7.93946L16.0606 5.00012L16.9518 4.10884ZM15 6.06084L17.9394 9.00018L7.94119 18.9995C7.73104 19.2097 7.46668 19.3574 7.17755 19.4263L3.76191 20.2395L4.57521 16.8237C4.64402 16.5346 4.79168 16.2704 5.00175 16.0603L15 6.06084Z";
         const string iconTrash = "M6.442 2.5a2 2 0 0 1 2-2h3.046a2 2 0 0 1 2 2v.314c0 .036-.003.07-.01.105h4.952a.5.5 0 1 1 0 1h-.764l-1.558 13.507a2.5 2.5 0 0 1-2.484 2.214H6.306a2.5 2.5 0 0 1-2.484-2.214L2.264 3.92H1.5a.5.5 0 0 1 0-1h4.953a.502.502 0 0 1-.011-.105V2.5Zm.989.419h5.068a.501.501 0 0 1-.01-.105V2.5a1 1 0 0 0-1-1H8.441a1 1 0 0 0-1 1v.314c0 .036-.004.07-.011.105Zm-4.16 1L4.815 17.31a1.5 1.5 0 0 0 1.49 1.329h7.318a1.5 1.5 0 0 0 1.49-1.329L16.66 3.92H3.27Zm5.38 3.337a.5.5 0 1 0-1 0v7.256a.5.5 0 0 0 1 0V7.256Zm3.128-.5a.5.5 0 0 1 .5.5v7.256a.5.5 0 0 1-1 0V7.256a.5.5 0 0 1 .5-.5Z";
         const string iconFolder = "M3.50014 6.25C3.50014 5.2835 4.28364 4.5 5.25014 4.5H8.12882C8.32773 4.5 8.5185 4.57902 8.65915 4.71967L10.7198 6.78033C10.8605 6.92098 11.0512 7 11.2501 7H16.7501C17.7166 7 18.5001 7.7835 18.5001 8.75C18.5001 8.83602 18.5146 8.91866 18.5413 8.99561L8.71867 8.99561C7.37893 8.99561 6.14095 9.71035 5.47108 10.8706L3.50014 14.2844V6.25ZM2.00036 17.7883C2.02089 19.5656 3.468 21 5.25014 21H11.0001C11.0292 21 11.058 20.9983 11.0862 20.9951H16.2812C17.6209 20.9951 18.8589 20.2804 19.5288 19.1201L22.5596 13.8706C23.7748 11.7657 22.3337 9.14964 19.9567 9.00214C19.9848 8.92334 20.0001 8.83846 20.0001 8.75C20.0001 6.95507 18.5451 5.5 16.7501 5.5H11.5608L9.71981 3.65901C9.29786 3.23705 8.72556 3 8.12882 3H5.25014C3.45522 3 2.00014 4.45507 2.00014 6.25V17.71C1.9999 17.7362 1.99997 17.7623 2.00036 17.7883ZM8.71867 10.4956L19.745 10.4956C21.0921 10.4956 21.9341 11.9539 21.2605 13.1206L18.2297 18.3701C17.8278 19.0663 17.085 19.4951 16.2812 19.4951H5.25485C3.9077 19.4951 3.06573 18.0368 3.7393 16.8701L6.77011 11.6206C7.17204 10.9245 7.91482 10.4956 8.71867 10.4956Z";
+
+        var isDark = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+        var imageInfoItem = new PhMenuItem
+        {
+            Header = "图片信息",
+            Tag = "ImageInfo",
+            Icon = CreateImageInfoMenuIcon(isDark),
+        };
+        imageInfoItem.Click += (_, _) => OwnerWindow.ToggleImageInfoWindow();
 
         var items = new object[]
         {
@@ -1255,6 +1356,9 @@ public partial class MainWindowView : PhControl
                 HotkeyText = AppAPIProvider.GetMenuHotkeyText(LangId.Menu_MnuRename),
             },
             CreateDangerMenuItem(iconTrash),
+            new Separator(),
+            imageInfoItem,
+            new Separator(),
             new PhMenuItem
             {
                 LangKey = LangId.Menu_MnuOpenLocation,
@@ -1279,7 +1383,8 @@ public partial class MainWindowView : PhControl
             var photosItem = new PhMenuItem
             {
                 Header = "使用 Windows 照片打开",
-                Icon = CreateContextMenuIcon(iconFolder, "#CBD5E1"),
+                Tag = "SystemViewer",
+                Icon = CreateSystemViewerMenuIcon(isDark),
             };
             photosItem.Click += OpenInWindowsPhotos_Click;
             mnuContext.Items.Add(photosItem);
@@ -1289,7 +1394,8 @@ public partial class MainWindowView : PhControl
             var systemViewerItem = new PhMenuItem
             {
                 Header = "使用系统查看器查看",
-                Icon = CreateContextMenuIcon(iconFolder, "#CBD5E1"),
+                Tag = "SystemViewer",
+                Icon = CreateSystemViewerMenuIcon(isDark),
             };
             systemViewerItem.Click += OpenInMacSystemViewer_Click;
             mnuContext.Items.Add(systemViewerItem);
@@ -1383,16 +1489,33 @@ public partial class MainWindowView : PhControl
                 {
                     item.HotkeyText = AppAPIProvider.GetMenuHotkeyText(key);
                 }
-                item.IsEnabled = hasFile;
+                item.IsEnabled = hasFile || Equals(item.Tag, "ImageInfo");
             }
         }
     }
 
+    private bool? _lastContextMenuIconThemeDark;
+
     private void UpdateContextMenuIconColors(ContextMenu menu)
     {
         var dark = ActualThemeVariant == Avalonia.Styling.ThemeVariant.Dark;
+        var themeChanged = _lastContextMenuIconThemeDark != dark;
+        _lastContextMenuIconThemeDark = dark;
+
         foreach (var item in menu.Items.OfType<PhMenuItem>())
         {
+            if (themeChanged && Equals(item.Tag, "ImageInfo"))
+            {
+                item.Icon = CreateImageInfoMenuIcon(dark);
+                continue;
+            }
+
+            if (themeChanged && Equals(item.Tag, "SystemViewer"))
+            {
+                item.Icon = CreateSystemViewerMenuIcon(dark);
+                continue;
+            }
+
             if (item.Icon is not Avalonia.Controls.Shapes.Path icon) continue;
             var color = GetContextMenuSemanticColor(item, dark);
             icon.Fill = Avalonia.Media.Brush.Parse(color);

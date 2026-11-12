@@ -49,7 +49,6 @@ public partial class ToolbarControl : PhControl
         using var windowScope = App.UseWindow(OwnerWindow);
         await Core.API.RunApiAsync(API.IG_OpenSettings);
     }
-    private void ImageInfo_Click(object? sender, RoutedEventArgs e) => OwnerWindow.ToggleImageInfoWindow();
     private void FitWindow_Click(object? sender, RoutedEventArgs e) => OwnerWindow.FitWindowToImage();
     private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = OwnerWindow.CanFitWindowToImage;
     private void Viewer_RenderStateChanged(Viewer.ViewerControl sender, EventArgs e) => UpdateFitWindowButton();
