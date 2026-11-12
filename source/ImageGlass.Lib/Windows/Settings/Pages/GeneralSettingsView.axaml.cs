@@ -65,10 +65,6 @@ public partial class GeneralSettingsView : SettingsPageView
         BindLink(PART_ResetSettings, LangId.Settings_ResetSettings, ShowQuickSetup);
 
         // Startup
-        BindToggle(PART_WelcomeImage, ConfigId.EnableWelcomeImage,
-            LangId.Settings_EnableWelcomeImage, LangId.Settings_Startup);
-        BindToggle(PART_LastSeenImage, ConfigId.EnableLastSeenImage,
-            LangId.Settings_EnableLastSeenImage, LangId.Settings_Startup);
         BindToggle(PART_MultiInstances, ConfigId.EnableMultiInstances,
             LangId.Settings_EnableMultiInstances, LangId.Settings_Startup);
 

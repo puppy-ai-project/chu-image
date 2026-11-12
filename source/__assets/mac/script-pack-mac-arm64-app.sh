@@ -84,4 +84,17 @@ for data_src in "$WORKSPACE_DIR/__assets/__app/"*; do
 	fi
 done
 
+# Remove debug artifacts that codesign rejects inside Contents/MacOS/.
+find "$APP_DIR" -type f -name "*.pdb" -delete
+find "$APP_DIR" -type d -name "*.dSYM" -exec rm -rf {} +
+
+# Ad-hoc sign so local ARM64 launches and Finder "Open With" pass signature checks;
+# script-pack-mac-arm64-dmg.sh re-signs with Developer ID (--force) for release.
+ENTITLEMENTS_FILE="$WORKSPACE_DIR/__assets/mac/ImageGlass.entitlements"
+while IFS= read -r -d '' lib; do
+	codesign --force --options runtime --sign - "$lib"
+done < <(find "$CONTENTS_DIR/MacOS" -type f \( -name "*.dylib" -o -name "*.so" \) -print0)
+
+codesign --force --options runtime --entitlements "$ENTITLEMENTS_FILE" --sign - "$APP_DIR"
+
 echo "Created bundle: $APP_DIR"

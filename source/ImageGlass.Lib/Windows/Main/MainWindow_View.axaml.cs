@@ -1358,26 +1358,9 @@ public partial class MainWindowView : PhControl
     private async void LoadImagesFromCmdArgs()
     {
         var pathToLoad = OwnerWindow.Session.InitialImagePath;
-
-        // check for last seen image
-        if (string.IsNullOrEmpty(pathToLoad)
-            && Core.Config.EnableLastSeenImage
-            && BHelper.CheckPath(Core.Config.LastSeenImagePath) == PathType.File)
-        {
-            pathToLoad = Core.Config.LastSeenImagePath;
-        }
-
-        // check for Welcome image
         if (string.IsNullOrEmpty(pathToLoad))
         {
-            if (Core.Config.EnableWelcomeImage)
-            {
-                pathToLoad = BHelper.BaseDir("default.webp");
-            }
-            else
-            {
-                return;
-            }
+            return;
         }
 
         // a non-built-in type may need a codec plugin still loading; wait for discovery
@@ -1389,6 +1372,12 @@ public partial class MainWindowView : PhControl
             try { await Core.PluginDiscoveryTask; } catch { }
             StartupTrace.Mark("plugins:await:end");
             StartupTrace.Flush();
+        }
+
+        // Cold macOS file activation may have populated InitialImagePath while awaiting above.
+        if (!string.IsNullOrEmpty(OwnerWindow.Session.InitialImagePath))
+        {
+            pathToLoad = OwnerWindow.Session.InitialImagePath;
         }
 
         // start loading path with the foreground shell

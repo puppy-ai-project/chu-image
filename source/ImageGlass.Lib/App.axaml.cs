@@ -55,7 +55,10 @@ public partial class App : Application
     private readonly HashSet<MainWindow> _closingImageWindows = [];
     private readonly List<string> _earlyActivatedPaths = [];
     private readonly TaskCompletionSource _startupUiReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly Stopwatch _startupElapsed = Stopwatch.StartNew();
+    private const long MAC_COLD_FILE_ACTIVATION_WINDOW_MS = 1500;
     private bool _isStartupCompleted;
+    private bool _hasStartupTargetImage;
     private bool _isShuttingDown;
     private int _pendingWindowOpens;
     private static Task _updateReconcileTask = Task.CompletedTask;
@@ -176,6 +179,7 @@ public partial class App : Application
 
             // set init image path
             Core.UpdateInitImagePath();
+            _hasStartupTargetImage = Core.InputImagePathsFromArgs.Count > 0;
 
             // set main window
             StartupTrace.Mark("MainWindow:ctor:begin");
@@ -286,6 +290,15 @@ public partial class App : Application
                 if (!_isStartupCompleted && MainWindow is not null && !MainWindow.IsVisible)
                 {
                     HandlePreStartupActivatedPaths(resolvedPaths);
+                    return;
+                }
+
+                // On macOS cold launch via Finder "Open With", AppleEvent FileActivation can land
+                // just after MainWindow.Show() before any startup target image was supplied.
+                if (CanReuseStartupWindowForFileActivation(out var mainWindow))
+                {
+                    StartupTrace.Mark("FileActivation:cold-reuse");
+                    ApplyColdStartFileActivation(mainWindow, resolvedPaths);
                     return;
                 }
 
@@ -713,6 +726,7 @@ public partial class App : Application
         var startIndex = 0;
         if (string.IsNullOrEmpty(MainWindow.Session.InitialImagePath))
         {
+            _hasStartupTargetImage = true;
             Core.UpdateInitImagePath(resolvedPaths[0]);
             MainWindow.Session.InitialImagePath = Core.InputImagePathFromArgs;
             StartupTrace.Mark("FileActivation:startup-path");
@@ -722,6 +736,51 @@ public partial class App : Application
         for (var i = startIndex; i < resolvedPaths.Count; i++)
         {
             QueueStartupActivatedPath(resolvedPaths[i]);
+        }
+    }
+
+    private bool CanReuseStartupWindowForFileActivation(
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out MainWindow? mainWindow)
+    {
+        if (OperatingSystem.IsMacOS()
+            && !_hasStartupTargetImage
+            && !_isShuttingDown
+            && _imageWindows.Count == 1
+            && _mainWindow is { } candidate
+            && !_closingImageWindows.Contains(candidate)
+            && string.IsNullOrEmpty(candidate.Session.InitialImagePath)
+            && _startupElapsed.ElapsedMilliseconds <= MAC_COLD_FILE_ACTIVATION_WINDOW_MS)
+        {
+            mainWindow = candidate;
+            return true;
+        }
+
+        mainWindow = null;
+        return false;
+    }
+
+    private void ApplyColdStartFileActivation(MainWindow mainWindow, IReadOnlyList<string> resolvedPaths)
+    {
+        _hasStartupTargetImage = true;
+        Core.UpdateInitImagePath(resolvedPaths[0]);
+        mainWindow.Session.InitialImagePath = Core.InputImagePathFromArgs;
+
+        if (mainWindow.PART_MainView.IsLoaded)
+        {
+            using (UseWindow(mainWindow))
+            {
+                mainWindow.PART_MainView.PrepareLoadPhotoList(
+                    [Core.InputImagePathFromArgs],
+                    currentFilePath: null,
+                    disposeForegroundShell: false,
+                    reloadInitPhoto: true);
+            }
+        }
+
+        mainWindow.RestoreAndActivate();
+        if (resolvedPaths.Count > 1)
+        {
+            OpenImagePathsInNewWindows(resolvedPaths.Skip(1).ToArray(), mainWindow);
         }
     }
 

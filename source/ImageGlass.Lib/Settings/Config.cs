@@ -290,7 +290,7 @@ public partial class Config : PhReactive
     /// </summary>
     public bool EnableWelcomeImage
     {
-        get => Get(ConfigId.EnableWelcomeImage, true);
+        get => Get(ConfigId.EnableWelcomeImage, false);
         set => Set(ConfigId.EnableWelcomeImage, value);
     }
 
@@ -299,7 +299,7 @@ public partial class Config : PhReactive
     /// </summary>
     public bool EnableLastSeenImage
     {
-        get => Get(ConfigId.EnableLastSeenImage, true);
+        get => Get(ConfigId.EnableLastSeenImage, false);
         set => Set(ConfigId.EnableLastSeenImage, value);
     }
 

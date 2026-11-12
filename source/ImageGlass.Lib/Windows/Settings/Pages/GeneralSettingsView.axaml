@@ -57,10 +57,10 @@
         <!--  Startup  -->
         <ui:PhTextBlock Classes="group" LangKey="Settings_Startup" />
         <StackPanel Margin="{DynamicResource SettingsGroupIndent}">
-            <CheckBox x:Name="PART_WelcomeImage">
+            <CheckBox x:Name="PART_WelcomeImage" IsVisible="False">
                 <ui:PhTextBlock LangKey="Settings_EnableWelcomeImage" TextWrapping="Wrap" />
             </CheckBox>
-            <CheckBox x:Name="PART_LastSeenImage">
+            <CheckBox x:Name="PART_LastSeenImage" IsVisible="False">
                 <ui:PhTextBlock LangKey="Settings_EnableLastSeenImage" TextWrapping="Wrap" />
             </CheckBox>
             <CheckBox x:Name="PART_MultiInstances">
