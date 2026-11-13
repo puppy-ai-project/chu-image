@@ -363,7 +363,7 @@
                             Margin="2,0,8,0" />
                     </ScrollViewer>
 
-                    <Border Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch" IsHitTestVisible="False">
+                    <Border Grid.Column="1" Background="Transparent" VerticalAlignment="Stretch">
                         <TextBlock
                             x:Name="PART_CustomTitle"
                             HorizontalAlignment="Right"
