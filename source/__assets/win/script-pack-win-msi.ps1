@@ -113,7 +113,7 @@ $DistDir      = Join-Path $WorkspaceDir '__artifacts\bundle'
 $MsiDir       = Join-Path $PSScriptRoot 'msi'
 $WxiFile      = Join-Path $MsiDir 'Variables.wxi'
 $WxsFiles     = @((Join-Path $MsiDir 'Package.wxs'), (Join-Path $MsiDir 'UI.wxs'))
-$WxlFile      = Join-Path $MsiDir 'en-us.wxl'
+$WxlFile      = Join-Path $MsiDir 'zh-cn.wxl'
 
 # Marker file that turns on portable mode; must match Const.PORTABLE_MARKER_FILE.
 # An installed copy carrying it cannot start, so this packer refuses to ship one.
@@ -535,7 +535,7 @@ $wixArgs = @(
 ) + $WxsFiles + @(
     '-arch', $Platform,
     '-ext', "$WixUiExt/$WixVersion",       # always versioned; a bare -ext takes the newest cached
-    '-culture', 'en-US',
+    '-culture', 'zh-CN',
     '-loc', $WxlFile,
     '-d', "ProductVersion=$msiVersion",
     '-d', "BuildNumber=$buildNumber",

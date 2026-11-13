@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Strings for the two hand-authored dialogs. WixUIBack/Next/Cancel/Browse come from the UI extension. -->
+<WixLocalization Culture="zh-CN" Codepage="936" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="IgFeatureMainTitle"      Value="ChuImage" />
+  <String Id="IgShortcutName"          Value="ChuImage" />
+  <String Id="IgShortcutDescription"   Value="快速、流畅的图片查看器" />
+  <String Id="IgNewerVersionInstalled" Value="已安装更高版本的 ChuImage，安装程序将退出。" />
+
+  <String Id="IgDlgTitle"              Value="[ProductName] 安装向导" />
+  <String Id="IgBannerBitmap"          Value="WixUI_Bmp_Banner" />
+  <!-- Binary-table icon shipped by the WixUI extension, used in place of an info emoji. -->
+  <String Id="IgInfoIcon"              Value="WixUI_Ico_Info" />
+
+  <!-- Screen 1: agreement -->
+  <String Id="IgAgreementTitle"        Value="使用条款和隐私政策" />
+  <String Id="IgAgreementDescription"  Value="安装 [ProductName] 前，请阅读以下内容。" />
+  <String Id="IgAgreementBody"         Value="ChuImage 是一款快速、开源的图片查看器。安装即表示您接受以下网站公布的使用条款和隐私政策：" />
+  <String Id="IgAgreementAgree"        Value="我已阅读并同意使用条款和隐私政策" />
+  <!-- Anchor markup for the MSI Hyperlink control; the raw URL doubles as the link text. -->
+  <String Id="IgTermsLink"             Value="&lt;a href=&quot;https://image.withqq.com/privacy-policy&quot;&gt;https://image.withqq.com/privacy-policy&lt;/a&gt;" />
+
+  <!-- Screen 2: installation type -->
+  <String Id="IgScopeTitle"            Value="安装类型" />
+  <String Id="IgScopeDescription"      Value="请选择 [ProductName] 的安装范围和位置。" />
+  <String Id="IgScopeGroupLabel"       Value="安装范围" />
+  <String Id="IgScopePerUser"          Value="仅当前用户（推荐）" />
+  <String Id="IgScopePerUserNote"      Value="安装到当前用户文件夹，无需管理员权限。" />
+  <String Id="IgScopePerMachine"       Value="此电脑上的所有用户" />
+  <String Id="IgScopePerMachineNote"   Value="安装到 Program Files，供此电脑上的所有用户使用。" />
+  <String Id="IgFolderLabel"           Value="安装位置：" />
+  <!-- The UI extension defines WixUIBack/Next/Cancel but has no Browse string. -->
+  <String Id="IgBrowse"                Value="浏览..." />
+  <String Id="IgElevationNote"         Value="开始安装时，Windows 将请求管理员权限。" />
+  <String Id="IgReplaceNote"           Value="检测到已安装的 ChuImage，将替换现有版本。" />
+  <String Id="IgReplaceNoteLocked"     Value="ChuImage 已安装，安装范围必须与现有版本一致。" />
+  <!-- Silent installs only: the wizard cannot reach a mismatch, because it locks the choice. -->
+  <String Id="IgScopeMismatchMachine"  Value="ChuImage 已为所有用户安装，请使用 ALLUSERS=1 更新，或先卸载旧版。" />
+  <String Id="IgScopeMismatchUser"     Value="ChuImage 已为当前用户安装，请使用 ALLUSERS=2 MSIINSTALLPERUSER=1 更新，或先卸载旧版。" />
+
+  <!-- 10.0.5.825 only; its "All users" install is registered per-user and cannot be upgraded. -->
+  <String Id="IgScopeBrokenLegacy"     Value="旧版 ImageGlass 10.0.5.825 的安装范围记录有误，无法直接升级。请先卸载该版本。" />
+
+  <!-- Two strings because an XML attribute cannot carry the line break, and no emoji: MSI
+       stores strings in an ANSI codepage, so anything outside CP1252 fails the build. -->
+
+  <!-- Screen 4: complete -->
+  <String Id="IgDialogBitmap"          Value="WixUI_Bmp_Dialog" />
+  <String Id="IgCompleteTitle"         Value="[ProductName] 安装完成" />
+  <String Id="IgCompleteDescription"   Value="点击“完成”退出安装向导。" />
+  <String Id="IgFinish"                Value="完成" />
+  <String Id="IgLaunchAfterInstall"    Value="启动 ChuImage" />
+
+</WixLocalization>
