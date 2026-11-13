@@ -55,7 +55,7 @@ ChuImage 是独立的衍生项目，并非 ImageGlass 官方发行版。上游�
 | 平台 | 当前构建目标 |
 | --- | --- |
 | Windows | x64、ARM64 |
-| macOS | Apple Silicon（ARM64） |
+| macOS | Apple Silicon（ARM64）、Intel（x64） |
 | Linux | x64 |
 
 ## 从源码构建
@@ -80,15 +80,21 @@ dotnet publish source/ImageGlass.Win32/ImageGlass.Win32.csproj -c Release -p:Pla
 # macOS Apple Silicon
 dotnet publish source/ImageGlass.Mac/ImageGlass.Mac.csproj -c Release -r osx-arm64 -p:Platform=ARM64
 
+# macOS Intel
+dotnet publish source/ImageGlass.Mac/ImageGlass.Mac.csproj -c Release -r osx-x64 -p:Platform=x64
+
 # Linux x64
 dotnet publish source/ImageGlass.Linux/ImageGlass.Linux.csproj -c Release -r linux-x64 -p:Platform=x64
 ```
 
-发布 macOS 应用包时，在完成 macOS ARM64 发布后运行：
+一次构建并打包 macOS Apple Silicon 与 Intel 版本（需要 Developer ID 签名和已配置的 notarization profile）：
 
 ```sh
-bash source/__assets/mac/script-pack-mac-arm64-app.sh
+bash source/__assets/mac/script-pack-mac-zip.sh
 ```
+
+输出文件为 `__artifacts/bundle/ChuImage-<版本号>-mac-arm64.zip` 和
+`__artifacts/bundle/ChuImage-<版本号>-mac-x64.zip`。
 
 详细构建流程和项目约定见 [`source/CLAUDE.md`](source/CLAUDE.md)。
 
