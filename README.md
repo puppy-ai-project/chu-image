@@ -1,164 +1,89 @@
 <div align="center">
 
-# 🖼️ ImageGlass
+# ChuImage
 
-### A Fast, Seamless Photo Viewer
+### 轻盈、顺手的桌面图片查看器
 
-ImageGlass is a fast, modern, open-source image viewer for Windows, macOS, and Linux. It pairs high-performance rendering with a smooth, immersive viewing experience and powerful tools for everyday users and designers alike, with seamless navigation across 90+ image formats, including `WEBP`, `JXL`, `SVG`, `HEIC`, `AVIF`, `HDR`, and raw images.
-
-Built enterprise-ready, ImageGlass Pro supports managed deployment through preset config files that work across every platform and package. IT teams can roll out a preconfigured app config, enforce admin-locked settings, and lock individual features on every managed device.
-
-<br/>
-
-[![Total downloads](https://img.shields.io/github/downloads/d2phap/imageglass/total?color=%23d60068&label=Total%20downloads&)](https://imageglass.org/pricing)
-[![Latest version downloads](https://img.shields.io/github/downloads/d2phap/imageglass/latest/total?color=%23e66700&label=Latest%20version&)](https://imageglass.org/pricing)
-
-[![Discord](https://img.shields.io/discord/818852544859209748?label=chat&logo=discord&color=%233097B8&style=social)](https://discord.gg/tWjbynH2X8)
-[![Twitter Follow](https://img.shields.io/twitter/follow/d2phap?style=social)](https://twitter.com/d2phap)
-[![Crowdin](https://d322cqt584bo4o.cloudfront.net/imageglass/localized.svg)](https://crowdin.com/project/imageglass)
-
-<br/>
-
-[**🌐 Website**](https://imageglass.org) &nbsp;•&nbsp;
-[**📥 Pricing**](https://imageglass.org/pricing) &nbsp;•&nbsp;
-[**🧩 Plugins**](https://imageglass.org/plugins) &nbsp;•&nbsp;
-[**📐 Tools**](https://imageglass.org/tools) &nbsp;•&nbsp;
-[**📚 Docs**](https://imageglass.org/docs) &nbsp;•&nbsp;
-[**💬 Support**](https://imageglass.org/support)
-
-<br/>
-
-[![ImageGlass 10](https://github.com/user-attachments/assets/ca49c1be-4ab6-4714-b23b-8b094b5eda90)](https://imageglass.org/news/introducing-imageglass-10-rebuilt-for-speed-and-cross-platform-support-107)
+[![Website](https://img.shields.io/badge/Website-image.withqq.com-4f78e8)](https://image.withqq.com)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-596579)](#平台支持)
 
 </div>
 
-<br/>
+ChuImage 是一款面向桌面用户的图片查看器，支持图片浏览、缩放、旋转、平移、缩略图浏览和多窗口查看。项目持续完善跨平台体验与界面交互。
 
+## 项目来源与致谢
 
-<table>
-<tr valign="top">
-<td width="25%" align="center"><a target="_blank" href="https://buy.stripe.com/dRmfZh2wJaCSaOB1h7fUQ09?client_reference_id=pro-individual__onetime__imageglass-10-0-6-906-66"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-individual-dark.svg"/>
-  <img src=".github/assets/pricing/pro-individual.svg" width="100%" alt="Pro Individual: $14.90 one-time, 1 user or device, Pro license, Pro v10.x updates"/>
-</picture></a></td>
-<td width="25%" align="center"><a target="_blank" href="https://buy.stripe.com/6oU8wP5IVh1g4qdcZPfUQ0a?client_reference_id=pro-team__onetime__imageglass-10-0-6-906-66"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-team-dark.svg"/>
-  <img src=".github/assets/pricing/pro-team.svg" width="100%" alt="Pro Team: $69 one-time, up to 3 users, Commercial Pro license, Pro v10.x updates"/>
-</picture></a></td>
-<td width="25%" align="center"><a target="_blank" href="https://imageglass.org/pricing"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/pro-business-dark.svg"/>
-  <img src=".github/assets/pricing/pro-business.svg" width="100%" alt="Pro Business: volume pricing by number of users, invoiced for 1–3 years, Commercial Pro license, all versions, priority support"/>
-</picture></a></td>
-<td width="25%" align="center"><a target="_blank" href="https://imageglass.org/download"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/pricing/classic-dark.svg"/>
-  <img src=".github/assets/pricing/classic.svg" width="100%" alt="Classic: free, unlimited users, GPLv3 license, all versions, community support"/>
-</picture></a></td>
-</tr>
-</table>
+ChuImage 基于 [ImageGlass](https://github.com/d2phap/ImageGlass) 开源项目进行二次开发。感谢 ImageGlass 原作者 **Duong Dieu Phap** 及所有贡献者提供优秀的代码基础和持续维护，也感谢开源社区提供的反馈与帮助。
 
-👉 Compare all plans and features at [imageglass.org/pricing](https://imageglass.org/pricing).
+ChuImage 是独立的衍生项目，并非 ImageGlass 官方发行版。上游项目的版权和许可声明保留在相应源码文件中。
 
-<br/>
+## 功能
 
+- 浏览图片并在同一文件夹中切换
+- 鼠标拖动平移图片，支持惯性移动
+- 缩放、连续旋转、翻转和视图重置
+- 浏览底部缩略图并切换图片
+- 为不同图片打开独立窗口
+- 切换跟随系统、浅色和深色主题
+- 支持拖放打开图片、棋盘透明背景和常用快捷键
+- 展示图片尺寸、文件大小等信息
 
-> [!Caution]
-> ### Security Alert: Beware of Fake ImageGlass Downloads
-> Malicious campaigns are using AI tools to impersonate trusted software through fake GitHub profiles, forks, and Gists that spread malware. Download ImageGlass only from its official sources:
-> - Website: [**imageglass.org**](https://imageglass.org)
-> - GitHub: [**github.com/d2phap/ImageGlass**](https://github.com/d2phap/ImageGlass) and the [**github.com/ImageGlass**](https://github.com/ImageGlass)
->
-> Any other repo, fork, or Gist offering ImageGlass builds is not mine. Always check the URL before downloading.
+可打开的具体格式取决于内置编解码器及系统支持。项目以共享核心代码提供 Windows、macOS 和 Linux 客户端。
 
-<br/>
+## 获取 ChuImage
 
+访问 [image.withqq.com](https://image.withqq.com) 查看项目介绍和可用版本。
 
-## Features
-Primarily a photo viewer, ImageGlass offers a wide array of features geared toward image viewing, along with some focused editing capabilities. Here are some of the key features:
-- Supports [90+ image formats](https://imageglass.org/docs/supported-formats) out of the box
-- Hardware-aware smart caching
-- Super-fast image browsing with Turbo mode
-- Slideshow with random interval and sound notification
-- Native SVG and SVGZ vector rendering
-- Animated GIF, WEBP, and SVG playback
-- Color management and basic HDR support
-- Different cursor-precise zoom modes with flexible image interpolations
-- Different window modes: Frameless, Window Fit, Full screen
-- Built-in Tools: Rotate, Flip, Crop, Resize, Color Picker, Frame Navigation, Lossless compression...
-- EXIF metadata viewing through the [ExifGlass tool](https://github.com/d2phap/ExifGlass)
-- Touch gestures for zoom and pan
-- Themes, layouts, and custom hotkeys
-- Custom action binding for toolbar, mouse...
-- [Plugins](https://imageglass.org/plugins) and [external tools](https://imageglass.org/tools) support via [ImageGlass.SDK](https://github.com/ImageGlass/SDK)
-- Managed deployment with [preset app config](https://imageglass.org/docs/app-configs), admin-locked settings, and feature lock, for all platforms and packages (Available for Pro only)
-- Windows: Explorer sort order support
-- Windows: Custom file type icon pack (Not available for Store release)
+## 平台支持
 
-👉 Visit https://imageglass.org/docs/features to explore all features of ImageGlass.
+| 平台 | 当前构建目标 |
+| --- | --- |
+| Windows | x64、ARM64 |
+| macOS | Apple Silicon（ARM64） |
+| Linux | x64 |
 
-<br/>
+## 从源码构建
 
+项目使用 C#、.NET 11 和 Avalonia UI。构建需要 .NET 11 SDK（当前源码使用预览版 C# 功能）以及对应平台的原生构建工具；macOS 需要 Xcode Command Line Tools。
 
-## Plugins & Tools
-Extend ImageGlass with codec plugins that open more image formats, and with tools that work alongside it.
+先还原依赖：
 
+```sh
+dotnet restore source/ImageGlass.slnx
+```
 
-| Plugin | Author | Description | Platforms |
-| :--- | :--- | :--- | :--- |
-| [AVIF Codec](https://github.com/aplefull/imageglass-avif-plugin) | [aplefull](https://github.com/aplefull) | Opens still and animated `.avif` files, using libavif, dav1d and libyuv | Windows, macOS, Linux |
-| [WIC Codec](https://github.com/d2phap/wic-imageglass-plugin) | [d2phap](https://github.com/d2phap) | Brings the Windows Imaging Component in as a native codec, including JPEG XR (`.jxr`, `.hdp`, `.wdp`) | Windows |
-| [APNG Codec](https://github.com/d2phap/apng-imageglass-plugin) | [d2phap](https://github.com/d2phap) | Plays animated `.apng` files | Windows, macOS, Linux |
-| [ITHMB Codec](https://github.com/B67687/Imageglass-Ithmb-Plugin) | [B67687](https://github.com/B67687) | Decodes `.ithmb` thumbnail files using [Ithmb-Codec](https://github.com/B67687/Ithmb-Codec) | Windows, macOS, Linux |
+在仓库根目录发布对应平台：
 
+```sh
+# Windows x64
+dotnet publish source/ImageGlass.Win32/ImageGlass.Win32.csproj -c Release -p:Platform=x64
 
-| Tool | Author | Description | Platforms |
-| :--- | :--- | :--- | :--- |
-| [ExifGlass](https://github.com/d2phap/ExifGlass) | [d2phap](https://github.com/d2phap) | Reads the camera settings, lens, location, and color profile in any photo | Windows, macOS, Linux |
-| [FewerPhotos](https://imageglass.org/fewerphotos) | [d2phap](https://github.com/d2phap) | Cleans up the photo folders you already have: duplicates, blurry shots, and sorting by date | Windows, macOS |
+# Windows ARM64
+dotnet publish source/ImageGlass.Win32/ImageGlass.Win32.csproj -c Release -p:Platform=ARM64
 
-👉 Browse the [plugins](https://imageglass.org/plugins) and [tools](https://imageglass.org/tools), or build your own with [ImageGlass.SDK](https://imageglass.org/docs/codec-plugins).
+# macOS Apple Silicon
+dotnet publish source/ImageGlass.Mac/ImageGlass.Mac.csproj -c Release -r osx-arm64 -p:Platform=ARM64
 
-<br/>
+# Linux x64
+dotnet publish source/ImageGlass.Linux/ImageGlass.Linux.csproj -c Release -r linux-x64 -p:Platform=x64
+```
 
+发布 macOS 应用包时，在完成 macOS ARM64 发布后运行：
 
-## System Requirements
-**Version 10**
-- Windows 10/11 x64 or arm64, version 1809 (build 17763) or later
-- macOS 14+, Apple Silicon arm64
-- Linux Desktop X11 x64: Ubuntu 20.04+, Linux Mint 20+, Debian 11+, Fedora 30+, RHEL/Alma/Rocky 9+,...
+```sh
+bash source/__assets/mac/script-pack-mac-arm64-app.sh
+```
 
-**Version 9**
-- Windows 10/11 x64 or arm64, version 1809 (build 17763) or later
-- Optional: [WebView2 Runtime 64-bit v119.0.2151 or later](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+详细构建流程和项目约定见 [`source/CLAUDE.md`](source/CLAUDE.md)。
 
-<br/>
+## 参与贡献
 
+欢迎通过 Issue 反馈问题、提出建议或提交 Pull Request。提交代码时请保留已有的上游版权与许可声明，并为新增依赖遵守其各自的许可证要求。
 
-## Development
-The `develop` branch contains the latest commits, while the `prod` branch holds the final stable release.
+## 许可
 
-**Version 10**: Located in `source` folder
-- Visual Studio 2026 for Windows build
-- VS Code for macOS, Linux build
-- Run a task from VS Code to build, publish, or pack the app
-  + Note: for debug builds, copy the contents of `source/__assets/__app/` into the build output folder, beside the ImageGlass executable, before launching it.
+本仓库的源码许可和版权说明以根目录 [`LICENSE`](LICENSE) 及各源码文件中的声明为准。第三方组件仍受各自许可证约束。
 
-**Version 9**: Located in `v9` folder
-- Visual Studio 2026 on Windows 11
-- VS Code for `WebUI`
+---
 
-<br/>
-
-
-## Roadmap
-
-[![ImageGlass 2026 roadmap](.github/assets/ig_roadmap.svg)](https://github.com/d2phap/ImageGlass/discussions/2287)
-
-<br/>
-
-
-## This project needs your help!
-
-If you find ImageGlass useful and would like to support its ongoing development, please consider making a donation or purchase Pro edition. Your support — whether financial or simply sharing ImageGlass with others — means the world to me. Every bit helps keep the project alive for everyone.
-
-#### 👉 Explore the ways to support at [imageglass.org/donate](https://imageglass.org/donate).
-
+由 **puppy** 维护 · [项目官网](https://image.withqq.com)
