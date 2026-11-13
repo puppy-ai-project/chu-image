@@ -58,6 +58,8 @@ public partial class MainWindowView : PhControl
     private MainWindow? _ownerWindow;
     private MainWindow OwnerWindow => _ownerWindow ?? (MainWindow)TopLevel.GetTopLevel(this)!;
     private bool _updatingRotation;
+    private PointerPressedEventArgs? _toolbarDragPress;
+    private Point _toolbarDragStart;
     private void RotationSlider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
         if (_updatingRotation || !IsLoaded) return;
@@ -337,6 +339,9 @@ public partial class MainWindowView : PhControl
 
     private void InitTitleBarPlatform()
     {
+        PART_Toolbar.AddHandler(PointerPressedEvent, ToolbarDrag_Pressed, RoutingStrategies.Tunnel);
+        PART_Toolbar.AddHandler(PointerMovedEvent, ToolbarDrag_Moved, RoutingStrategies.Tunnel, true);
+        PART_Toolbar.AddHandler(PointerReleasedEvent, ToolbarDrag_Released, RoutingStrategies.Tunnel, true);
         var isMac = BHelper.OS == OSType.Mac;
         PART_MacButtons.IsVisible = isMac;
         PART_WinButtons.IsVisible = !isMac;
@@ -352,6 +357,30 @@ public partial class MainWindowView : PhControl
             OwnerWindow.PropertyChanged += MainWindow_PropertyChanged;
         }
     }
+
+    private void ToolbarDrag_Pressed(object? sender, PointerPressedEventArgs e)
+    {
+        _toolbarDragPress = null;
+        if (!e.GetCurrentPoint(PART_Toolbar).Properties.IsLeftButtonPressed ||
+            e.Source is not Visual source ||
+            !source.GetSelfAndVisualAncestors().Any(v => v is Button)) return;
+        _toolbarDragPress = e;
+        _toolbarDragStart = e.GetPosition(OwnerWindow);
+    }
+
+    private void ToolbarDrag_Moved(object? sender, PointerEventArgs e)
+    {
+        if (_toolbarDragPress is not { } press || e.Pointer != press.Pointer ||
+            !e.GetCurrentPoint(PART_Toolbar).Properties.IsLeftButtonPressed) return;
+        var delta = e.GetPosition(OwnerWindow) - _toolbarDragStart;
+        if (Math.Abs(delta.X) < 5 && Math.Abs(delta.Y) < 5) return;
+        _toolbarDragPress = null;
+        e.Pointer.Capture(null);
+        OwnerWindow.BeginMoveDrag(press);
+        e.Handled = true;
+    }
+
+    private void ToolbarDrag_Released(object? sender, PointerReleasedEventArgs e) => _toolbarDragPress = null;
 
     private void TitleBarLayout_SizeChanged(object? sender, SizeChangedEventArgs e) => UpdateTitleBarTitleWidth();
 
