@@ -112,7 +112,7 @@ public partial class AboutWindow : DialogWindow
         foreach (var btn in linkButtons) btn.Padding = new Thickness(6, 2);
 
         PART_BtnWebsite.Click += (_, _) => OpenUrl("https://image.withqq.com");
-        PART_BtnGitHub.Click += (_, _) => OpenUrl("https://image.withqq.com");
+        PART_BtnGitHub.Click += (_, _) => OpenUrl("https://github.com/puppy-ai-project/chu-image");
         PART_BtnEula.Click += (_, _) => OpenUrl("https://image.withqq.com");
         PART_BtnPrivacy.Click += (_, _) => OpenUrl("https://image.withqq.com");
         PART_BtnDonate.Click += (_, _) => OpenUrl("https://image.withqq.com");
