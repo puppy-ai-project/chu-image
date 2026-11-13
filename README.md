@@ -30,6 +30,22 @@ ChuImage 是独立的衍生项目，并非 ImageGlass 官方发行版。上游�
 
 可打开的具体格式取决于内置编解码器及系统支持。项目以共享核心代码提供 Windows、macOS 和 Linux 客户端。
 
+## 界面预览
+
+**主窗口**
+
+<p align="center">
+  <img src=".github/assets/screenshots/dark-main.png" alt="ChuImage 深色模式主窗口" width="49%" />
+  <img src=".github/assets/screenshots/light-main.png" alt="ChuImage 浅色模式主窗口" width="49%" />
+</p>
+
+**主题设置**
+
+<p align="center">
+  <img src=".github/assets/screenshots/dark-settings.png" alt="ChuImage 深色模式主题设置" width="49%" />
+  <img src=".github/assets/screenshots/light-settings.png" alt="ChuImage 浅色模式主题设置" width="49%" />
+</p>
+
 ## 获取 ChuImage
 
 访问 [image.withqq.com](https://image.withqq.com) 查看项目介绍和可用版本。
