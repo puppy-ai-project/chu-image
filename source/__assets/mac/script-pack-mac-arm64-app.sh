@@ -76,6 +76,8 @@ chmod +x "$CONTENTS_DIR/MacOS/${APP_NAME}"
 # codesign rejects any non-Mach-O file or folder left in Contents/MacOS/ ("code object is
 # not signed at all"), so stage every __assets/__app/ item — loose files included — under
 # Contents/Resources/ and symlink it back so BaseDir() lookups still resolve at runtime.
+cp -R "$WORKSPACE_DIR/__assets/__app/." "$CONTENTS_DIR/MacOS/"
+
 for data_src in "$WORKSPACE_DIR/__assets/__app/"*; do
 	[[ -e "$data_src" ]] || continue
 	data_name="$(basename "$data_src")"
