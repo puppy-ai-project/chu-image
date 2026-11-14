@@ -2983,13 +2983,9 @@ public partial class AppAPIProvider
         }
         else
         {
-            var hasAlpha = Core.Photos.CurrentMetadata?.HasAlpha ?? false;
-
             if (Core.Config.CheckerboardMode == CheckerboardType.None)
             {
-                wantedMode = hasAlpha
-                    ? CheckerboardType.Image
-                    : CheckerboardType.Client;
+                wantedMode = CheckerboardType.Client;
             }
             else if (Core.Config.CheckerboardMode == CheckerboardType.Image)
             {
