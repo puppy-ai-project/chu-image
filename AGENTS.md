@@ -32,4 +32,4 @@
 - 构建要求 .NET 11 SDK 和目标平台原生工具；macOS 还需要 Xcode Command Line Tools。常用 `dotnet restore source/ImageGlass.slnx`，各平台 `dotnet publish` 示例见根目录 `README.md`，VS Code 任务见 `source/.vscode/tasks.json`。AOT 发布及打包可能有平台、架构、签名等额外要求。
 - 按改动范围运行相应平台构建并验证相关交互；涉及跨平台共享代码时考虑其他平台。不能运行时说明环境限制，不要声称已验证。
 - macOS 正式打包使用 `source/__assets/mac/script-pack-mac-zip.sh`，使用临时签名且不公证；上传及官网更新流程以私有 skill 和实际环境为准。官网页面位于 `lumina-backend/internal/handler/web/image.html`；执行前确认链接及页面仍然存在。不要把构建、上传或修改源码等同于已部署上线。
-- 七牛配置包含凭证，不得输出、复制或提交。上传工具成功后返回 JSON，既有对象 key 不会覆盖；应检查结果，并准确对应平台和架构。
+- 安装包统一上传到七牛对象目录 `public-download/chu-image/`，macOS 使用 `.zip`，并按平台、架构和版本区分文件名。七牛配置包含凭证，不得输出、复制或提交。上传工具成功后返回 JSON，既有对象 key 不会覆盖；应检查结果，并准确对应平台和架构。
