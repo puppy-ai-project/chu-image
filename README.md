@@ -87,14 +87,14 @@ dotnet publish source/ImageGlass.Mac/ImageGlass.Mac.csproj -c Release -r osx-x64
 dotnet publish source/ImageGlass.Linux/ImageGlass.Linux.csproj -c Release -r linux-x64 -p:Platform=x64
 ```
 
-一次构建并打包 macOS Apple Silicon 与 Intel 版本（需要 Developer ID 签名和已配置的 notarization profile）：
+一次构建并打包 macOS Apple Silicon 与 Intel 版本（使用本地临时签名，不进行 Apple 公证）：
 
 ```sh
 bash source/__assets/mac/script-pack-mac-zip.sh
 ```
 
-输出文件为 `__artifacts/bundle/ChuImage-<版本号>-mac-arm64.zip` 和
-`__artifacts/bundle/ChuImage-<版本号>-mac-x64.zip`。
+输出文件为 `source/__artifacts/bundle/ChuImage-<版本号>-mac-arm64.zip` 和
+`source/__artifacts/bundle/ChuImage-<版本号>-mac-x64.zip`。
 
 详细构建流程和项目约定见 [`source/CLAUDE.md`](source/CLAUDE.md)。
 
