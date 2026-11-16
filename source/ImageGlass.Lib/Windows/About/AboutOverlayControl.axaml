@@ -595,7 +595,7 @@
                                                         x:Name="PART_TxtUpdateTitle"
                                                         FontSize="15"
                                                         FontWeight="Bold"
-                                                        Foreground="{DynamicResource IgDarkBrushF9FAFB}"
+                                                        Foreground="{DynamicResource IgDarkBrushF3F4F6}"
                                                         Text="软件更新"
                                                         VerticalAlignment="Center" />
 
