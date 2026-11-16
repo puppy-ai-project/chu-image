@@ -359,6 +359,7 @@ public partial class AboutOverlayControl : UserControl
 
         PART_UpdateVersionPill.IsVisible = false;
         PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpLatestInfoCard.IsVisible = false;
         PART_UpDownloadCard.IsVisible = false;
         PART_UpReadyCard.IsVisible = false;
         PART_UpFailedCard.IsVisible = false;
@@ -391,6 +392,9 @@ public partial class AboutOverlayControl : UserControl
         PART_BtnUpPrimary.IsVisible = false;
         PART_BtnTriggerCheck.IsVisible = true;
         PART_BtnTriggerCheck.IsEnabled = true;
+
+        PART_TxtUpPlatformInfo.Text = $"{RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()})";
+        PART_UpLatestInfoCard.IsVisible = true;
 
         if (release is not null && !string.IsNullOrWhiteSpace(release.PublishedDate))
         {
@@ -433,6 +437,7 @@ public partial class AboutOverlayControl : UserControl
         PART_BtnUpChangelog.IsVisible = !string.IsNullOrWhiteSpace(release.ChangelogUrl);
         PART_UpdateReleaseCard.IsVisible = true;
 
+        PART_UpLatestInfoCard.IsVisible = false;
         PART_UpDownloadCard.IsVisible = false;
         PART_UpReadyCard.IsVisible = false;
         PART_UpFailedCard.IsVisible = false;
@@ -460,6 +465,7 @@ public partial class AboutOverlayControl : UserControl
 
         PART_UpdateVersionPill.IsVisible = false;
         PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpLatestInfoCard.IsVisible = false;
         PART_UpReadyCard.IsVisible = false;
         PART_UpFailedCard.IsVisible = false;
 
@@ -492,6 +498,7 @@ public partial class AboutOverlayControl : UserControl
 
         PART_UpdateVersionPill.IsVisible = false;
         PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpLatestInfoCard.IsVisible = false;
         PART_UpDownloadCard.IsVisible = false;
         PART_UpFailedCard.IsVisible = false;
 
@@ -519,6 +526,7 @@ public partial class AboutOverlayControl : UserControl
 
         PART_UpdateVersionPill.IsVisible = false;
         PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpLatestInfoCard.IsVisible = false;
         PART_UpDownloadCard.IsVisible = false;
         PART_UpReadyCard.IsVisible = false;
 
