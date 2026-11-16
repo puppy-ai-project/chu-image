@@ -32,7 +32,7 @@ public static class SharedUpdateDownload
         Changed?.Invoke(null, EventArgs.Empty);
     }
 
-    public static void Start(UpdateReleaseInfo release)
+    public static void Start(UpdateReleaseInfo release, string? destination = null)
     {
         if (State.Status == SharedDownloadStatus.Downloading) return;
         if (!Uri.TryCreate(release.UpdateUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
@@ -46,9 +46,10 @@ public static class SharedUpdateDownload
         if (string.IsNullOrWhiteSpace(name) || !name.Contains('.')) name = $"ChuImage-{release.Version}{extension}";
         var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
         if (!Directory.Exists(directory)) directory = Path.GetTempPath();
-        var target = Path.Combine(directory, name);
-        for (var index = 1; File.Exists(target); index++)
-            target = Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(name)} ({index}){Path.GetExtension(name)}");
+        var target = destination ?? Path.Combine(directory, name);
+        if (destination is null)
+            for (var index = 1; File.Exists(target); index++)
+                target = Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(name)} ({index}){Path.GetExtension(name)}");
         _cancellation = new CancellationTokenSource();
         SetState(new(SharedDownloadStatus.Downloading, release, name));
         _ = DownloadAsync(release, uri, target, _cancellation);

@@ -28,7 +28,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -265,14 +264,18 @@ public partial class UpdateWindow : ModalWindow
             await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail("Invalid update package URL."), this);
             return;
         }
-        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        string? destination = null;
+        if (SharedUpdateDownload.State.Status != SharedDownloadStatus.Downloading)
         {
-            SuggestedFileName = $"ChuImage-{release.Version}{extension}",
-            DefaultExtension = extension.TrimStart('.'),
-            FileTypeChoices = [new FilePickerFileType("ChuImage update") { Patterns = [$"*{extension}"] }],
-        });
-        var path = file?.TryGetLocalPath();
-        if (string.IsNullOrEmpty(path)) return;
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                SuggestedFileName = $"ChuImage-{release.Version}{extension}",
+                DefaultExtension = extension.TrimStart('.'),
+                FileTypeChoices = [new FilePickerFileType("ChuImage update") { Patterns = [$"*{extension}"] }],
+            });
+            destination = file?.TryGetLocalPath();
+            if (string.IsNullOrEmpty(destination)) return;
+        }
 
         _cancelDownload?.Cancel();
         _cancelDownload = new CancellationTokenSource();
@@ -282,45 +285,49 @@ public partial class UpdateWindow : ModalWindow
         IsProgressVisible = true;
         IsProgressIndeterminate = true;
         PART_BtnCopyDownloadUrl.IsVisible = false;
-        var temp = path + ".download-" + Guid.NewGuid().ToString("N");
+        var completion = new TaskCompletionSource<SharedDownloadState>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnDownloadChanged(object? sender, EventArgs e)
+        {
+            var state = SharedUpdateDownload.State;
+            if (state.Status == SharedDownloadStatus.Downloading && state.TotalBytes > 0)
+            {
+                IsProgressIndeterminate = false;
+                ProgressValue = Math.Clamp(state.BytesRead * 100.0 / state.TotalBytes, 0, 100);
+            }
+            else if (state.Status is SharedDownloadStatus.Ready or SharedDownloadStatus.Failed or SharedDownloadStatus.Idle)
+                completion.TrySetResult(state);
+        }
+        SharedUpdateDownload.Changed += OnDownloadChanged;
         try
         {
-            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
-            using var response = await client.GetAsync(packageUri, HttpCompletionOption.ResponseHeadersRead, token);
-            response.EnsureSuccessStatusCode();
-            if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps)
-                throw new IOException("The update download was redirected to an insecure URL.");
-            if (response.Content.Headers.ContentLength > 1024L * 1024 * 1024) throw new IOException("Update package is too large.");
-            await using (var input = await response.Content.ReadAsStreamAsync(token))
-            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+            if (destination is not null) SharedUpdateDownload.Start(release, destination);
+            OnDownloadChanged(null, EventArgs.Empty);
+            var result = await completion.Task.WaitAsync(token);
+            if (result.Status == SharedDownloadStatus.Idle) { SetResultState(_result!); return; }
+            if (result.Status != SharedDownloadStatus.Ready || result.FilePath is null || result.Release is null)
             {
-                var buffer = new byte[81920]; long total = 0; int count;
-                while ((count = await input.ReadAsync(buffer, token)) > 0)
-                {
-                    total += count;
-                    if (total > 1024L * 1024 * 1024) throw new IOException("Update package is too large.");
-                    await output.WriteAsync(buffer.AsMemory(0, count), token);
-                }
+                SetResultState(_result!);
+                await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail(result.Error ?? "Download failed."), this);
+                return;
             }
-            File.Move(temp, path, true);
             var confirm = await ModalWindow.ShowAsync(this, new ModalWindowOptions
             {
                 Title = Core.Lang[LangId._CheckForUpdate],
                 Heading = "下载完成，是否立即重启并升级？",
-                Description = path,
+                Description = result.FilePath,
             }, ModalWindowButton.Yes_No);
             if (confirm.ExitCode == DialogExitCode.OK)
             {
                 if (App.MainWindow is { } mainWindow) _ = await mainWindow.CaptureAndSaveConfigAsync();
                 SetInstallingState();
-                var apply = await Core.UpdateProvider.ApplyAndRestartAsync(path, release, token);
+                var apply = await Core.UpdateProvider.ApplyAndRestartAsync(result.FilePath, result.Release, token);
                 if (!apply.IsSuccess && !apply.IsSkipped) await AppAPIProvider.ShowUpdateFailedAsync(apply, this);
             }
             if (!_isClosed) { DialogResult = DialogExitCode.Cancel; Close(); }
         }
         catch (OperationCanceledException) { }
-        catch (Exception ex) { SetResultState(_result!); await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail(ex), this); }
-        finally { try { if (File.Exists(temp)) File.Delete(temp); } catch { } }
+        catch (Exception ex) { if (!_isClosed) { SetResultState(_result!); await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail(ex), this); } }
+        finally { SharedUpdateDownload.Changed -= OnDownloadChanged; }
         return;
 
 
