@@ -640,6 +640,7 @@
                                             x:Name="PART_NavAssociations"
                                             Classes="link settings-nav-btn"
                                             Click="NavTab_Click"
+                                            IsVisible="False"
                                             Tag="associations">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
@@ -2014,6 +2015,7 @@
                         <!--  ======================================================  -->
                         <Border
                             Grid.Row="1"
+                            IsVisible="False"
                             Padding="20,11"
                             Background="{DynamicResource IgDarkBrush1C1E23}"
                             BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"

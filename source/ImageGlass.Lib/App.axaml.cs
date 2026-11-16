@@ -63,6 +63,7 @@ public partial class App : Application
     private bool _isShuttingDown;
     private int _pendingWindowOpens;
     private static Task _updateReconcileTask = Task.CompletedTask;
+    private readonly CancellationTokenSource _updateCheckCancellation = new();
     private TaskCompletionSource _taskUi = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     /// <summary>
@@ -162,6 +163,11 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.Exit += (_, _) =>
+            {
+                _updateCheckCancellation.Cancel();
+                ServiceProviders.Update.SharedUpdateDownload.Cancel();
+            };
             // portable mode cannot use the startup dir: report and quit before anything else runs,
             // so the app never falls back to the app data dir
             if (ConfigMode.PortableError is not null)
@@ -1002,12 +1008,20 @@ public partial class App : Application
     /// <summary>
     /// Fires the silent update check once the pending-update flag has been reconciled.
     /// </summary>
-    private static async Task InitializeUpdateProviderAsync()
+    private async Task InitializeUpdateProviderAsync()
     {
         await _updateReconcileTask;
 
-        // silent check handles disabled/interval logic
-        _ = await Core.API.RunApiAsync(API.IG_CheckForUpdate, "false");
+        var token = _updateCheckCancellation.Token;
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                _ = await Core.UpdateProvider.CheckForUpdateAsync(token);
+                await Task.Delay(TimeSpan.FromMinutes(30), token);
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
     }
 
 

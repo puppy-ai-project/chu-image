@@ -842,6 +842,25 @@
                     Spacing="2" />
             </Border>
 
+            <ui:PhToolButton
+                x:Name="PART_BtnUpdateAvailable"
+                Height="28"
+                Padding="10,0"
+                Margin="3,0,0,0"
+                CornerRadius="5.5"
+                Background="{DynamicResource IgToolbarCheckedBrush}"
+                Focusable="False"
+                IsVisible="False"
+                ToolTip.Tip="发现新版本"
+                Click="UpdateAvailable_Click">
+                <TextBlock x:Name="PART_TxtUpdateAvailable"
+                           VerticalAlignment="Center"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource IgIconNeutralBrush}"
+                           Text="发现新版本" />
+            </ui:PhToolButton>
+
         </StackPanel>
         </Border>
     </Border>

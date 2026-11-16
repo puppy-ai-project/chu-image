@@ -24,6 +24,8 @@ using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.UI.Windowing;
 using Avalonia.Platform.Storage;
+using Avalonia.Input.Platform;
+using Avalonia.Threading;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -39,6 +41,10 @@ public partial class UpdateWindow : ModalWindow
     private bool _canDownloadAndInstall;
     private bool _isClosed;
     private CancellationTokenSource? _cancelDownload;
+    private IDisposable? _copyDownloadFeedbackTimer;
+
+    private static string CopyDownloadText => Core.Lang.FilePath.Contains("Chinese", StringComparison.OrdinalIgnoreCase)
+        ? "复制下载地址" : "Copy download link";
 
     protected override int MIN_WIDTH => 550;
     protected override int MAX_WIDTH => 550;
@@ -68,6 +74,7 @@ public partial class UpdateWindow : ModalWindow
         PART_BtnTitle.Click += (_, _) => OpenChangeLog();
         PART_BtnChangelog.Click += (_, _) => OpenChangeLog();
         PART_BtnSkipVersion.Click += (_, _) => SkipVersion();
+        PART_BtnCopyDownloadUrl.Click += async (_, _) => await CopyDownloadUrlAsync();
 
         PART_BtnUpgradePro.Click += (_, _) => OpenUrl(UpdateConstants.ProPricingUrl);
         PART_BtnProStore.Click += (_, _) => OpenUrl(UpdateConstants.MsStoreProductUrl);
@@ -82,6 +89,7 @@ public partial class UpdateWindow : ModalWindow
         base.OnIgLanguageChanged();
 
         PART_BtnSkipVersion.Text = Core.Lang[LangId.Menu_MnuCheckForUpdate_SkipVersion];
+        PART_BtnCopyDownloadUrl.Text = CopyDownloadText;
         PART_BtnChangelog.Text = Core.Lang[LangId.QuickSetup_SeeWhatNew];
 
         PART_BtnUpgradePro.Text = Core.Lang[LangId.Menu_MnuUpgradeLicense];
@@ -129,6 +137,7 @@ public partial class UpdateWindow : ModalWindow
 
         _isClosed = true;
         _cancelDownload?.Cancel();
+        _copyDownloadFeedbackTimer?.Dispose();
     }
 
     #endregion // Override Methods
@@ -136,6 +145,18 @@ public partial class UpdateWindow : ModalWindow
 
 
     #region Private Methods
+
+    private async Task CopyDownloadUrlAsync()
+    {
+        var url = _result?.Release?.UpdateUrl;
+        if (string.IsNullOrWhiteSpace(url) || Clipboard is null) return;
+        await Clipboard.SetTextAsync(url);
+        PART_BtnCopyDownloadUrl.Text = Core.Lang.FilePath.Contains("Chinese", StringComparison.OrdinalIgnoreCase)
+            ? "已复制 ✓" : "Copied ✓";
+        _copyDownloadFeedbackTimer?.Dispose();
+        _copyDownloadFeedbackTimer = DispatcherTimer.RunOnce(() => PART_BtnCopyDownloadUrl.Text = CopyDownloadText,
+            TimeSpan.FromSeconds(1.8));
+    }
 
     /// <summary>
     /// Remembers the release as skipped, then closes the window.
@@ -225,6 +246,7 @@ public partial class UpdateWindow : ModalWindow
     {
         PART_ReleaseCard.IsVisible = false;
         PART_BtnSkipVersion.IsVisible = false;
+        PART_BtnCopyDownloadUrl.IsVisible = false;
     }
 
 
@@ -259,6 +281,7 @@ public partial class UpdateWindow : ModalWindow
         IsButton1Visible = false;
         IsProgressVisible = true;
         IsProgressIndeterminate = true;
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         var temp = path + ".download-" + Guid.NewGuid().ToString("N");
         try
         {
@@ -329,6 +352,7 @@ public partial class UpdateWindow : ModalWindow
         IsProgressVisible = true;
         IsProgressIndeterminate = true;
         PART_BtnSkipVersion.IsVisible = false;
+        PART_BtnCopyDownloadUrl.IsVisible = false;
     }
 
     #endregion // Private Methods
@@ -399,6 +423,7 @@ public partial class UpdateWindow : ModalWindow
 
             // "Skip this version" link + [Update / Restart now] [Close]
             PART_BtnSkipVersion.IsVisible = true;
+            PART_BtnCopyDownloadUrl.IsVisible = !string.IsNullOrWhiteSpace(release.UpdateUrl);
             // "Download" is the honest label when the click fetches the package instead of a page
             Button1Text = Core.Lang[_isReadyToInstall
                 ? LangId._RestartNow

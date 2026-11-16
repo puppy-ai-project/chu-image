@@ -26,6 +26,7 @@ using ImageGlass.Common;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
+using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,19 @@ public partial class ToolbarControl : PhControl
     {
         using var windowScope = App.UseWindow(OwnerWindow);
         await Core.API.RunApiAsync(API.IG_OpenSettings);
+    }
+    private void UpdateAvailable_Click(object? sender, RoutedEventArgs e)
+        => OwnerWindow.OpenUpdateOverlay(UpdateProvider.LatestResult);
+
+    private void UpdateResultChanged(object? sender, EventArgs e) => RefreshAvailableUpdate();
+
+    private void RefreshAvailableUpdate()
+    {
+        PART_BtnUpdateAvailable.IsVisible = UpdateProvider.LatestResult?.Status == UpdateCheckStatus.UpdateAvailable;
+        var text = Core.Lang.FilePath.Contains("Chinese", StringComparison.OrdinalIgnoreCase)
+            ? "发现新版本" : "Update available";
+        PART_TxtUpdateAvailable.Text = text;
+        ToolTip.SetTip(PART_BtnUpdateAvailable, text);
     }
     private void FitWindow_Click(object? sender, RoutedEventArgs e) => OwnerWindow.FitWindowToImage();
     private void UpdateFitWindowButton() => PART_BtnFitWindow.IsEnabled = OwnerWindow.CanFitWindowToImage;
@@ -128,6 +142,8 @@ public partial class ToolbarControl : PhControl
 
         _ownerWindow = (ImageGlass.Common.Windows.MainWindow?)TopLevel.GetTopLevel(this);
         Core.Config.PropertyChanged += Config_PropertyChanged;
+        UpdateProvider.LatestResultChanged += UpdateResultChanged;
+        RefreshAvailableUpdate();
         OwnerWindow.PART_MainView.PART_Viewer.RenderStateChanged += Viewer_RenderStateChanged;
         OwnerWindow.PART_MainView.PART_Viewer.DisplayRotationChanged += Viewer_DisplayRotationChanged;
         OwnerWindow.SizeChanged += MainWindow_FitSizeChanged;
@@ -144,6 +160,7 @@ public partial class ToolbarControl : PhControl
     {
         base.OnUnloaded(e);
         Core.Config.PropertyChanged -= Config_PropertyChanged;
+        UpdateProvider.LatestResultChanged -= UpdateResultChanged;
         OwnerWindow.PART_MainView.PART_Viewer.RenderStateChanged -= Viewer_RenderStateChanged;
         OwnerWindow.PART_MainView.PART_Viewer.DisplayRotationChanged -= Viewer_DisplayRotationChanged;
         OwnerWindow.SizeChanged -= MainWindow_FitSizeChanged;
@@ -627,6 +644,7 @@ public partial class ToolbarControl : PhControl
     /// </summary>
     private void RefreshLanguage()
     {
+        RefreshAvailableUpdate();
         // 工具栏按钮绑定的是 LoadItems 生成的 _windowItems 副本，必须刷新副本列表才能更新提示文本
         foreach (var vm in _windowItems)
         {

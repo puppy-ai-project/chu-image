@@ -98,6 +98,10 @@
                 x:Name="PART_BtnSkipVersion"
                 IsVisible="False"
                 Variant="Link" />
+            <ui:PhButton
+                x:Name="PART_BtnCopyDownloadUrl"
+                IsVisible="False"
+                Variant="Link" />
         </StackPanel>
     </uiw:ModalWindow.DialogFooterLeftContent>
 

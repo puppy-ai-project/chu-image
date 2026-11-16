@@ -65,13 +65,13 @@ public partial class AboutOverlayControl : UserControl
     private UpdateFlowState _updateFlowState = UpdateFlowState.Idle;
     private UpdateCheckResult? _lastCheckResult;
     private UpdateReleaseInfo? _currentRelease;
-    private CancellationTokenSource? _downloadCts;
     private string? _downloadedFilePath;
     private DispatcherTimer? _updateBadgeSpinTimer;
     private double _updateBadgeSpinAngle;
 
     private IDisposable? _heroIntroTimer;
     private IDisposable? _copyFeedbackTimer;
+    private IDisposable? _copyDownloadFeedbackTimer;
     private IDisposable? _updateFeedbackTimer;
     private string _activeTab = "update";
     private string _fullVersionClipboardText = string.Empty;
@@ -80,6 +80,8 @@ public partial class AboutOverlayControl : UserControl
     public AboutOverlayControl()
     {
         InitializeComponent();
+
+        DetachedFromVisualTree += (_, _) => Close();
 
         ActualThemeVariantChanged += (_, _) =>
         {
@@ -93,6 +95,10 @@ public partial class AboutOverlayControl : UserControl
     /// </summary>
     public void Open(string? initialTab = "update")
     {
+        UpdateProvider.LatestResultChanged -= LatestUpdateResultChanged;
+        UpdateProvider.LatestResultChanged += LatestUpdateResultChanged;
+        SharedUpdateDownload.Changed -= SharedDownloadChanged;
+        SharedUpdateDownload.Changed += SharedDownloadChanged;
         SwitchTab(initialTab ?? "update");
         SetupEditionChip();
         ApplyLocalizedTexts();
@@ -106,10 +112,13 @@ public partial class AboutOverlayControl : UserControl
         _heroIntroTimer = DispatcherTimer.RunOnce(PlayHeroBurst,
             TimeSpan.FromMilliseconds(HERO_INTRO_DELAY_MS));
 
+        SyncSharedDownload();
+
         // 如果切到更新 Tab 且尚未检查过更新，自动检查一次
         if (_activeTab == "update" && _updateFlowState == UpdateFlowState.Idle)
         {
-            _ = CheckForUpdateInPanelAsync();
+            if (UpdateProvider.LatestResult is { } result) ApplyUpdateResult(result);
+            else _ = CheckForUpdateInPanelAsync();
         }
     }
 
@@ -119,18 +128,17 @@ public partial class AboutOverlayControl : UserControl
     /// </summary>
     public void Close()
     {
+        UpdateProvider.LatestResultChanged -= LatestUpdateResultChanged;
+        SharedUpdateDownload.Changed -= SharedDownloadChanged;
         _heroIntroTimer?.Dispose();
         _heroIntroTimer = null;
         _copyFeedbackTimer?.Dispose();
         _copyFeedbackTimer = null;
+        _copyDownloadFeedbackTimer?.Dispose();
+        _copyDownloadFeedbackTimer = null;
         _updateFeedbackTimer?.Dispose();
         _updateFeedbackTimer = null;
         StopUpdateBadgeSpin();
-
-        if (_updateFlowState == UpdateFlowState.Downloading)
-        {
-            CancelDownload();
-        }
 
         IsVisible = false;
     }
@@ -298,11 +306,23 @@ public partial class AboutOverlayControl : UserControl
 
     #region Software Update In-Panel Flow
 
+    private void LatestUpdateResultChanged(object? sender, EventArgs e)
+    {
+        if (IsVisible && _activeTab == "update" && SharedUpdateDownload.State.Status is not (SharedDownloadStatus.Downloading or SharedDownloadStatus.Ready)
+            && UpdateProvider.LatestResult is { } result)
+            ApplyUpdateResult(result);
+    }
+
     /// <summary>
     /// 外部直接应用检查结果并展示在软件更新工作台。
     /// </summary>
     public void ApplyUpdateResult(UpdateCheckResult result)
     {
+        if (SharedUpdateDownload.State.Status is SharedDownloadStatus.Downloading or SharedDownloadStatus.Ready)
+        {
+            SyncSharedDownload();
+            return;
+        }
         SwitchTab("update");
         StopUpdateBadgeSpin();
         _lastCheckResult = result;
@@ -347,6 +367,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateCheckingState()
     {
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         _updateFlowState = UpdateFlowState.Checking;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1E3B82F6");
         PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#363B82F6");
@@ -371,6 +392,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateNoUpdateState(UpdateReleaseInfo? release)
     {
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         _updateFlowState = UpdateFlowState.NoUpdate;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1A10B981");
         PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#3310B981");
@@ -413,6 +435,8 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateAvailableState(UpdateReleaseInfo release)
     {
+        PART_BtnCopyDownloadUrl.Content = T("复制下载地址", "Copy download link");
+        PART_BtnCopyDownloadUrl.IsVisible = !string.IsNullOrWhiteSpace(release.UpdateUrl);
         _updateFlowState = UpdateFlowState.UpdateAvailable;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1E3B82F6");
         PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#3D60A5FA");
@@ -453,6 +477,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateDownloadingState(string fileName)
     {
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         _updateFlowState = UpdateFlowState.Downloading;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1A0EA5E9");
         PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#330EA5E9");
@@ -485,6 +510,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateReadyState(string savedPath)
     {
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         _updateFlowState = UpdateFlowState.ReadyToInstall;
         _downloadedFilePath = savedPath;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1AF59E0B");
@@ -494,7 +520,7 @@ public partial class AboutOverlayControl : UserControl
         StopUpdateBadgeSpin();
 
         PART_TxtUpdateTitle.Text = "更新包已准备就绪";
-        PART_TxtUpdateSubtitle.Text = "新版本已成功下载并校验完毕";
+        PART_TxtUpdateSubtitle.Text = "安装包已下载完成";
 
         PART_UpdateVersionPill.IsVisible = false;
         PART_UpdateReleaseCard.IsVisible = false;
@@ -514,6 +540,7 @@ public partial class AboutOverlayControl : UserControl
 
     private void SetUpdateFailedState(string errorMessage)
     {
+        PART_BtnCopyDownloadUrl.IsVisible = false;
         _updateFlowState = UpdateFlowState.Failed;
         PART_UpdateBadgeBorder.Background = Brush.Parse("#1AEF4444");
         PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#33EF4444");
@@ -539,120 +566,43 @@ public partial class AboutOverlayControl : UserControl
         PART_BtnTriggerCheck.IsEnabled = true;
     }
 
-    private async Task StartDownloadInPanelAsync()
+    private Task StartDownloadInPanelAsync()
     {
-        if (_currentRelease is null || string.IsNullOrWhiteSpace(_currentRelease.UpdateUrl))
+        if (_currentRelease is not null) SharedUpdateDownload.Start(_currentRelease);
+        return Task.CompletedTask;
+    }
+
+    private void SharedDownloadChanged(object? sender, EventArgs e) => SyncSharedDownload();
+
+    private void SyncSharedDownload()
+    {
+        var state = SharedUpdateDownload.State;
+        if (state.Release is not null) _currentRelease = state.Release;
+        if (state.Status == SharedDownloadStatus.Downloading)
         {
-            SetUpdateFailedState("未找到有效的更新下载链接。");
-            return;
-        }
-
-        var updateUrl = _currentRelease.UpdateUrl;
-        if (!Uri.TryCreate(updateUrl, UriKind.Absolute, out var packageUri) ||
-            packageUri.Scheme != Uri.UriSchemeHttps)
-        {
-            SetUpdateFailedState("更新包链接不符合安全标准（必须使用 HTTPS）。");
-            return;
-        }
-
-        var ext = OperatingSystem.IsMacOS() ? ".zip" : OperatingSystem.IsWindows() ? ".msi" : ".zip";
-        var fileName = Path.GetFileName(packageUri.LocalPath);
-        if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
-        {
-            fileName = $"ChuImage-{_currentRelease.Version}{ext}";
-        }
-
-        var downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-        if (!Directory.Exists(downloadsDir)) downloadsDir = Path.GetTempPath();
-
-        var targetPath = Path.Combine(downloadsDir, fileName);
-        var tempFile = targetPath + ".download-" + Guid.NewGuid().ToString("N");
-
-        CancelDownload();
-        _downloadCts = new CancellationTokenSource();
-        var token = _downloadCts.Token;
-
-        SetUpdateDownloadingState(fileName);
-
-        try
-        {
-            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
-            using var response = await client.GetAsync(packageUri, HttpCompletionOption.ResponseHeadersRead, token);
-            response.EnsureSuccessStatusCode();
-
-            if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps)
-                throw new IOException("下载请求被重定向到了非安全链接。");
-
-            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-            if (totalBytes > 1024L * 1024 * 1024) throw new IOException("安装包大小超出合理限制（> 1GB）。");
-
-            await using (var stream = await response.Content.ReadAsStreamAsync(token))
-            await using (var fileStream = new FileStream(tempFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+            if (_updateFlowState != UpdateFlowState.Downloading)
+                SetUpdateDownloadingState(state.FileName ?? string.Empty);
+            PART_UpProgressBar.IsIndeterminate = state.TotalBytes <= 0;
+            if (state.TotalBytes > 0)
             {
-                var buffer = new byte[81920];
-                long totalRead = 0;
-                int bytesRead;
-                var stopwatch = Stopwatch.StartNew();
-                long lastReadForSpeed = 0;
-                var lastSpeedCheck = stopwatch.Elapsed;
-
-                while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
-                {
-                    totalRead += bytesRead;
-                    if (totalRead > 1024L * 1024 * 1024) throw new IOException("下载数据大小超出安全限制。");
-
-                    await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), token);
-
-                    var now = stopwatch.Elapsed;
-                    var elapsedSec = (now - lastSpeedCheck).TotalSeconds;
-                    var speedText = string.Empty;
-                    if (elapsedSec >= 0.5)
-                    {
-                        var bytesDiff = totalRead - lastReadForSpeed;
-                        var speedBps = bytesDiff / elapsedSec;
-                        speedText = $"{FormatBytes(speedBps)}/s";
-                        lastReadForSpeed = totalRead;
-                        lastSpeedCheck = now;
-                    }
-
-                    await Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        if (totalBytes > 0)
-                        {
-                            var pct = (int)Math.Clamp((totalRead * 100.0) / totalBytes, 0, 100);
-                            PART_UpProgressBar.Value = pct;
-                            PART_TxtUpPercent.Text = $"{pct}%";
-                            PART_TxtUpDownloadSize.Text = $"{FormatBytes(totalRead)} / {FormatBytes(totalBytes)}";
-                        }
-                        else
-                        {
-                            PART_UpProgressBar.IsIndeterminate = true;
-                            PART_TxtUpPercent.Text = string.Empty;
-                            PART_TxtUpDownloadSize.Text = FormatBytes(totalRead);
-                        }
-
-                        if (!string.IsNullOrEmpty(speedText))
-                        {
-                            PART_TxtUpDownloadSpeed.Text = speedText;
-                        }
-                    }, DispatcherPriority.Background);
-                }
+                var pct = (int)Math.Clamp(state.BytesRead * 100.0 / state.TotalBytes, 0, 100);
+                PART_UpProgressBar.Value = pct;
+                PART_TxtUpPercent.Text = $"{pct}%";
+                PART_TxtUpDownloadSize.Text = $"{FormatBytes(state.BytesRead)} / {FormatBytes(state.TotalBytes)}";
             }
-
-            File.Move(tempFile, targetPath, true);
-            SetUpdateReadyState(targetPath);
+            else
+            {
+                PART_TxtUpPercent.Text = string.Empty;
+                PART_TxtUpDownloadSize.Text = FormatBytes(state.BytesRead);
+            }
+            if (state.BytesPerSecond > 0) PART_TxtUpDownloadSpeed.Text = $"{FormatBytes(state.BytesPerSecond)}/s";
         }
-        catch (OperationCanceledException)
-        {
-            if (File.Exists(tempFile)) try { File.Delete(tempFile); } catch { }
-            if (_currentRelease is not null) SetUpdateAvailableState(_currentRelease);
-            else SetUpdateNoUpdateState(null);
-        }
-        catch (Exception ex)
-        {
-            if (File.Exists(tempFile)) try { File.Delete(tempFile); } catch { }
-            SetUpdateFailedState($"下载更新包失败：{ex.Message}");
-        }
+        else if (state.Status == SharedDownloadStatus.Ready && state.FilePath is not null)
+            SetUpdateReadyState(state.FilePath);
+        else if (state.Status == SharedDownloadStatus.Failed)
+            SetUpdateFailedState($"下载更新包失败：{state.Error}");
+        else if (_updateFlowState == UpdateFlowState.Downloading && _currentRelease is not null)
+            SetUpdateAvailableState(_currentRelease);
     }
 
     private async Task InstallAndRestartFromPanelAsync()
@@ -685,20 +635,6 @@ public partial class AboutOverlayControl : UserControl
         {
             PART_BtnUpPrimary.IsEnabled = true;
             SetUpdateFailedState($"执行升级异常：{ex.Message}");
-        }
-    }
-
-    private void CancelDownload()
-    {
-        if (_downloadCts is not null)
-        {
-            try
-            {
-                _downloadCts.Cancel();
-                _downloadCts.Dispose();
-            }
-            catch { }
-            _downloadCts = null;
         }
     }
 
@@ -749,7 +685,6 @@ public partial class AboutOverlayControl : UserControl
 
     private void Backdrop_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_updateFlowState == UpdateFlowState.Downloading) return;
         Close();
         e.Handled = true;
     }
@@ -787,7 +722,7 @@ public partial class AboutOverlayControl : UserControl
     {
         if (_updateFlowState == UpdateFlowState.Downloading)
         {
-            CancelDownload();
+            SharedUpdateDownload.Cancel();
         }
     }
 
@@ -824,6 +759,19 @@ public partial class AboutOverlayControl : UserControl
             }
         }
         catch { }
+    }
+
+    private async void CopyDownloadUrl_Click(object? sender, RoutedEventArgs e)
+    {
+        var url = _currentRelease?.UpdateUrl;
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (string.IsNullOrWhiteSpace(url) || clipboard is null) return;
+
+        await clipboard.SetTextAsync(url);
+        PART_BtnCopyDownloadUrl.Content = T("已复制 ✓", "Copied ✓");
+        _copyDownloadFeedbackTimer?.Dispose();
+        _copyDownloadFeedbackTimer = DispatcherTimer.RunOnce(() =>
+            PART_BtnCopyDownloadUrl.Content = T("复制下载地址", "Copy download link"), TimeSpan.FromSeconds(1.8));
     }
 
     private async void CopyVersion_Click(object? sender, RoutedEventArgs e)

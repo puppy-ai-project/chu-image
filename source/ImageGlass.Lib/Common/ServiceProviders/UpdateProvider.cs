@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
+using Avalonia.Threading;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -31,6 +32,11 @@ public partial class UpdateProvider : IUpdateProvider
 {
     private static readonly HttpClient _httpClient = CreateHttpClient();
     private InterlockedBool _isChecking;
+
+    /// <summary>Latest successful check, shared by all image windows.</summary>
+    private static UpdateCheckResult? _latestResult;
+    public static UpdateCheckResult? LatestResult => Volatile.Read(ref _latestResult);
+    public static event EventHandler? LatestResultChanged;
 
 
     /// <summary>
@@ -65,6 +71,12 @@ public partial class UpdateProvider : IUpdateProvider
         try
         {
             var result = await CheckForUpdateCoreAsync(isScheduled, ct).ConfigureAwait(false);
+
+            if (result.Status != UpdateCheckStatus.CheckFailed)
+            {
+                Volatile.Write(ref _latestResult, result);
+                Dispatcher.UIThread.Post(() => LatestResultChanged?.Invoke(null, EventArgs.Empty));
+            }
 
             if (isScheduled && result.Status != UpdateCheckStatus.CheckFailed)
             {

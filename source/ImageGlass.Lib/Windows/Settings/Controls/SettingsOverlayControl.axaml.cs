@@ -265,6 +265,7 @@ public partial class SettingsOverlayControl : UserControl
 
     private void HideOverlayAndDisposePreviews()
     {
+        PART_AboutPage.Close();
         _previewBgCallback?.Invoke(null);
         CloseLargeThemePreview();
         HideAddBar(clearText: true);
@@ -339,7 +340,7 @@ public partial class SettingsOverlayControl : UserControl
         PART_TxtNavTheme.Text = Core.Lang[LangId.Settings_Theme];
         PART_TxtNavAssociations.Text = Core.Lang[LangId.Settings_Nav_FileTypeAssociations];
         PART_TxtNavAbout.Text = Core.Lang[LangId.Menu_MnuAbout];
-        PART_SidebarTip.Text = T("按 Esc 取消并关闭", "Press Esc to close");
+        PART_SidebarTip.Text = T("按 Esc 关闭", "Press Esc to close");
 
         // 主题页文案
         PART_TxtInstallTheme.Text = Core.Lang[LangId.Settings_Theme_InstallTheme];

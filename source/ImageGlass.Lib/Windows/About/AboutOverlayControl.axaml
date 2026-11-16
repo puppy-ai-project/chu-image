@@ -656,6 +656,13 @@
                                                     Click="UpSecondary_Click"
                                                     IsVisible="False" />
 
+                                                <Button
+                                                    x:Name="PART_BtnCopyDownloadUrl"
+                                                    Classes="link about-secondary-btn"
+                                                    Content="复制下载地址"
+                                                    Click="CopyDownloadUrl_Click"
+                                                    IsVisible="False" />
+
                                                 <!--  立即更新 / 立即重启升级 (核心高光主动作按钮)  -->
                                                 <Button
                                                     x:Name="PART_BtnUpPrimary"
