@@ -27,7 +27,6 @@ using Avalonia.Platform.Storage;
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -153,8 +152,8 @@ public partial class UpdateWindow : ModalWindow
             if (string.Equals(Core.Config.UpdatePendingVersion, version, StringComparison.OrdinalIgnoreCase))
             {
                 Core.UpdateProvider.DiscardPendingUpdate();
-                _ = Core.Config.SaveAsync();
             }
+            _ = Core.Config.SaveAsync();
         }
 
         DialogResult = DialogExitCode.Cancel;
@@ -206,6 +205,7 @@ public partial class UpdateWindow : ModalWindow
 
         PART_LblPublishedDate.Text = Core.Lang[LangId.Menu_MnuCheckForUpdate_PublishedDate, release.PublishedDate];
         PART_LblPublishedDate.IsVisible = !string.IsNullOrWhiteSpace(release.PublishedDate);
+        PART_BtnChangelog.IsVisible = !string.IsNullOrWhiteSpace(release.ChangelogUrl);
 
         // the separator only earns its space when there are notes below it
         var hasNotes = !string.IsNullOrWhiteSpace(release.Description);
@@ -265,6 +265,8 @@ public partial class UpdateWindow : ModalWindow
             using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
             using var response = await client.GetAsync(packageUri, HttpCompletionOption.ResponseHeadersRead, token);
             response.EnsureSuccessStatusCode();
+            if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps)
+                throw new IOException("The update download was redirected to an insecure URL.");
             if (response.Content.Headers.ContentLength > 1024L * 1024 * 1024) throw new IOException("Update package is too large.");
             await using (var input = await response.Content.ReadAsStreamAsync(token))
             await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
@@ -281,20 +283,15 @@ public partial class UpdateWindow : ModalWindow
             var confirm = await ModalWindow.ShowAsync(this, new ModalWindowOptions
             {
                 Title = Core.Lang[LangId._CheckForUpdate],
-                Heading = OperatingSystem.IsWindows() ? "下载完成，是否立即启动安装程序？" : "下载完成，是否立即重启并升级？",
+                Heading = "下载完成，是否立即重启并升级？",
                 Description = path,
             }, ModalWindowButton.Yes_No);
             if (confirm.ExitCode == DialogExitCode.OK)
             {
-                if (OperatingSystem.IsWindows())
-                {
-                    Process.Start(new ProcessStartInfo("msiexec.exe") { UseShellExecute = true, Arguments = "/i \"" + path.Replace("\"", "") + "\"" });
-                }
-                else
-                {
-                    var apply = await Core.UpdateProvider.ApplyAndRestartAsync(path, release, token);
-                    if (!apply.IsSuccess && !apply.IsSkipped) await AppAPIProvider.ShowUpdateFailedAsync(apply, this);
-                }
+                if (App.MainWindow is { } mainWindow) _ = await mainWindow.CaptureAndSaveConfigAsync();
+                SetInstallingState();
+                var apply = await Core.UpdateProvider.ApplyAndRestartAsync(path, release, token);
+                if (!apply.IsSuccess && !apply.IsSkipped) await AppAPIProvider.ShowUpdateFailedAsync(apply, this);
             }
             if (!_isClosed) { DialogResult = DialogExitCode.Cancel; Close(); }
         }
@@ -390,12 +387,8 @@ public partial class UpdateWindow : ModalWindow
         if (result.Status == UpdateCheckStatus.UpdateAvailable && release is not null)
         {
             // a downloaded package installs from disk; otherwise the button opens the download page
-            _isReadyToInstall = string.Equals(Core.Config.UpdatePendingVersion, release.Version,
-                    StringComparison.OrdinalIgnoreCase)
-                && Core.UpdateProvider.CanApplyPendingUpdate
-                && Core.UpdateProvider.GetPendingPackagePath() is not null;
-
-            _canDownloadAndInstall = !_isReadyToInstall && !string.IsNullOrWhiteSpace(release.UpdateUrl);
+            _isReadyToInstall = false;
+            _canDownloadAndInstall = !string.IsNullOrWhiteSpace(release.UpdateUrl);
 
             Heading = Core.Lang[_isReadyToInstall
                 ? LangId.Menu_MnuCheckForUpdate_ReadyToInstall

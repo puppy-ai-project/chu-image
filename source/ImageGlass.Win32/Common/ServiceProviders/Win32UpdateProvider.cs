@@ -24,6 +24,8 @@ using ImageGlass.Win32.Common.WinAPI;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Management.Deployment;
@@ -142,6 +144,36 @@ public class Win32UpdateProvider : UpdateProvider
     public override async Task<UpdateOpResult> ApplyAndRestartAsync(string packageFilePath,
         UpdateReleaseInfo release, CancellationToken ct = default)
     {
+        if (packageFilePath.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!OperatingSystem.IsWindows() || !File.Exists(packageFilePath))
+                return UpdateOpResult.Fail("The Windows installer is missing.");
+
+            try
+            {
+                // The helper waits for this process to exit before starting Windows Installer.
+                // UTF-16 encoded arguments avoid interpreting file names as PowerShell source.
+                var msi = Convert.ToBase64String(Encoding.UTF8.GetBytes(Path.GetFullPath(packageFilePath)));
+                var exe = Convert.ToBase64String(Encoding.UTF8.GetBytes(BHelper.AppExePath));
+                var script = $"$p=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{msi}')); "
+                    + $"$e=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{exe}')); "
+                    + $"Wait-Process -Id {Environment.ProcessId} -Timeout 120 -ErrorAction SilentlyContinue; "
+                    + $"if (Get-Process -Id {Environment.ProcessId} -ErrorAction SilentlyContinue) {{ exit 1 }}; "
+                    + "try { Start-Process -FilePath msiexec.exe -ArgumentList @('/i', ('\"' + $p + '\"')) -Wait -PassThru | Out-Null } "
+                    + "finally { if (Test-Path -LiteralPath $e) { Start-Process -FilePath $e } }";
+                var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+                var powershell = Path.Combine(Environment.SystemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe");
+                var psi = new ProcessStartInfo(powershell) { UseShellExecute = false, CreateNoWindow = true };
+                psi.ArgumentList.Add("-NoProfile");
+                psi.ArgumentList.Add("-EncodedCommand");
+                psi.ArgumentList.Add(encoded);
+                if (Process.Start(psi) is null) return UpdateOpResult.Fail("Could not start the update installer.");
+                BHelper.ExitApp(false);
+                return UpdateOpResult.Ok();
+            }
+            catch (Exception ex) { return UpdateOpResult.Fail(ex); }
+        }
+
         // repeated inline so the platform analyzer can see the guard on the API calls below
         if (!IsInstallSupported || !OperatingSystem.IsWindowsVersionAtLeast(10, 0, MIN_BUILD))
         {

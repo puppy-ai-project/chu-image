@@ -61,14 +61,12 @@ public partial class UpdateProvider : IUpdateProvider
     /// </param>
     public async Task<UpdateCheckResult> CheckForUpdateAsync(CancellationToken ct, bool isScheduled = false)
     {
-        if (_isChecking) return UpdateCheckResult.Failed("Check already in progress.");
-
-        _isChecking.SetTrue();
+        if (!_isChecking.SetTrue()) return UpdateCheckResult.Failed("Check already in progress.");
         try
         {
             var result = await CheckForUpdateCoreAsync(isScheduled, ct).ConfigureAwait(false);
 
-            if (isScheduled)
+            if (isScheduled && result.Status != UpdateCheckStatus.CheckFailed)
             {
                 // record the check time
                 Core.Config.AutoUpdate = BHelper.FormatUtcRoundtrip(DateTime.UtcNow);
