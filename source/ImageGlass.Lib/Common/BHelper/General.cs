@@ -216,7 +216,7 @@ public partial class BHelper
 
         var details = $"""
             Version: {BHelper.AppDisplayName} v{Core.BuildInfo.FullVersion}
-            Magick.NET: {MagickNET.Version}
+            Magick.NET: {GetMagickVersionSafely()}
             Runtime: .NET {Environment.Version}
             OS: {OS} {Environment.OSVersion.VersionString} {osArch}
 
@@ -242,7 +242,7 @@ public partial class BHelper
 
         var debugInfo = $"""
             {BHelper.AppDisplayName} {Core.BuildInfo.FullVersion}
-            {MagickNET.Version}
+            {GetMagickVersionSafely()}
             {OS} {osArch} {Environment.OSVersion.Version}, .NET {Environment.Version}
             """;
 
@@ -255,5 +255,14 @@ public partial class BHelper
 
         return (debugInfo, errDetails);
     }
+
+    private static string GetMagickVersionSafely()
+    {
+        try { return GetMagickVersion(); }
+        catch { return "unavailable"; }
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static string GetMagickVersion() => MagickNET.Version;
 
 }

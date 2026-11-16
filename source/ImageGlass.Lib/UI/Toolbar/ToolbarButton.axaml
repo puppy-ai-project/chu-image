@@ -64,8 +64,9 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
             <Svg
-                Width="{Binding #PART_Icon.Width}"
-                Height="{Binding #PART_Icon.Height}"
+                x:Name="PART_IconSvg"
+                Width="19"
+                Height="19"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Opacity="0.92"

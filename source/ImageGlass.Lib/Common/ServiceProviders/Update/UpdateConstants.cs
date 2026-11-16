@@ -25,7 +25,7 @@ internal static class UpdateConstants
     /// <summary>
     /// Update metadata endpoint (HTTPS only).
     /// </summary>
-    public const string MetadataUrl = "https://image.withqq.com";
+    public const string MetadataUrl = "https://download.withqq.com/chu-image";
 
     /// <summary>
     /// Fallback URL when update check fails.

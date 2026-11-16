@@ -57,4 +57,10 @@
   <ItemGroup>
     <ProjectReference Include="..\ImageGlass.Lib\ImageGlass.Lib.csproj" />
   </ItemGroup>
+
+  <!-- Development runs need the same theme and language resources as the app bundle. -->
+  <ItemGroup>
+    <None Include="..\__assets\__app\**\*" Link="%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
+  </ItemGroup>
 </Project>

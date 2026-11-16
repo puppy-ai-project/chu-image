@@ -27,7 +27,16 @@ namespace ImageGlass.Common.ServiceProviders.Update;
 /// </summary>
 [JsonSerializable(typeof(UpdateManifest))]
 [JsonSerializable(typeof(UpdateReleaseInfo))]
+[JsonSerializable(typeof(PlatformUpdateManifest))]
 public partial class UpdateManifestJsonContext : JsonSerializerContext;
+
+public sealed class PlatformUpdateManifest
+{
+    [JsonPropertyName("version")] public string Version { get; set; } = string.Empty;
+    [JsonPropertyName("dateTime")] public string DateTime { get; set; } = string.Empty;
+    [JsonPropertyName("url")] public string Url { get; set; } = string.Empty;
+    [JsonPropertyName("x64Url")] public string X64Url { get; set; } = string.Empty;
+}
 
 
 /// <summary>

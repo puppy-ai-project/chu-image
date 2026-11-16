@@ -192,6 +192,26 @@ public partial class MacUpdateProvider : UpdateProvider
     {
         TryDeleteDirectory(staged);
 
+        if (dmgPath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            var temp = Path.Combine(Path.GetTempPath(), $"chuimage-update-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(temp);
+            try
+            {
+                var extract = await RunCommandAsync(CreateStartInfo(DITTO, "-x", "-k", dmgPath, temp), COPY_TIMEOUT).ConfigureAwait(false);
+                if (extract.ExitCode != 0) return UpdateOpResult.Fail("Could not extract the update ZIP.", FormatCommandDetails(dmgPath, extract));
+                ct.ThrowIfCancellationRequested();
+                var source = FindAppBundle(temp);
+                if (source is null) return UpdateOpResult.Fail("The update ZIP does not contain an app.");
+                var copy = await RunCommandAsync(CreateStartInfo(DITTO, source, staged), COPY_TIMEOUT).ConfigureAwait(false);
+                if (copy.ExitCode != 0) return UpdateOpResult.Fail("Could not stage the update.", FormatCommandDetails(dmgPath, copy));
+                var verification = await VerifyStagedBundleAsync(staged, bundle).ConfigureAwait(false);
+                if (!verification.IsSuccess) TryDeleteDirectory(staged);
+                return verification;
+            }
+            finally { TryDeleteDirectory(temp); }
+        }
+
         // a private mount point, hidden from Finder; hdiutil creates it and removes it on detach
         var mountPoint = Path.Combine(Path.GetTempPath(), $"{BHelper.AppName}-update-{Environment.ProcessId}");
         var attach = await RunCommandAsync(CreateStartInfo(HDIUTIL, "attach", "-nobrowse", "-noautoopen",

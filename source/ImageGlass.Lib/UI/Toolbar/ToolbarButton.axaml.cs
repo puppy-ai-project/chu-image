@@ -29,6 +29,8 @@ public partial class ToolbarButton : PhToolButton, IToolbarItem
     {
         PART_Icon.Width = size;
         PART_Icon.Height = size;
+        PART_IconSvg.Width = size;
+        PART_IconSvg.Height = size;
     }
 
 

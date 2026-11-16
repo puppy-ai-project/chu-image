@@ -3329,8 +3329,21 @@ public partial class AppAPIProvider
     /// </summary>
     public static async Task IG_CheckForUpdateAsync(bool showUI = true)
     {
-        // The fork has no update feed yet; never check or install upstream releases.
-        if (showUI) await BHelper.OpenUrlAsync(App.MainWindow, "https://image.withqq.com", "from_update");
+        if (!showUI && !UpdateProvider.ShouldCheck) return;
+        var result = await Core.UpdateProvider.CheckForUpdateAsync(CancellationToken.None, !showUI);
+        if (result.Status != Update.UpdateCheckStatus.UpdateAvailable || result.Release is null)
+        {
+            if (showUI)
+            {
+                var dialog = new UpdateWindow();
+                dialog.SetResultState(result);
+                await dialog.ShowAsync(App.MainWindow);
+            }
+            return;
+        }
+        var update = new UpdateWindow();
+        update.SetResultState(result);
+        await update.ShowAsync(App.MainWindow);
     }
 
 

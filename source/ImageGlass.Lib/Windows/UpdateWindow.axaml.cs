@@ -23,7 +23,11 @@ using ImageGlass.Common.ServiceProviders.Licensing;
 using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.UI.Windowing;
+using Avalonia.Platform.Storage;
 using System;
+using System.IO;
+using System.Net.Http;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -182,7 +186,7 @@ public partial class UpdateWindow : ModalWindow
     /// </summary>
     private void ShowProPitch()
     {
-        PART_ProAdCard.IsVisible = !Core.IsProEnabled && !IsMsStoreBuild;
+        PART_ProAdCard.IsVisible = false;
 
         // the Store route only exists on Windows, and only for a build that is not already from it
         PART_BtnProStore.IsVisible = PART_ProAdCard.IsVisible && BHelper.OS == OSType.Windows;
@@ -232,42 +236,74 @@ public partial class UpdateWindow : ModalWindow
         var release = _result?.Release;
         if (release is null) return;
 
+        var extension = OperatingSystem.IsMacOS() ? ".zip" : OperatingSystem.IsWindows() ? ".msi" : string.Empty;
+        if (!Uri.TryCreate(release.UpdateUrl, UriKind.Absolute, out var packageUri) || packageUri.Scheme != Uri.UriSchemeHttps ||
+            string.IsNullOrEmpty(extension) || !packageUri.AbsolutePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+        {
+            await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail("Invalid update package URL."), this);
+            return;
+        }
+        var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            SuggestedFileName = $"ChuImage-{release.Version}{extension}",
+            DefaultExtension = extension.TrimStart('.'),
+            FileTypeChoices = [new FilePickerFileType("ChuImage update") { Patterns = [$"*{extension}"] }],
+        });
+        var path = file?.TryGetLocalPath();
+        if (string.IsNullOrEmpty(path)) return;
+
         _cancelDownload?.Cancel();
         _cancelDownload = new CancellationTokenSource();
         var token = _cancelDownload.Token;
-
-        // downloading state
         Heading = Core.Lang[LangId.Menu_MnuCheckForUpdate_Downloading];
         IsButton1Visible = false;
-        Button2Text = Core.Lang[LangId._Cancel];
         IsProgressVisible = true;
-        IsProgressIndeterminate = false;
-        ProgressValue = 0;
-        PART_BtnSkipVersion.IsVisible = false;
-
-        var progress = new Progress<double>(percent => ProgressValue = percent);
-        var download = await Core.UpdateProvider.TryDownloadForInstallAsync(release, progress, token);
-
-        if (token.IsCancellationRequested || download.IsSkipped) return;
-
-        if (!download.IsSuccess)
+        IsProgressIndeterminate = true;
+        var temp = path + ".download-" + Guid.NewGuid().ToString("N");
+        try
         {
-            // put the dialog back so the user can still reach the download page
-            SetResultState(_result!);
-            _canDownloadAndInstall = false;
-
-            _ = AppAPIProvider.ShowUpdateFailedAsync(download);
+            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+            using var response = await client.GetAsync(packageUri, HttpCompletionOption.ResponseHeadersRead, token);
+            response.EnsureSuccessStatusCode();
+            if (response.Content.Headers.ContentLength > 1024L * 1024 * 1024) throw new IOException("Update package is too large.");
+            await using (var input = await response.Content.ReadAsStreamAsync(token))
+            await using (var output = new FileStream(temp, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+            {
+                var buffer = new byte[81920]; long total = 0; int count;
+                while ((count = await input.ReadAsync(buffer, token)) > 0)
+                {
+                    total += count;
+                    if (total > 1024L * 1024 * 1024) throw new IOException("Update package is too large.");
+                    await output.WriteAsync(buffer.AsMemory(0, count), token);
+                }
+            }
+            File.Move(temp, path, true);
+            var confirm = await ModalWindow.ShowAsync(this, new ModalWindowOptions
+            {
+                Title = Core.Lang[LangId._CheckForUpdate],
+                Heading = OperatingSystem.IsWindows() ? "下载完成，是否立即启动安装程序？" : "下载完成，是否立即重启并升级？",
+                Description = path,
+            }, ModalWindowButton.Yes_No);
+            if (confirm.ExitCode == DialogExitCode.OK)
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    Process.Start(new ProcessStartInfo("msiexec.exe") { UseShellExecute = true, Arguments = "/i \"" + path.Replace("\"", "") + "\"" });
+                }
+                else
+                {
+                    var apply = await Core.UpdateProvider.ApplyAndRestartAsync(path, release, token);
+                    if (!apply.IsSuccess && !apply.IsSkipped) await AppAPIProvider.ShowUpdateFailedAsync(apply, this);
+                }
+            }
+            if (!_isClosed) { DialogResult = DialogExitCode.Cancel; Close(); }
         }
-        else
-        {
-            SetInstallingState();
-            await AppAPIProvider.IG_InstallUpdateAsync(false);
-        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { SetResultState(_result!); await AppAPIProvider.ShowUpdateFailedAsync(UpdateOpResult.Fail(ex), this); }
+        finally { try { if (File.Exists(temp)) File.Delete(temp); } catch { } }
+        return;
 
 
-        if (_isClosed) return;
-        DialogResult = DialogExitCode.Cancel;
-        Close();
     }
 
 
@@ -359,9 +395,7 @@ public partial class UpdateWindow : ModalWindow
                 && Core.UpdateProvider.CanApplyPendingUpdate
                 && Core.UpdateProvider.GetPendingPackagePath() is not null;
 
-            _canDownloadAndInstall = !_isReadyToInstall
-                && Core.UpdateProvider.CanInstallUpdateInApp
-                && Core.UpdateProvider.ResolveArtifact(release) is not null;
+            _canDownloadAndInstall = !_isReadyToInstall && !string.IsNullOrWhiteSpace(release.UpdateUrl);
 
             Heading = Core.Lang[_isReadyToInstall
                 ? LangId.Menu_MnuCheckForUpdate_ReadyToInstall
