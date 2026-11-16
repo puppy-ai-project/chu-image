@@ -130,12 +130,6 @@ public partial class UpdateProvider : IUpdateProvider
             return UpdateCheckResult.NoUpdate(release);
         }
 
-        // user chose to skip this version (an update does exist, so don't surface it as the latest)
-        if (string.Equals(release.Version, Core.Config.UpdateSkippedVersion, StringComparison.OrdinalIgnoreCase))
-        {
-            return UpdateCheckResult.NoUpdate();
-        }
-
         return UpdateCheckResult.Available(release);
     }
 

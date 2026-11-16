@@ -30,6 +30,7 @@ using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
+using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.UI.Windowing;
 using SkiaSharp;
@@ -1746,6 +1747,16 @@ public partial class SettingsOverlayControl : UserControl
 
     private async void LinuxUnregister_Click(object? sender, RoutedEventArgs e)
         => await AppAPIProvider.RegisterAppMenuEntryAsync(false);
+
+    public void ApplyAboutUpdateResult(UpdateCheckResult result)
+    {
+        PART_AboutPage.ApplyUpdateResult(result);
+    }
+
+    public void TriggerAboutUpdateCheck()
+    {
+        _ = PART_AboutPage.CheckForUpdateInPanelAsync();
+    }
 
     #endregion // UI Event Handlers
 }

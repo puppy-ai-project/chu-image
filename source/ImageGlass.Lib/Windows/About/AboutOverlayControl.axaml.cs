@@ -1,20 +1,7 @@
 /*
-ImageGlass - A Fast, Seamless Photo Viewer
+ChuImage - A Modern, Seamless Photo Viewer
 Copyright (C) 2010 - 2026 DUONG DIEU PHAP
-Project homepage: https://imageglass.org
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+Secondary development by puppy.
 */
 using Avalonia;
 using Avalonia.Controls;
@@ -23,14 +10,21 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
+using ImageGlass.Common;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.ServiceProviders;
+using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.UI.Windowing;
 using ImageMagick;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ImageGlass.Common.Windows;
 
@@ -51,15 +45,35 @@ public sealed class AboutCreditItem
 
 
 /// <summary>
-/// 应用内「关于」弹窗遮盖层控件，适配亮/暗双主题，保留并替代独立 AboutWindow 交互。
+/// 应用内「关于」弹窗遮盖层控件，集成软件更新完整工作台（检查、对比、下载、升级就绪一体化完成，无需额外弹窗）。
 /// </summary>
 public partial class AboutOverlayControl : UserControl
 {
     private const int HERO_INTRO_DELAY_MS = 450;
 
+    private enum UpdateFlowState
+    {
+        Idle,
+        Checking,
+        NoUpdate,
+        UpdateAvailable,
+        Downloading,
+        ReadyToInstall,
+        Failed
+    }
+
+    private UpdateFlowState _updateFlowState = UpdateFlowState.Idle;
+    private UpdateCheckResult? _lastCheckResult;
+    private UpdateReleaseInfo? _currentRelease;
+    private CancellationTokenSource? _downloadCts;
+    private string? _downloadedFilePath;
+    private DispatcherTimer? _updateBadgeSpinTimer;
+    private double _updateBadgeSpinAngle;
+
     private IDisposable? _heroIntroTimer;
     private IDisposable? _copyFeedbackTimer;
-    private string _activeTab = "overview";
+    private IDisposable? _updateFeedbackTimer;
+    private string _activeTab = "update";
     private string _fullVersionClipboardText = string.Empty;
 
 
@@ -75,12 +89,11 @@ public partial class AboutOverlayControl : UserControl
 
 
     /// <summary>
-    /// 打开应用内关于弹窗并刷新版本、语言及主题样式。
+    /// 打开应用内关于弹窗并刷新版本、语言及主题样式，默认切换至第一位 Tab（软件更新）。
     /// </summary>
-    public void Open()
+    public void Open(string? initialTab = "update")
     {
-        _activeTab = "overview";
-        SwitchTab("overview");
+        SwitchTab(initialTab ?? "update");
         SetupEditionChip();
         ApplyLocalizedTexts();
         RefreshVersionCards();
@@ -92,6 +105,12 @@ public partial class AboutOverlayControl : UserControl
         _heroIntroTimer?.Dispose();
         _heroIntroTimer = DispatcherTimer.RunOnce(PlayHeroBurst,
             TimeSpan.FromMilliseconds(HERO_INTRO_DELAY_MS));
+
+        // 如果切到更新 Tab 且尚未检查过更新，自动检查一次
+        if (_activeTab == "update" && _updateFlowState == UpdateFlowState.Idle)
+        {
+            _ = CheckForUpdateInPanelAsync();
+        }
     }
 
 
@@ -104,6 +123,15 @@ public partial class AboutOverlayControl : UserControl
         _heroIntroTimer = null;
         _copyFeedbackTimer?.Dispose();
         _copyFeedbackTimer = null;
+        _updateFeedbackTimer?.Dispose();
+        _updateFeedbackTimer = null;
+        StopUpdateBadgeSpin();
+
+        if (_updateFlowState == UpdateFlowState.Downloading)
+        {
+            CancelDownload();
+        }
+
         IsVisible = false;
     }
 
@@ -119,6 +147,7 @@ public partial class AboutOverlayControl : UserControl
         PART_LblSlogan.Text = Core.Lang[LangId._Slogan];
         PART_LblCopyright.Text = $"Copyright © 2010-{DateTime.UtcNow.Year} Dương Diệu Pháp · 二次开发：puppy";
 
+        PART_TxtTabUpdate.Text = T("软件更新", "Software Update");
         PART_TxtTabOverview.Text = T("版本与链接", Core.Lang[LangId.Menu_MnuAbout]);
         PART_TxtTabCredits.Text = Core.Lang[LangId._Credits];
         PART_TxtCopyVersion.Text = T("复制版本", "Copy info");
@@ -136,9 +165,10 @@ public partial class AboutOverlayControl : UserControl
         PART_TxtPrivacySub.Text = T("本地离线安全浏览", "Offline private viewing");
 
         PART_TxtDonate.Text = Core.Lang[LangId._Donate];
-        PART_TxtCheckUpdate.Text = Core.Lang[LangId._CheckForUpdate];
+        var checkText = Core.Lang[LangId._CheckForUpdate];
         PART_BtnDone.Content = Core.Lang[LangId._Close];
 
+        ToolTip.SetTip(PART_BtnCardCheckUpdate, checkText);
         ToolTip.SetTip(PART_BtnEdition, Core.Lang[Core.IsProEnabled
             ? LangId.Menu_MnuManageLicense
             : LangId.Menu_MnuUpgradeLicense]);
@@ -150,33 +180,29 @@ public partial class AboutOverlayControl : UserControl
     private void RefreshVersionCards()
     {
         var appVer = Core.BuildInfo.Version;
-        var magickFull = MagickNET.Version;
-        var magickCompact = ExtractCompactMagickVersion(magickFull);
-        var runtime = RuntimeInformation.FrameworkDescription;
+        var magickVer = CleanVersionString(MagickNET.Version);
+        var runtimeVer = CleanVersionString(RuntimeInformation.FrameworkDescription);
 
         PART_ValAppVersion.Text = appVer;
-        PART_ValMagickVersion.Text = magickCompact;
-        PART_ValRuntimeVersion.Text = runtime;
-        ToolTip.SetTip(PART_ValMagickVersion, magickFull);
+        PART_ValMagickVersion.Text = magickVer;
+        PART_ValRuntimeVersion.Text = runtimeVer;
 
+        var fullRuntime = RuntimeInformation.FrameworkDescription;
+        var osDesc = RuntimeInformation.OSDescription;
         var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
-        var osDesc = RuntimeInformation.OSDescription.Trim();
-        PART_LblFullVersionLine.Text = $"{magickFull}  ·  {osDesc} ({arch})";
 
-        _fullVersionClipboardText = $"""
-            {BHelper.AppDisplayName} {(Core.IsProEnabled ? "Pro" : "Classic")}
-            {Core.Lang[LangId._AboutVersion]} {appVer}
-            {magickFull}
-            {runtime}
-            {osDesc} ({arch})
-            """;
+        _fullVersionClipboardText =
+            $"ChuImage {appVer}{Environment.NewLine}" +
+            $".NET Runtime: {fullRuntime} ({arch}){Environment.NewLine}" +
+            $"Magick.NET: {MagickNET.Version}{Environment.NewLine}" +
+            $"OS: {osDesc} ({arch}){Environment.NewLine}" +
+            $"Homepage: https://image.withqq.com";
     }
 
 
-    private static string ExtractCompactMagickVersion(string full)
+    private static string CleanVersionString(string full)
     {
         if (string.IsNullOrWhiteSpace(full)) return "-";
-        // 将如 "Magick.NET-Q16-HDRI-arm64 AnyCPU 14.0.0" 或含 "Q16-HDRI" 与版本号的字符串提炼清晰
         var parts = full.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return parts.Length >= 3 ? $"{parts[^2]} {parts[^1]}" : full;
     }
@@ -214,16 +240,26 @@ public partial class AboutOverlayControl : UserControl
     }
 
 
-    private void SwitchTab(string tab)
+    public void SwitchTab(string tab)
     {
-        _activeTab = tab == "credits" ? "credits" : "overview";
+        _activeTab = tab switch
+        {
+            "overview" => "overview",
+            "credits" => "credits",
+            _ => "update"
+        };
+
+        var isUpdate = _activeTab == "update";
         var isOverview = _activeTab == "overview";
+        var isCredits = _activeTab == "credits";
 
+        PART_TabUpdate.Classes.Set("active", isUpdate);
         PART_TabOverview.Classes.Set("active", isOverview);
-        PART_TabCredits.Classes.Set("active", !isOverview);
+        PART_TabCredits.Classes.Set("active", isCredits);
 
+        PART_UpdatePanel.IsVisible = isUpdate;
         PART_OverviewPanel.IsVisible = isOverview;
-        PART_CreditsPanel.IsVisible = !isOverview;
+        PART_CreditsPanel.IsVisible = isCredits;
     }
 
 
@@ -260,10 +296,452 @@ public partial class AboutOverlayControl : UserControl
     }
 
 
+    #region Software Update In-Panel Flow
+
+    /// <summary>
+    /// 外部直接应用检查结果并展示在软件更新工作台。
+    /// </summary>
+    public void ApplyUpdateResult(UpdateCheckResult result)
+    {
+        SwitchTab("update");
+        StopUpdateBadgeSpin();
+        _lastCheckResult = result;
+        _currentRelease = result.Release;
+
+        if (result.Status == UpdateCheckStatus.UpdateAvailable && result.Release is not null)
+        {
+            SetUpdateAvailableState(result.Release);
+        }
+        else if (result.Status == UpdateCheckStatus.CheckFailed)
+        {
+            SetUpdateFailedState(string.IsNullOrWhiteSpace(result.ErrorMessage)
+                ? "连接更新服务器失败，请检查网络设置后重试。"
+                : result.ErrorMessage);
+        }
+        else
+        {
+            SetUpdateNoUpdateState(result.Release);
+        }
+    }
+
+    /// <summary>
+    /// 在面板内部直接触发检查更新流程。
+    /// </summary>
+    public async Task CheckForUpdateInPanelAsync()
+    {
+        if (_updateFlowState == UpdateFlowState.Checking || _updateFlowState == UpdateFlowState.Downloading) return;
+
+        SwitchTab("update");
+        SetUpdateCheckingState();
+
+        try
+        {
+            var result = await Core.UpdateProvider.CheckForUpdateAsync(CancellationToken.None, false);
+            ApplyUpdateResult(result);
+        }
+        catch (Exception ex)
+        {
+            SetUpdateFailedState($"检查更新异常：{ex.Message}");
+        }
+    }
+
+    private void SetUpdateCheckingState()
+    {
+        _updateFlowState = UpdateFlowState.Checking;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1E3B82F6");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#363B82F6");
+        HideAllUpdateIcons();
+        PART_UpdateIconChecking.IsVisible = true;
+        StartUpdateBadgeSpin();
+
+        PART_TxtUpdateTitle.Text = "正在检查更新...";
+        PART_TxtUpdateSubtitle.Text = "正在连接官方服务器获取最新版本信息";
+
+        PART_UpdateVersionPill.IsVisible = false;
+        PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpDownloadCard.IsVisible = false;
+        PART_UpReadyCard.IsVisible = false;
+        PART_UpFailedCard.IsVisible = false;
+
+        PART_BtnUpSecondary.IsVisible = false;
+        PART_BtnUpPrimary.IsVisible = false;
+        PART_BtnTriggerCheck.IsEnabled = false;
+    }
+
+    private void SetUpdateNoUpdateState(UpdateReleaseInfo? release)
+    {
+        _updateFlowState = UpdateFlowState.NoUpdate;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1A10B981");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#3310B981");
+        HideAllUpdateIcons();
+        PART_UpdateIconNoUpdate.IsVisible = true;
+        StopUpdateBadgeSpin();
+
+        var currentVer = Core.BuildInfo.Version;
+        PART_TxtUpdateTitle.Text = "当前已是最新版本";
+        PART_TxtUpdateSubtitle.Text = $"当前版本 v{currentVer} 已是官方最新版本，暂无可用更新。";
+
+        PART_UpdateVersionPill.IsVisible = false;
+        PART_UpDownloadCard.IsVisible = false;
+        PART_UpReadyCard.IsVisible = false;
+        PART_UpFailedCard.IsVisible = false;
+        PART_UpdateBadgeDot.IsVisible = false;
+
+        PART_BtnUpSecondary.IsVisible = false;
+        PART_BtnUpPrimary.IsVisible = false;
+        PART_BtnTriggerCheck.IsVisible = true;
+        PART_BtnTriggerCheck.IsEnabled = true;
+
+        if (release is not null && !string.IsNullOrWhiteSpace(release.PublishedDate))
+        {
+            PART_TxtUpPublishedDate.Text = $"发布时间：{release.PublishedDate}";
+            var hasNotes = !string.IsNullOrWhiteSpace(release.Description);
+            PART_UpNotesScroller.IsVisible = hasNotes;
+            if (hasNotes) PART_TxtUpNotes.Text = release.Description;
+            PART_BtnUpChangelog.IsVisible = !string.IsNullOrWhiteSpace(release.ChangelogUrl);
+            PART_UpdateReleaseCard.IsVisible = true;
+        }
+        else
+        {
+            PART_UpdateReleaseCard.IsVisible = false;
+        }
+    }
+
+    private void SetUpdateAvailableState(UpdateReleaseInfo release)
+    {
+        _updateFlowState = UpdateFlowState.UpdateAvailable;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1E3B82F6");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#3D60A5FA");
+        HideAllUpdateIcons();
+        PART_UpdateIconAvailable.IsVisible = true;
+        StopUpdateBadgeSpin();
+
+        PART_TxtUpdateTitle.Text = "发现新版本！";
+        PART_TxtUpdateSubtitle.Text = "ChuImage 发布了新版本，建议立即更新以获得更佳体验。";
+
+        PART_TxtUpCurrentVer.Text = $"v{Core.BuildInfo.Version}";
+        PART_TxtUpLatestVer.Text = $"v{release.Version}";
+        PART_UpdateVersionPill.IsVisible = true;
+
+        PART_TxtUpPublishedDate.Text = string.IsNullOrWhiteSpace(release.PublishedDate)
+            ? $"版本号：{release.Version}"
+            : $"发布时间：{release.PublishedDate}";
+
+        var hasNotes = !string.IsNullOrWhiteSpace(release.Description);
+        PART_UpNotesScroller.IsVisible = hasNotes;
+        if (hasNotes) PART_TxtUpNotes.Text = release.Description;
+        PART_BtnUpChangelog.IsVisible = !string.IsNullOrWhiteSpace(release.ChangelogUrl);
+        PART_UpdateReleaseCard.IsVisible = true;
+
+        PART_UpDownloadCard.IsVisible = false;
+        PART_UpReadyCard.IsVisible = false;
+        PART_UpFailedCard.IsVisible = false;
+
+        // 右上角主操作按钮
+        PART_BtnTriggerCheck.IsVisible = false;
+        PART_BtnUpSecondary.IsVisible = false;
+        PART_BtnUpPrimary.Content = "立即更新";
+        PART_BtnUpPrimary.IsVisible = true;
+
+        PART_UpdateBadgeDot.IsVisible = true;
+    }
+
+    private void SetUpdateDownloadingState(string fileName)
+    {
+        _updateFlowState = UpdateFlowState.Downloading;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1A0EA5E9");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#330EA5E9");
+        HideAllUpdateIcons();
+        PART_UpdateIconDownloading.IsVisible = true;
+        StopUpdateBadgeSpin();
+
+        PART_TxtUpdateTitle.Text = "正在下载更新包...";
+        PART_TxtUpdateSubtitle.Text = "正在从官方服务器下载最新安装包，请稍候";
+
+        PART_UpdateVersionPill.IsVisible = false;
+        PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpReadyCard.IsVisible = false;
+        PART_UpFailedCard.IsVisible = false;
+
+        PART_TxtUpPackageName.Text = fileName;
+        PART_TxtUpPercent.Text = "0%";
+        PART_UpProgressBar.Value = 0;
+        PART_TxtUpDownloadSize.Text = "正在建立安全连接...";
+        PART_TxtUpDownloadSpeed.Text = string.Empty;
+        PART_UpDownloadCard.IsVisible = true;
+
+        // 右上角操作
+        PART_BtnTriggerCheck.IsVisible = false;
+        PART_BtnUpPrimary.IsVisible = false;
+        PART_BtnUpSecondary.Content = "取消下载";
+        PART_BtnUpSecondary.IsVisible = true;
+    }
+
+    private void SetUpdateReadyState(string savedPath)
+    {
+        _updateFlowState = UpdateFlowState.ReadyToInstall;
+        _downloadedFilePath = savedPath;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1AF59E0B");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#33F59E0B");
+        HideAllUpdateIcons();
+        PART_UpdateIconReady.IsVisible = true;
+        StopUpdateBadgeSpin();
+
+        PART_TxtUpdateTitle.Text = "更新包已准备就绪";
+        PART_TxtUpdateSubtitle.Text = "新版本已成功下载并校验完毕";
+
+        PART_UpdateVersionPill.IsVisible = false;
+        PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpDownloadCard.IsVisible = false;
+        PART_UpFailedCard.IsVisible = false;
+
+        PART_TxtUpSavedPath.Text = savedPath;
+        PART_UpReadyCard.IsVisible = true;
+
+        // 右上角主操作：立即重启升级
+        PART_BtnTriggerCheck.IsVisible = false;
+        PART_BtnUpSecondary.IsVisible = false;
+        PART_BtnUpPrimary.Content = "立即重启升级";
+        PART_BtnUpPrimary.IsVisible = true;
+    }
+
+    private void SetUpdateFailedState(string errorMessage)
+    {
+        _updateFlowState = UpdateFlowState.Failed;
+        PART_UpdateBadgeBorder.Background = Brush.Parse("#1AEF4444");
+        PART_UpdateBadgeBorder.BorderBrush = Brush.Parse("#33EF4444");
+        HideAllUpdateIcons();
+        PART_UpdateIconFailed.IsVisible = true;
+        StopUpdateBadgeSpin();
+
+        PART_TxtUpdateTitle.Text = "更新操作遇到问题";
+        PART_TxtUpdateSubtitle.Text = "未能完成更新检查或安装包下载";
+
+        PART_UpdateVersionPill.IsVisible = false;
+        PART_UpdateReleaseCard.IsVisible = false;
+        PART_UpDownloadCard.IsVisible = false;
+        PART_UpReadyCard.IsVisible = false;
+
+        PART_TxtUpFailedDetails.Text = errorMessage;
+        PART_UpFailedCard.IsVisible = true;
+
+        PART_BtnUpSecondary.IsVisible = false;
+        PART_BtnUpPrimary.IsVisible = false;
+        PART_BtnTriggerCheck.IsVisible = true;
+        PART_BtnTriggerCheck.IsEnabled = true;
+    }
+
+    private async Task StartDownloadInPanelAsync()
+    {
+        if (_currentRelease is null || string.IsNullOrWhiteSpace(_currentRelease.UpdateUrl))
+        {
+            SetUpdateFailedState("未找到有效的更新下载链接。");
+            return;
+        }
+
+        var updateUrl = _currentRelease.UpdateUrl;
+        if (!Uri.TryCreate(updateUrl, UriKind.Absolute, out var packageUri) ||
+            packageUri.Scheme != Uri.UriSchemeHttps)
+        {
+            SetUpdateFailedState("更新包链接不符合安全标准（必须使用 HTTPS）。");
+            return;
+        }
+
+        var ext = OperatingSystem.IsMacOS() ? ".zip" : OperatingSystem.IsWindows() ? ".msi" : ".zip";
+        var fileName = Path.GetFileName(packageUri.LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName) || !fileName.Contains('.'))
+        {
+            fileName = $"ChuImage-{_currentRelease.Version}{ext}";
+        }
+
+        var downloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        if (!Directory.Exists(downloadsDir)) downloadsDir = Path.GetTempPath();
+
+        var targetPath = Path.Combine(downloadsDir, fileName);
+        var tempFile = targetPath + ".download-" + Guid.NewGuid().ToString("N");
+
+        CancelDownload();
+        _downloadCts = new CancellationTokenSource();
+        var token = _downloadCts.Token;
+
+        SetUpdateDownloadingState(fileName);
+
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+            using var response = await client.GetAsync(packageUri, HttpCompletionOption.ResponseHeadersRead, token);
+            response.EnsureSuccessStatusCode();
+
+            if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps)
+                throw new IOException("下载请求被重定向到了非安全链接。");
+
+            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+            if (totalBytes > 1024L * 1024 * 1024) throw new IOException("安装包大小超出合理限制（> 1GB）。");
+
+            await using (var stream = await response.Content.ReadAsStreamAsync(token))
+            await using (var fileStream = new FileStream(tempFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
+            {
+                var buffer = new byte[81920];
+                long totalRead = 0;
+                int bytesRead;
+                var stopwatch = Stopwatch.StartNew();
+                long lastReadForSpeed = 0;
+                var lastSpeedCheck = stopwatch.Elapsed;
+
+                while ((bytesRead = await stream.ReadAsync(buffer, token)) > 0)
+                {
+                    totalRead += bytesRead;
+                    if (totalRead > 1024L * 1024 * 1024) throw new IOException("下载数据大小超出安全限制。");
+
+                    await fileStream.WriteAsync(buffer.AsMemory(0, bytesRead), token);
+
+                    var now = stopwatch.Elapsed;
+                    var elapsedSec = (now - lastSpeedCheck).TotalSeconds;
+                    var speedText = string.Empty;
+                    if (elapsedSec >= 0.5)
+                    {
+                        var bytesDiff = totalRead - lastReadForSpeed;
+                        var speedBps = bytesDiff / elapsedSec;
+                        speedText = $"{FormatBytes(speedBps)}/s";
+                        lastReadForSpeed = totalRead;
+                        lastSpeedCheck = now;
+                    }
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        if (totalBytes > 0)
+                        {
+                            var pct = (int)Math.Clamp((totalRead * 100.0) / totalBytes, 0, 100);
+                            PART_UpProgressBar.Value = pct;
+                            PART_TxtUpPercent.Text = $"{pct}%";
+                            PART_TxtUpDownloadSize.Text = $"{FormatBytes(totalRead)} / {FormatBytes(totalBytes)}";
+                        }
+                        else
+                        {
+                            PART_UpProgressBar.IsIndeterminate = true;
+                            PART_TxtUpPercent.Text = string.Empty;
+                            PART_TxtUpDownloadSize.Text = FormatBytes(totalRead);
+                        }
+
+                        if (!string.IsNullOrEmpty(speedText))
+                        {
+                            PART_TxtUpDownloadSpeed.Text = speedText;
+                        }
+                    }, DispatcherPriority.Background);
+                }
+            }
+
+            File.Move(tempFile, targetPath, true);
+            SetUpdateReadyState(targetPath);
+        }
+        catch (OperationCanceledException)
+        {
+            if (File.Exists(tempFile)) try { File.Delete(tempFile); } catch { }
+            if (_currentRelease is not null) SetUpdateAvailableState(_currentRelease);
+            else SetUpdateNoUpdateState(null);
+        }
+        catch (Exception ex)
+        {
+            if (File.Exists(tempFile)) try { File.Delete(tempFile); } catch { }
+            SetUpdateFailedState($"下载更新包失败：{ex.Message}");
+        }
+    }
+
+    private async Task InstallAndRestartFromPanelAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_downloadedFilePath) || !File.Exists(_downloadedFilePath) || _currentRelease is null)
+        {
+            SetUpdateFailedState("安装包文件不存在，请重新下载。");
+            return;
+        }
+
+        try
+        {
+            if (App.MainWindow is MainWindow mainWindow)
+            {
+                _ = await mainWindow.CaptureAndSaveConfigAsync();
+            }
+
+            PART_TxtUpdateTitle.Text = "正在准备重启升级...";
+            PART_TxtUpdateSubtitle.Text = "ChuImage 将在几秒内退出并完成安装升级，请稍候";
+            PART_BtnUpPrimary.IsEnabled = false;
+
+            var result = await Core.UpdateProvider.ApplyAndRestartAsync(_downloadedFilePath, _currentRelease, CancellationToken.None);
+            if (!result.IsSuccess && !result.IsSkipped)
+            {
+                PART_BtnUpPrimary.IsEnabled = true;
+                SetUpdateFailedState($"执行升级失败：{result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            PART_BtnUpPrimary.IsEnabled = true;
+            SetUpdateFailedState($"执行升级异常：{ex.Message}");
+        }
+    }
+
+    private void CancelDownload()
+    {
+        if (_downloadCts is not null)
+        {
+            try
+            {
+                _downloadCts.Cancel();
+                _downloadCts.Dispose();
+            }
+            catch { }
+            _downloadCts = null;
+        }
+    }
+
+    private static string FormatBytes(double bytes)
+    {
+        if (bytes < 1024) return $"{bytes:F0} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+
+    private void HideAllUpdateIcons()
+    {
+        PART_UpdateIconChecking.IsVisible = false;
+        PART_UpdateIconNoUpdate.IsVisible = false;
+        PART_UpdateIconAvailable.IsVisible = false;
+        PART_UpdateIconDownloading.IsVisible = false;
+        PART_UpdateIconReady.IsVisible = false;
+        PART_UpdateIconFailed.IsVisible = false;
+    }
+
+    private void StartUpdateBadgeSpin()
+    {
+        StopUpdateBadgeSpin();
+        _updateBadgeSpinAngle = 0;
+        _updateBadgeSpinTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (_, _) =>
+        {
+            _updateBadgeSpinAngle = (_updateBadgeSpinAngle + 6) % 360;
+            if (PART_UpdateIconChecking.RenderTransform is not RotateTransform rt)
+            {
+                rt = new RotateTransform();
+                PART_UpdateIconChecking.RenderTransform = rt;
+            }
+            rt.Angle = _updateBadgeSpinAngle;
+        });
+        _updateBadgeSpinTimer.Start();
+    }
+
+    private void StopUpdateBadgeSpin()
+    {
+        _updateBadgeSpinTimer?.Stop();
+        _updateBadgeSpinTimer = null;
+    }
+
+    #endregion // Software Update In-Panel Flow
+
+
     #region UI Event Handlers
 
     private void Backdrop_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (_updateFlowState == UpdateFlowState.Downloading) return;
         Close();
         e.Handled = true;
     }
@@ -278,6 +756,66 @@ public partial class AboutOverlayControl : UserControl
         {
             SwitchTab(tab);
         }
+    }
+
+    private async void TriggerCheck_Click(object? sender, RoutedEventArgs e)
+    {
+        await CheckForUpdateInPanelAsync();
+    }
+
+    private async void UpPrimary_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_updateFlowState == UpdateFlowState.UpdateAvailable)
+        {
+            await StartDownloadInPanelAsync();
+        }
+        else if (_updateFlowState == UpdateFlowState.ReadyToInstall)
+        {
+            await InstallAndRestartFromPanelAsync();
+        }
+    }
+
+    private void UpSecondary_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_updateFlowState == UpdateFlowState.Downloading)
+        {
+            CancelDownload();
+        }
+    }
+
+    private async void UpChangelog_Click(object? sender, RoutedEventArgs e)
+    {
+        var url = _currentRelease?.ChangelogUrl;
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            await BHelper.OpenUrlAsync(TopLevel.GetTopLevel(this) as PhWindow, url, "from_about_update");
+        }
+    }
+
+    private void UpOpenFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_downloadedFilePath) || !File.Exists(_downloadedFilePath)) return;
+
+        try
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", $"-R \"{_downloadedFilePath}\"");
+            }
+            else if (OperatingSystem.IsWindows())
+            {
+                Process.Start("explorer.exe", $"/select,\"{_downloadedFilePath}\"");
+            }
+            else
+            {
+                var dir = Path.GetDirectoryName(_downloadedFilePath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Process.Start("xdg-open", $"\"{dir}\"");
+                }
+            }
+        }
+        catch { }
     }
 
     private async void CopyVersion_Click(object? sender, RoutedEventArgs e)
@@ -317,7 +855,9 @@ public partial class AboutOverlayControl : UserControl
 
     private async void CheckForUpdate_Click(object? sender, RoutedEventArgs e)
     {
-        _ = await Core.API.RunApiAsync(API.IG_CheckForUpdate, "true");
+        // 点击关于界面各处的检查更新，直接切换至第一位 Tab 并在面板内运行检查
+        SwitchTab("update");
+        await CheckForUpdateInPanelAsync();
     }
 
     #endregion // UI Event Handlers

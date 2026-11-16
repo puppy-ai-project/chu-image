@@ -224,23 +224,62 @@
             <Setter Property="Background" Value="{DynamicResource IgDarkBrush242730}" />
             <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
         </Style>
+
+        <!--  检查更新专属高质感胶囊按钮 (醒目微光 + 精致描边)  -->
+        <Style Selector="Button.about-update-btn">
+            <Setter Property="Template" Value="{StaticResource AboutCleanButtonTemplate}" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush1E3B82F6}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush4060A5FA}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource IgDarkBrush93C5FD}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Padding" Value="11,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.about-update-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush263B82F6}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush6060A5FA}" />
+            <Setter Property="Foreground" Value="#BAE6FD" />
+        </Style>
+        <Style Selector="Button.about-update-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush1E3B82F6}" />
+            <Setter Property="RenderTransform" Value="scale(0.97)" />
+        </Style>
+        <Style Selector="Button.about-update-btn.checking">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush20FFFFFF}" />
+            <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushE5E7EB}" />
+        </Style>
     </UserControl.Styles>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+    <ScrollViewer
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="0">
 
-                    <!--  ======================================================  -->
-                    <!--  1. HERO BRAND BANNER (全新图标 + 标题 + 版本徽章 + 粒子星芒)  -->
-                    <!--  ======================================================  -->
-                    <Border
-                        x:Name="PART_Hero"
-                        Grid.Row="0"
-                        Padding="22,18,16,16"
-                        Background="{StaticResource AboutHeroGradient}"
-                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
-                        BorderThickness="0,0,0,1"
-                        Cursor="Hand"
-                        PointerPressed="Hero_PointerPressed">
+            <!--  ======================================================  -->
+            <!--  1. HERO BRAND BANNER (全新图标 + 标题 + 版本徽章 + 粒子星芒)  -->
+            <!--  ======================================================  -->
+            <Border
+                x:Name="PART_Hero"
+                Padding="22,18,16,16"
+                Background="{StaticResource AboutHeroGradient}"
+                BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
+                BorderThickness="0,0,0,1"
+                Cursor="Hand"
+                PointerPressed="Hero_PointerPressed">
                         <Panel>
                             <!--  星空微光粒子动画层 (置于标识下方)  -->
                             <ui:PhStarsOverlay x:Name="PART_HeroStars" IsHitTestVisible="False" />
@@ -332,110 +371,508 @@
                         </Panel>
                     </Border>
 
-                    <!--  ======================================================  -->
-                    <!--  2. SEGMENTED TABS BAR (应用与环境 | 开源致谢)              -->
-                    <!--  ======================================================  -->
+            <!--  ======================================================  -->
+            <!--  2. SEGMENTED TABS BAR (软件更新 | 应用与环境 | 开源致谢)     -->
+            <!--  ======================================================  -->
+            <Border
+                Padding="22,10"
+                BorderBrush="{DynamicResource IgDarkBrush0AFFFFFF}"
+                BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="Auto,*,Auto">
                     <Border
-                        Grid.Row="1"
-                        Padding="22,10"
-                        BorderBrush="{DynamicResource IgDarkBrush0AFFFFFF}"
-                        BorderThickness="0,0,0,1">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <Border
-                                Grid.Column="0"
-                                Padding="3"
-                                Background="{DynamicResource IgDarkBrush15171C}"
-                                BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
-                                BorderThickness="1"
-                                CornerRadius="9">
-                                <StackPanel Orientation="Horizontal" Spacing="3">
-                                    <Button
-                                        x:Name="PART_TabOverview"
-                                        Classes="link about-tab-pill active"
-                                        Click="Tab_Click"
-                                        Tag="overview">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Path
-                                                Width="12"
-                                                Height="12"
-                                                VerticalAlignment="Center"
-                                                Data="{StaticResource IconInfo}"
-                                                Fill="{DynamicResource IgIconCyanBrush}"
-                                                Stretch="Uniform" />
-                                            <TextBlock
-                                                x:Name="PART_TxtTabOverview"
-                                                VerticalAlignment="Center"
-                                                Text="版本与链接" />
-                                        </StackPanel>
-                                    </Button>
-
-                                    <Button
-                                        x:Name="PART_TabCredits"
-                                        Classes="link about-tab-pill"
-                                        Click="Tab_Click"
-                                        Tag="credits">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Path
-                                                Width="12"
-                                                Height="12"
-                                                VerticalAlignment="Center"
-                                                Data="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"
-                                                Fill="{DynamicResource IgIconPurpleBrush}"
-                                                Stretch="Uniform" />
-                                            <TextBlock
-                                                x:Name="PART_TxtTabCredits"
-                                                VerticalAlignment="Center"
-                                                Text="开源致谢" />
-                                            <Border
-                                                Padding="5,0.5"
-                                                VerticalAlignment="Center"
-                                                Background="{DynamicResource IgDarkBrush14FFFFFF}"
-                                                CornerRadius="6">
-                                                <TextBlock
-                                                    x:Name="PART_TxtCreditsCount"
-                                                    FontSize="10"
-                                                    Foreground="{DynamicResource IgDarkBrush9CA3AF}"
-                                                    Text="12" />
-                                            </Border>
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
-
-                            <!--  右侧一键复制版本快捷按钮  -->
+                        Grid.Column="0"
+                        Padding="3"
+                        Background="{DynamicResource IgDarkBrush15171C}"
+                        BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                        BorderThickness="1"
+                        CornerRadius="9">
+                        <StackPanel Orientation="Horizontal" Spacing="3">
+                            <!--  TAB 1: 软件更新 (排在第一位，内嵌完成全部检查、对比、下载、重启升级流程，无需弹窗)  -->
                             <Button
-                                x:Name="PART_BtnCopyVersion"
-                                Classes="link about-secondary-btn"
-                                Grid.Column="2"
-                                Height="28"
-                                Padding="10,0"
-                                Click="CopyVersion_Click">
-                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                x:Name="PART_TabUpdate"
+                                Classes="link about-tab-pill active"
+                                Click="Tab_Click"
+                                Tag="update">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path
-                                        x:Name="PART_CopyIcon"
-                                        Width="11.5"
-                                        Height="11.5"
+                                        Width="12"
+                                        Height="12"
                                         VerticalAlignment="Center"
-                                        Data="{StaticResource IconCopy}"
+                                        Data="{StaticResource IconReset}"
                                         Fill="{DynamicResource IgIconBlueBrush}"
                                         Stretch="Uniform" />
                                     <TextBlock
-                                        x:Name="PART_TxtCopyVersion"
+                                        x:Name="PART_TxtTabUpdate"
                                         VerticalAlignment="Center"
-                                        FontSize="11.5"
-                                        Text="复制版本" />
+                                        Text="软件更新" />
+                                    <Ellipse
+                                        x:Name="PART_UpdateBadgeDot"
+                                        Width="6"
+                                        Height="6"
+                                        VerticalAlignment="Center"
+                                        Fill="{DynamicResource IgIconEmeraldBrush}"
+                                        IsVisible="False" />
                                 </StackPanel>
                             </Button>
-                        </Grid>
+
+                            <!--  TAB 2: 版本与链接  -->
+                            <Button
+                                x:Name="PART_TabOverview"
+                                Classes="link about-tab-pill"
+                                Click="Tab_Click"
+                                Tag="overview">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Path
+                                        Width="12"
+                                        Height="12"
+                                        VerticalAlignment="Center"
+                                        Data="{StaticResource IconInfo}"
+                                        Fill="{DynamicResource IgIconCyanBrush}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        x:Name="PART_TxtTabOverview"
+                                        VerticalAlignment="Center"
+                                        Text="版本与链接" />
+                                </StackPanel>
+                            </Button>
+
+                            <!--  TAB 3: 开源致谢  -->
+                            <Button
+                                x:Name="PART_TabCredits"
+                                Classes="link about-tab-pill"
+                                Click="Tab_Click"
+                                Tag="credits">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Path
+                                        Width="12"
+                                        Height="12"
+                                        VerticalAlignment="Center"
+                                        Data="M12 21.35 10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"
+                                        Fill="{DynamicResource IgIconPurpleBrush}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        x:Name="PART_TxtTabCredits"
+                                        VerticalAlignment="Center"
+                                        Text="开源致谢" />
+                                    <Border
+                                        Padding="5,0.5"
+                                        VerticalAlignment="Center"
+                                        Background="{DynamicResource IgDarkBrush14FFFFFF}"
+                                        CornerRadius="6">
+                                        <TextBlock
+                                            x:Name="PART_TxtCreditsCount"
+                                            FontSize="10"
+                                            Foreground="{DynamicResource IgDarkBrush9CA3AF}"
+                                            Text="12" />
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Border>
 
-                    <!--  ======================================================  -->
-                    <!--  3. CONTENT BODY (Overview vs Credits)                   -->
-                    <!--  ======================================================  -->
-                    <Panel Grid.Row="2">
+                    <!--  右侧快捷操作组：一键复制版本  -->
+                    <StackPanel
+                        Grid.Column="2"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                        <Button
+                            x:Name="PART_BtnCopyVersion"
+                            Classes="link about-secondary-btn"
+                            Height="28"
+                            Padding="10,0"
+                            Click="CopyVersion_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Path
+                                    x:Name="PART_CopyIcon"
+                                    Width="11.5"
+                                    Height="11.5"
+                                    VerticalAlignment="Center"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgIconBlueBrush}"
+                                    Stretch="Uniform" />
+                                <TextBlock
+                                    x:Name="PART_TxtCopyVersion"
+                                    VerticalAlignment="Center"
+                                    FontSize="11.5"
+                                    Text="复制版本" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!--  ======================================================  -->
+            <!--  3. CONTENT BODY (各 Tab 对应的内容面板)                  -->
+            <!--  ======================================================  -->
+            <Panel>
+
+                        <!--  PAGE 0: 软件更新专属工作台 (一体化微雕大卡片，告别割裂长条，无需额外弹窗)  -->
+                        <Border x:Name="PART_UpdatePanel" IsVisible="True">
+                            <StackPanel Margin="22,16,22,18">
+                                <Border
+                                    Background="{DynamicResource IgDarkBrush181A20}"
+                                    BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="18,16">
+                                    <StackPanel Spacing="14">
+                                        <!--  1. 头部工作台：徽章 + 标题与版本胶囊 + 右上角主操作按钮组  -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!--  状态微雕徽章 (46x46 Squircle)  -->
+                                            <Border
+                                                x:Name="PART_UpdateBadgeBorder"
+                                                Grid.Column="0"
+                                                Width="46"
+                                                Height="46"
+                                                CornerRadius="12"
+                                                Background="{DynamicResource IgDarkBrush1E3B82F6}"
+                                                BorderBrush="{DynamicResource IgDarkBrush363B82F6}"
+                                                BorderThickness="1"
+                                                VerticalAlignment="Center">
+                                                <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <!--  检查中旋转环  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconChecking"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M12 2v2a8 8 0 1 1-8 8H2C2 6.477 6.477 2 12 2z"
+                                                        Fill="{DynamicResource IgDarkBrush60A5FA}"
+                                                        Stretch="Uniform"
+                                                        RenderTransformOrigin="50%,50%"
+                                                        IsVisible="False" />
+                                                    <!--  无更新/已最新 (翡翠绿对勾)  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconNoUpdate"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                                        Fill="{DynamicResource IgIconEmeraldBrush}"
+                                                        Stretch="Uniform"
+                                                        IsVisible="False" />
+                                                    <!--  发现新版本 (微火箭/向上升级)  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconAvailable"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M12 2.5a.75.75 0 0 1 .67.416l2.5 5a.75.75 0 0 1-.096.848l-2 2a.75.75 0 0 1-.574.236H9.5a.75.75 0 0 1-.574-.236l-2-2a.75.75 0 0 1-.096-.848l2.5-5A.75.75 0 0 1 10 2.5h2zm-4.72 10.32a.75.75 0 0 1 1.06 0L11 15.44V8.75a.75.75 0 0 1 1.5 0v6.69l2.66-2.67a.75.75 0 1 1 1.06 1.06l-3.94 3.94a.75.75 0 0 1-1.06 0l-3.94-3.94a.75.75 0 0 1 0-1.06z"
+                                                        Fill="{DynamicResource IgDarkBrush60A5FA}"
+                                                        Stretch="Uniform"
+                                                        IsVisible="False" />
+                                                    <!--  正在下载  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconDownloading"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-1 6a1 1 0 0 1 2 0v4.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586z"
+                                                        Fill="{DynamicResource IgIconBlueBrush}"
+                                                        Stretch="Uniform"
+                                                        IsVisible="False" />
+                                                    <!--  准备就绪  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconReady"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M12 2l2.4 5.3 5.8.5-4.4 3.9 1.3 5.7-5.1-3-5.1 3 1.3-5.7-4.4-3.9 5.8-.5L12 2z"
+                                                        Fill="{DynamicResource IgIconAmberBrush}"
+                                                        Stretch="Uniform"
+                                                        IsVisible="False" />
+                                                    <!--  失败  -->
+                                                    <Path
+                                                        x:Name="PART_UpdateIconFailed"
+                                                        Width="20"
+                                                        Height="20"
+                                                        Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                                                        Fill="{DynamicResource IgDarkBrushF87171}"
+                                                        Stretch="Uniform"
+                                                        IsVisible="False" />
+                                                </Panel>
+                                            </Border>
+
+                                            <!--  文字标题组 + 紧凑版本跃升胶囊  -->
+                                            <StackPanel Grid.Column="1" Margin="14,0,12,0" VerticalAlignment="Center" Spacing="4">
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                    <TextBlock
+                                                        x:Name="PART_TxtUpdateTitle"
+                                                        FontSize="15"
+                                                        FontWeight="Bold"
+                                                        Foreground="{DynamicResource IgDarkBrushF9FAFB}"
+                                                        Text="软件更新"
+                                                        VerticalAlignment="Center" />
+
+                                                    <!--  内嵌紧凑版本对比胶囊 (发现新版本时显现)  -->
+                                                    <Border
+                                                        x:Name="PART_UpdateVersionPill"
+                                                        Background="{DynamicResource IgDarkBrush242730}"
+                                                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="5"
+                                                        Padding="7,2"
+                                                        VerticalAlignment="Center"
+                                                        IsVisible="False">
+                                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                            <TextBlock x:Name="PART_TxtUpCurrentVer" Text="v1.0.8" FontSize="11" Foreground="{DynamicResource IgDarkBrush9CA3AF}" VerticalAlignment="Center" />
+                                                            <TextBlock Text="→" FontSize="11" Foreground="{DynamicResource IgDarkBrush60A5FA}" VerticalAlignment="Center" />
+                                                            <TextBlock x:Name="PART_TxtUpLatestVer" Text="v1.0.9" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrush93C5FD}" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpdateSubtitle"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource IgDarkBrush9CA3AF}"
+                                                    Text="点击右侧按钮检查最新版本"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <!--  右上角主操作按钮组 (一体化显眼落座，绝不再留白)  -->
+                                            <StackPanel
+                                                Grid.Column="2"
+                                                Orientation="Horizontal"
+                                                Spacing="8"
+                                                VerticalAlignment="Center">
+                                                <!--  检查更新次按钮 (最新版或平时显现)  -->
+                                                <Button
+                                                    x:Name="PART_BtnTriggerCheck"
+                                                    Classes="link about-secondary-btn"
+                                                    Click="TriggerCheck_Click">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Path
+                                                            Width="12"
+                                                            Height="12"
+                                                            Data="{StaticResource IconReset}"
+                                                            Fill="{DynamicResource IgIconCyanBrush}"
+                                                            Stretch="Uniform"
+                                                            VerticalAlignment="Center" />
+                                                        <TextBlock Text="检查更新" FontSize="11.5" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+
+                                                <!--  取消下载按钮 (下载中显现)  -->
+                                                <Button
+                                                    x:Name="PART_BtnUpSecondary"
+                                                    Classes="link about-secondary-btn"
+                                                    Content="取消下载"
+                                                    Click="UpSecondary_Click"
+                                                    IsVisible="False" />
+
+                                                <!--  立即更新 / 立即重启升级 (核心高光主动作按钮)  -->
+                                                <Button
+                                                    x:Name="PART_BtnUpPrimary"
+                                                    Classes="link about-primary-btn"
+                                                    Content="立即更新"
+                                                    Click="UpPrimary_Click"
+                                                    IsVisible="False" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!--  2. 发布时间与更新说明区域 (有新版本时在卡片下半部展开)  -->
+                                        <StackPanel x:Name="PART_UpdateReleaseCard" Spacing="10" IsVisible="False">
+                                            <Border Height="1" Background="{DynamicResource IgDarkBrush10FFFFFF}" />
+
+                                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <Path
+                                                        Width="12"
+                                                        Height="12"
+                                                        Data="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"
+                                                        Fill="{DynamicResource IgDarkBrush8E95A2}"
+                                                        Stretch="Uniform"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBlock
+                                                        x:Name="PART_TxtUpPublishedDate"
+                                                        FontSize="11.5"
+                                                        Foreground="{DynamicResource IgDarkBrush8E95A2}"
+                                                        VerticalAlignment="Center"
+                                                        Text="发布时间：2026-11-16 11:56:52" />
+                                                </StackPanel>
+
+                                                <Button
+                                                    x:Name="PART_BtnUpChangelog"
+                                                    Grid.Column="2"
+                                                    Classes="link"
+                                                    Click="UpChangelog_Click"
+                                                    IsVisible="False">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <TextBlock Text="查看更新日志" FontSize="11.5" Foreground="{DynamicResource IgDarkBrush60A5FA}" VerticalAlignment="Center" />
+                                                        <Path
+                                                            Width="9.5"
+                                                            Height="9.5"
+                                                            Data="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7z"
+                                                            Fill="{DynamicResource IgDarkBrush60A5FA}"
+                                                            Stretch="Uniform"
+                                                            VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <!--  说明文本区 (温润内衬底，避免空洞)  -->
+                                            <Border
+                                                Background="{DynamicResource IgDarkBrush14FFFFFF}"
+                                                CornerRadius="8"
+                                                Padding="12,10"
+                                                MaxHeight="130">
+                                                <ScrollViewer
+                                                    x:Name="PART_UpNotesScroller"
+                                                    HorizontalScrollBarVisibility="Disabled"
+                                                    VerticalScrollBarVisibility="Auto">
+                                                    <SelectableTextBlock
+                                                        x:Name="PART_TxtUpNotes"
+                                                        FontSize="12"
+                                                        LineHeight="18"
+                                                        Foreground="{DynamicResource IgDarkBrushD1D5DB}"
+                                                        TextWrapping="Wrap" />
+                                                </ScrollViewer>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!--  3. 下载进度展示 (下载中展开)  -->
+                                        <StackPanel x:Name="PART_UpDownloadCard" Spacing="8" IsVisible="False">
+                                            <Border Height="1" Background="{DynamicResource IgDarkBrush10FFFFFF}" />
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpPackageName"
+                                                    Grid.Column="0"
+                                                    FontSize="12"
+                                                    Foreground="{DynamicResource IgDarkBrushD1D5DB}"
+                                                    Text="正在下载安装包..."
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpPercent"
+                                                    Grid.Column="1"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource IgDarkBrush60A5FA}"
+                                                    Text="0%" />
+                                            </Grid>
+                                            <ProgressBar
+                                                x:Name="PART_UpProgressBar"
+                                                Height="6"
+                                                Minimum="0"
+                                                Maximum="100"
+                                                Value="0"
+                                                CornerRadius="3"
+                                                Foreground="{DynamicResource IgDarkBrush3B82F6}"
+                                                Background="{DynamicResource IgDarkBrush242730}" />
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpDownloadSize"
+                                                    Grid.Column="0"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource IgDarkBrush8B92A0}"
+                                                    Text="正在建立连接..." />
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpDownloadSpeed"
+                                                    Grid.Column="1"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource IgDarkBrush8B92A0}" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!--  4. 就绪提示 (下载完成，提供在访达/文件夹中查看入口)  -->
+                                        <StackPanel x:Name="PART_UpReadyCard" Spacing="10" IsVisible="False">
+                                            <Border Height="1" Background="{DynamicResource IgDarkBrush10FFFFFF}" />
+                                            <Border
+                                                Background="{DynamicResource IgDarkBrush14FFFFFF}"
+                                                CornerRadius="8"
+                                                Padding="12,10">
+                                                <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                        <Border
+                                                            Width="24"
+                                                            Height="24"
+                                                            Background="{DynamicResource IgIconAmberSoftBrush}"
+                                                            CornerRadius="6">
+                                                            <Path
+                                                                Width="12"
+                                                                Height="12"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Data="{StaticResource IconFolderOpen}"
+                                                                Fill="{DynamicResource IgIconAmberBrush}"
+                                                                Stretch="Uniform" />
+                                                        </Border>
+                                                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                                                            <TextBlock
+                                                                FontSize="12"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                                                                Text="安装包下载完毕" />
+                                                            <TextBlock
+                                                                x:Name="PART_TxtUpSavedPath"
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource IgDarkBrush8B92A0}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                MaxWidth="380" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+
+                                                    <Button
+                                                        x:Name="PART_BtnUpOpenFolder"
+                                                        Grid.Column="1"
+                                                        Classes="link about-secondary-btn"
+                                                        Height="26"
+                                                        Padding="9,0"
+                                                        VerticalAlignment="Center"
+                                                        Click="UpOpenFolder_Click">
+                                                        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                            <TextBlock Text="在文件夹中显示" FontSize="11" VerticalAlignment="Center" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!--  5. 无更新/已最新补充信息 (安全稳定状态)  -->
+                                        <StackPanel x:Name="PART_UpLatestInfoCard" Spacing="8" IsVisible="False">
+                                            <Border Height="1" Background="{DynamicResource IgDarkBrush10FFFFFF}" />
+                                            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                    <Path
+                                                        Width="12"
+                                                        Height="12"
+                                                        Data="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"
+                                                        Fill="{DynamicResource IgIconEmeraldBrush}"
+                                                        Stretch="Uniform"
+                                                        VerticalAlignment="Center" />
+                                                    <TextBlock
+                                                        FontSize="11.5"
+                                                        Foreground="{DynamicResource IgDarkBrush8E95A2}"
+                                                        VerticalAlignment="Center"
+                                                        Text="运行环境已处于最新稳定通道" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    x:Name="PART_TxtUpPlatformInfo"
+                                                    Grid.Column="1"
+                                                    FontSize="11"
+                                                    Foreground="{DynamicResource IgDarkBrush6F7785}"
+                                                    VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!--  6. 失败提示  -->
+                                        <Border
+                                            x:Name="PART_UpFailedCard"
+                                            Background="{DynamicResource IgDarkBrush1EEF4444}"
+                                            BorderBrush="{DynamicResource IgDarkBrush38EF4444}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="12,10"
+                                            IsVisible="False">
+                                            <TextBlock
+                                                x:Name="PART_TxtUpFailedDetails"
+                                                FontSize="12"
+                                                LineHeight="17"
+                                                Foreground="{DynamicResource IgDarkBrushFECACA}"
+                                                TextWrapping="Wrap" />
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
 
                         <!--  PAGE 1: 版本信息卡片 + 快捷入口链接  -->
-                        <Border x:Name="PART_OverviewPanel">
+                        <Border x:Name="PART_OverviewPanel" IsVisible="False">
                             <StackPanel Margin="22,16,22,18" Spacing="14">
 
                                 <!--  3.1 三列环境信息卡片  -->
@@ -472,12 +909,40 @@
                                                     Foreground="{DynamicResource IgDarkBrush8B92A0}"
                                                     Text="应用版本" />
                                             </StackPanel>
-                                            <SelectableTextBlock
-                                                x:Name="PART_ValAppVersion"
-                                                FontSize="12"
-                                                FontWeight="SemiBold"
-                                                Foreground="{DynamicResource IgDarkBrushF3F4F6}"
-                                                TextWrapping="Wrap" />
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <SelectableTextBlock
+                                                    x:Name="PART_ValAppVersion"
+                                                    Grid.Column="0"
+                                                    VerticalAlignment="Center"
+                                                    FontSize="12"
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                                                    TextWrapping="Wrap" />
+                                                <Button
+                                                    x:Name="PART_BtnCardCheckUpdate"
+                                                    Grid.Column="1"
+                                                    Classes="link about-icon-btn"
+                                                    Width="24"
+                                                    Height="24"
+                                                    VerticalAlignment="Center"
+                                                    Click="CheckForUpdate_Click"
+                                                    ToolTip.Tip="检查更新">
+                                                    <Path
+                                                        x:Name="PART_UpdateIconCard"
+                                                        Width="11"
+                                                        Height="11"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Data="{StaticResource IconReset}"
+                                                        Fill="{DynamicResource IgIconBlueBrush}"
+                                                        Stretch="Uniform"
+                                                        RenderTransformOrigin="50%,50%">
+                                                        <Path.RenderTransform>
+                                                            <RotateTransform Angle="0" />
+                                                        </Path.RenderTransform>
+                                                    </Path>
+                                                </Button>
+                                            </Grid>
                                         </StackPanel>
                                     </Border>
 
@@ -738,14 +1203,11 @@
                     </Panel>
 
                     <!--  ======================================================  -->
-                    <!--  4. UNIFIED FOOTER (赞助 / 检查更新 / 关闭)              -->
+                    <!--  4. UNIFIED FOOTER (随页面整体平滑滚动，通透温润底栏)       -->
                     <!--  ======================================================  -->
                     <Border
-                        Grid.Row="3"
-                        Padding="22,12"
-                        Background="{DynamicResource IgDarkBrush1C1E23}"
-                        BorderBrush="{DynamicResource IgDarkBrush10FFFFFF}"
-                        BorderThickness="0,1,0,0">
+                        Padding="22,6,22,16"
+                        Background="Transparent">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                 <Button
@@ -764,22 +1226,6 @@
                                         <TextBlock x:Name="PART_TxtDonate" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-
-                                <Button
-                                    x:Name="PART_BtnCheckForUpdate"
-                                    Classes="link about-secondary-btn"
-                                    Click="CheckForUpdate_Click">
-                                    <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <Path
-                                            Width="12"
-                                            Height="12"
-                                            VerticalAlignment="Center"
-                                            Data="{StaticResource IconReset}"
-                                            Fill="{DynamicResource IgIconCyanBrush}"
-                                            Stretch="Uniform" />
-                                        <TextBlock x:Name="PART_TxtCheckUpdate" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
                             </StackPanel>
 
                             <Button
@@ -790,6 +1236,6 @@
                         </Grid>
                     </Border>
 
-    </Grid>
+        </StackPanel>
     </ScrollViewer>
 </UserControl>

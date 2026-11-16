@@ -3330,7 +3330,24 @@ public partial class AppAPIProvider
     public static async Task IG_CheckForUpdateAsync(bool showUI = true)
     {
         if (!showUI && !UpdateProvider.ShouldCheck) return;
+
+        var mainWin = App.MainWindow as MainWindow;
+        if (showUI && mainWin is not null)
+        {
+            mainWin.OpenUpdateOverlay(null);
+        }
+
         var result = await Core.UpdateProvider.CheckForUpdateAsync(CancellationToken.None, !showUI);
+
+        if (mainWin is not null)
+        {
+            if (showUI || (result.Status == Update.UpdateCheckStatus.UpdateAvailable && result.Release is not null))
+            {
+                mainWin.OpenUpdateOverlay(result);
+            }
+            return;
+        }
+
         if (result.Status != Update.UpdateCheckStatus.UpdateAvailable || result.Release is null)
         {
             if (showUI)

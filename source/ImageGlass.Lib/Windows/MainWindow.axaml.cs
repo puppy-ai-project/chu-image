@@ -28,6 +28,7 @@ using ImageGlass.Common.Extensions;
 using ImageGlass.Common.Localization;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
+using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.Tools;
 using ImageGlass.UI;
@@ -294,6 +295,8 @@ public partial class MainWindow : PhWindow
         => PART_MainView.PromptRenameAsync(title, heading, filePath, thumbnail);
     public void OpenSettingsOverlay(string? section = null) => PART_MainView.OpenSettingsOverlay(section);
     public void OpenAboutOverlay() => PART_MainView.OpenAboutOverlay();
+    public void OpenUpdateOverlay(UpdateCheckResult? result = null) => PART_MainView.OpenUpdateOverlay(result);
+    public void CloseUpdateOverlay() => PART_MainView.CloseUpdateOverlay();
 
     private void ResizeHandle_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -663,6 +666,7 @@ public partial class MainWindow : PhWindow
             or AutoCompleteBox) return;
 
         if (e.KeyModifiers != KeyModifiers.None
+            || PART_MainView.IsUpdateOverlayOpen
             || PART_MainView.IsRenameModalOpen
             || PART_MainView.IsDeleteConfirmationOpen
             || PART_MainView.IsAboutOverlayOpen
@@ -699,6 +703,7 @@ public partial class MainWindow : PhWindow
         }
 
         if (e.KeyModifiers != KeyModifiers.None
+            || PART_MainView.IsUpdateOverlayOpen
             || PART_MainView.IsRenameModalOpen
             || PART_MainView.IsDeleteConfirmationOpen
             || PART_MainView.IsAboutOverlayOpen

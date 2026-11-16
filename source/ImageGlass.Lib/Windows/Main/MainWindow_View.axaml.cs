@@ -32,6 +32,7 @@ using ImageGlass.Common.Loggers;
 using ImageGlass.Common.Photoing;
 using ImageGlass.Common.ServiceProviders;
 using ImageGlass.Common.ServiceProviders.FileSearchService;
+using ImageGlass.Common.ServiceProviders.Update;
 using ImageGlass.Common.Types;
 using ImageGlass.Tools;
 using ImageGlass.UI;
@@ -517,6 +518,32 @@ public partial class MainWindowView : PhControl
     }
 
     #endregion // About Overlay
+
+
+    #region Update In About Overlay
+
+    public bool IsUpdateOverlayOpen => false;
+
+    public void OpenUpdateOverlay(UpdateCheckResult? result = null)
+    {
+        CloseImageInfoOverlay();
+        PART_SettingsModal.Open("about", hex => UpdateViewerCustomBackground(hex));
+        if (result is not null)
+        {
+            PART_SettingsModal.ApplyAboutUpdateResult(result);
+        }
+        else
+        {
+            PART_SettingsModal.TriggerAboutUpdateCheck();
+        }
+    }
+
+    public void CloseUpdateOverlay()
+    {
+        PART_SettingsModal.Close();
+    }
+
+    #endregion // Update In About Overlay
 
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
