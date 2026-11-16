@@ -466,8 +466,9 @@ public partial class AboutOverlayControl : UserControl
         PART_UpReadyCard.IsVisible = false;
         PART_UpFailedCard.IsVisible = false;
 
-        // 右上角主操作按钮
-        PART_BtnTriggerCheck.IsVisible = false;
+        // 允许在发现更新后重新检查，同时保留下载操作。
+        PART_BtnTriggerCheck.IsVisible = true;
+        PART_BtnTriggerCheck.IsEnabled = true;
         PART_BtnUpSecondary.IsVisible = false;
         PART_BtnUpPrimary.Content = "立即更新";
         PART_BtnUpPrimary.IsVisible = true;
