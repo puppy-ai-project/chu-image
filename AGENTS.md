@@ -18,6 +18,10 @@
 
 后三个目录在当前工作区是本地符号链接，并被根目录 `.gitignore` 忽略；其他环境可能不存在或指向不同位置。不要把符号链接、私有 skill、配置、凭证或发布产物提交到公共仓库。跨仓库操作前分别检查路径、Git 状态和实际内容。
 
+修改 `project-skill/` 中的 skill 后，读取 `project-skill/sync-project-skill/SKILL.md`，按其中流程将本次相关改动提交并推送到该独立仓库。
+
+新会话开始处理本项目时，如 `project-skill/chu-image/chu-image-context/SKILL.md` 存在，先阅读该 skill 和其中的项目功能记录；每次完成涉及核心功能的改动后，按该 skill 更新记录。目录不存在时，以当前源码和本文件为准继续工作。
+
 ## 客户端架构
 
 - 技术栈为 C#、.NET 11、Avalonia 和 SkiaSharp；依赖版本集中在 `source/Directory.Packages.props`，各项目配置使用预览版 C# 功能。
