@@ -147,6 +147,7 @@ public partial class SettingsOverlayControl : UserControl
     {
         InitializeComponent();
         SizeChanged += (_, _) => UpdateSettingsCardHeight();
+        PART_ThemeCardsGrid.SizeChanged += (_, _) => UpdateThemeCardSizes();
         ActualThemeVariantChanged += (_, _) =>
         {
             if (IsVisible) UpdateAppearanceMode();
@@ -284,7 +285,7 @@ public partial class SettingsOverlayControl : UserControl
     private void SettingsThemeChanged(object? sender, ThemePackChangedEventArgs e)
     {
         ApplySettingsThemeResources();
-        if (IsVisible) RebuildThemeGridCards();
+        if (IsVisible) UpdateThemeCardSelection();
     }
 
     private void ApplySettingsThemeResources()
@@ -782,9 +783,40 @@ public partial class SettingsOverlayControl : UserControl
             var isActive = string.Equals(theme.FolderName, currentActive, StringComparison.OrdinalIgnoreCase);
             PART_ThemeCardsGrid.Children.Add(BuildThemeGridCard(theme, isActive));
         }
+        UpdateThemeCardSizes();
     }
 
-    private Border BuildThemeGridCard(IgTheme theme, bool isActive)
+    private void UpdateThemeCardSizes()
+    {
+        var width = PART_ThemeCardsGrid.Bounds.Width;
+        if (width <= 0) return;
+        foreach (var card in PART_ThemeCardsGrid.Children.OfType<Button>())
+        {
+            var size = Math.Max(0, width / 3 - card.Margin.Left - card.Margin.Right);
+            if (Math.Abs(card.Width - size) > 0.1 || double.IsNaN(card.Width)) card.Width = size;
+            if (Math.Abs(card.Height - size) > 0.1 || double.IsNaN(card.Height)) card.Height = size;
+        }
+    }
+
+    private void UpdateThemeCardSelection()
+    {
+        foreach (var card in PART_ThemeCardsGrid.Children.OfType<Button>())
+        {
+            if (card.Tag is IgTheme theme)
+            {
+                var active = string.Equals(theme.FolderName, Core.Theme.FolderName, StringComparison.OrdinalIgnoreCase);
+                card.Classes.Set("active", active);
+                if (card.Content is Grid { Children.Count: > 1 } grid && grid.Children[1] is Grid footer)
+                {
+                    if (footer.Children[0] is TextBlock name)
+                        name.Foreground = BHelper.ColorFromHex(Core.Theme.Colors.TextColor).ToBrush();
+                    if (footer.Children[1] is Border badge) badge.IsVisible = active;
+                }
+            }
+        }
+    }
+
+    private Button BuildThemeGridCard(IgTheme theme, bool isActive)
     {
         var data = GetThemePaletteData(theme);
         var isDark = theme.Settings.IsDarkMode;
@@ -792,7 +824,6 @@ public partial class SettingsOverlayControl : UserControl
         // 1. Mini Window Container (IDE preview mockup)
         var miniWindow = new Border
         {
-            Height = 106,
             Margin = new Thickness(6, 6, 6, 0),
             Background = Brush.Parse(data.BgHex),
             BorderBrush = Brush.Parse(isDark ? "#24FFFFFF" : "#E2E8F0"),
@@ -935,17 +966,18 @@ public partial class SettingsOverlayControl : UserControl
         // 3. Card Outer Border
         var cardGrid = new Grid
         {
-            RowDefinitions = new RowDefinitions("Auto,Auto"),
-            IsHitTestVisible = false,
+            RowDefinitions = new RowDefinitions("*,Auto"),
         };
         Grid.SetRow(miniWindow, 0);
         Grid.SetRow(bottomGrid, 1);
         cardGrid.Children.AddRange([miniWindow, bottomGrid]);
 
-        var card = new Border
+        var card = new Button
         {
             Margin = new Thickness(4),
-            Child = cardGrid,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Content = cardGrid,
+            Tag = theme,
         };
         card.Classes.Add("theme-grid-card");
         if (isActive)
@@ -954,8 +986,7 @@ public partial class SettingsOverlayControl : UserControl
         }
 
         card.DoubleTapped += async (_, _) => await ShowLargeThemePreviewAsync(theme);
-        card.PointerPressed += async (_, _) => await SelectAndApplyThemeAsync(theme);
-
+        card.Click += async (_, _) => await SelectAndApplyThemeAsync(theme);
         return card;
     }
 
@@ -992,7 +1023,7 @@ public partial class SettingsOverlayControl : UserControl
         }
         await Core.Config.SaveAsync();
 
-        RebuildThemeGridCards();
+        UpdateThemeCardSelection();
         UpdateThemeSlotOverview();
         UpdateAppearanceMode();
         UpdateFooterState();

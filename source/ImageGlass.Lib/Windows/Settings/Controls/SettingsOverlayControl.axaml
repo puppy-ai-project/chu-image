@@ -65,6 +65,24 @@
             </Border>
         </ControlTemplate>
 
+        <!--  整张主题卡片使用固定的矩形命中区域，预览仅用于显示。  -->
+        <ControlTemplate x:Key="ThemeCardButtonTemplate" TargetType="Button">
+            <Border Background="Transparent">
+                <Border
+                    IsHitTestVisible="False"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
+                    <ContentPresenter
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Border>
+            </Border>
+        </ControlTemplate>
+
         <!--  外观模式可视化选择卡片模板 (System / Dark / Light)  -->
         <ControlTemplate x:Key="AppearanceModeCardTemplate" TargetType="RadioButton">
             <Border
@@ -428,19 +446,23 @@
         </Style>
 
         <!--  3 列主题网格卡片现代质感 (复刻顶级 IDE 调色板卡片)  -->
-        <Style Selector="Border.theme-grid-card">
+        <Style Selector="Button.theme-grid-card">
+            <Setter Property="Template" Value="{StaticResource ThemeCardButtonTemplate}" />
             <Setter Property="Background" Value="{DynamicResource IgDarkBrush181A20}" />
             <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
         </Style>
-        <Style Selector="Border.theme-grid-card:pointerover">
+        <Style Selector="Button.theme-grid-card:pointerover">
             <Setter Property="Background" Value="{DynamicResource IgDarkBrush20232A}" />
             <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush4060A5FA}" />
         </Style>
-        <Style Selector="Border.theme-grid-card.active">
+        <Style Selector="Button.theme-grid-card.active">
             <Setter Property="Background" Value="{DynamicResource IgDarkBrush20232A}" />
             <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush3B82F6}" />
             <Setter Property="BorderThickness" Value="1.5" />
