@@ -427,6 +427,25 @@
             <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushA8CCFC}" />
         </Style>
 
+        <!--  3 列主题网格卡片现代质感 (复刻顶级 IDE 调色板卡片)  -->
+        <Style Selector="Border.theme-grid-card">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush181A20}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="ClipToBounds" Value="True" />
+        </Style>
+        <Style Selector="Border.theme-grid-card:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush20232A}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush4060A5FA}" />
+        </Style>
+        <Style Selector="Border.theme-grid-card.active">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush20232A}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush3B82F6}" />
+            <Setter Property="BorderThickness" Value="1.5" />
+        </Style>
+
         <!--  主题包卡片悬浮质感  -->
         <Style Selector="Border.theme-pack-card">
             <Setter Property="Background" Value="{DynamicResource IgDarkBrush191B20}" />
@@ -844,355 +863,8 @@
                                     <windows:AboutOverlayControl x:Name="PART_AboutPage" IsVisible="False" />
 
                                     <!--  ================================================  -->
-                                    <!--  PAGE 1: 主题与外观 (PART_PageTheme)               -->
+                                    <!--  PAGE 1: 主题工作台 (PART_PageTheme - 3列现代调色板网格)  -->
                                     <!--  ================================================  -->
-                                    <!--  ================================================  -->
-                                    <!--  PAGE 1A: 主题外观风格 (PART_AppearancePage)         -->
-                                    <!--  ================================================  -->
-                                    <ScrollViewer
-                                        x:Name="PART_AppearancePage"
-                                        HorizontalScrollBarVisibility="Disabled"
-                                        IsVisible="False"
-                                        VerticalScrollBarVisibility="Auto">
-                                        <StackPanel Margin="22,18,22,20" Spacing="16">
-
-                                            <!--  1.1 标题栏 + 当前生效模式实时徽章  -->
-                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                                <StackPanel Grid.Column="0" Spacing="3">
-                                                    <TextBlock
-                                                        x:Name="PART_AppearanceTitle"
-                                                        FontSize="13.5"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource IgDarkBrushF3F4F6}"
-                                                        Text="外观模式" />
-                                                    <TextBlock
-                                                        x:Name="PART_AppearanceDesc"
-                                                        FontSize="11.5"
-                                                        Foreground="{DynamicResource IgDarkBrush8B92A0}"
-                                                        Text="选择应用外观，跟随系统时将随 macOS 自动切换深浅主题。"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-
-                                                <Border
-                                                    x:Name="PART_CurrentThemeStatusBadge"
-                                                    Grid.Column="1"
-                                                    Padding="10,5"
-                                                    VerticalAlignment="Center"
-                                                    Background="{DynamicResource IgIconPurpleSoftBrush}"
-                                                    BorderBrush="{DynamicResource IgDarkBrush18FFFFFF}"
-                                                    BorderThickness="1"
-                                                    CornerRadius="14">
-                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Path
-                                                            x:Name="PART_CurrentThemeStatusIcon"
-                                                            Width="12"
-                                                            Height="12"
-                                                            VerticalAlignment="Center"
-                                                            Data="{StaticResource IconWeatherMoon}"
-                                                            Fill="{DynamicResource IgIconPurpleBrush}"
-                                                            Stretch="Uniform" />
-                                                        <TextBlock
-                                                            x:Name="PART_TxtCurrentThemeStatus"
-                                                            VerticalAlignment="Center"
-                                                            FontSize="11"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="{DynamicResource IgDarkBrushE5E7EB}"
-                                                            Text="当前：暗色" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </Grid>
-
-                                            <!--  1.2 三栏可视化主题预览选择卡  -->
-                                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
-
-                                                <!--  卡片 A：跟随系统 (左暗右亮对半分屏预览)  -->
-                                                <RadioButton
-                                                    x:Name="PART_ModeSystem"
-                                                    Grid.Column="0"
-                                                    Classes="appearance-card"
-                                                    Click="AppearanceMode_Click"
-                                                    GroupName="AppearanceMode"
-                                                    Tag="System">
-                                                    <StackPanel Spacing="10">
-                                                        <!--  迷你双拼桌面预览图  -->
-                                                        <Border
-                                                            Height="104"
-                                                            BorderBrush="{DynamicResource IgDarkBrush16FFFFFF}"
-                                                            BorderThickness="1"
-                                                            ClipToBounds="True"
-                                                            CornerRadius="8">
-                                                            <Panel>
-                                                                <Grid ColumnDefinitions="*,*">
-                                                                    <!--  左半边：暗色工作室  -->
-                                                                    <Border Grid.Column="0" Background="#14171D">
-                                                                        <Grid RowDefinitions="20,*,16">
-                                                                            <!--  模拟顶栏  -->
-                                                                            <Border Grid.Row="0" Background="#1D212B" Padding="7,0">
-                                                                                <StackPanel Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
-                                                                                    <Ellipse Width="5" Height="5" Fill="#FF5F56" />
-                                                                                    <Ellipse Width="5" Height="5" Fill="#FFBD2E" />
-                                                                                    <Ellipse Width="5" Height="5" Fill="#27C93F" />
-                                                                                </StackPanel>
-                                                                            </Border>
-                                                                            <!--  模拟左半图片框  -->
-                                                                            <Border Grid.Row="1" Margin="8,8,0,6" Background="#1E2533" BorderBrush="#2D374B" BorderThickness="1,1,0,1" CornerRadius="5,0,0,5" ClipToBounds="True">
-                                                                                <Canvas>
-                                                                                    <Path Fill="#38BDF8" Opacity="0.9" Data="M0,44 L18,22 L38,34 L62,14 L62,48 L0,48 Z" />
-                                                                                    <Path Fill="#6366F1" Opacity="0.7" Data="M0,48 L22,30 L48,42 L62,36 L62,48 Z" />
-                                                                                </Canvas>
-                                                                            </Border>
-                                                                            <!--  模拟左半底栏  -->
-                                                                            <Border Grid.Row="2" Background="#1B1E26" Padding="8,0">
-                                                                                <Border Height="3" Width="36" HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="1.5" Background="#60A5FA" />
-                                                                            </Border>
-                                                                        </Grid>
-                                                                    </Border>
-                                                                    <!--  右半边：亮色工作室  -->
-                                                                    <Border Grid.Column="1" Background="#F1F5FA">
-                                                                        <Grid RowDefinitions="20,*,16">
-                                                                            <!--  模拟顶栏  -->
-                                                                            <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="0,0,7,0">
-                                                                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
-                                                                                    <Ellipse Width="5" Height="5" Fill="#0284C7" />
-                                                                                    <Ellipse Width="5" Height="5" Fill="#059669" />
-                                                                                </StackPanel>
-                                                                            </Border>
-                                                                            <!--  模拟右半图片框  -->
-                                                                            <Border Grid.Row="1" Margin="0,8,8,6" Background="#E0F2FE" BorderBrush="#CBD5E1" BorderThickness="0,1,1,1" CornerRadius="0,5,5,0" ClipToBounds="True">
-                                                                                <Canvas>
-                                                                                    <Ellipse Canvas.Left="24" Canvas.Top="8" Width="12" Height="12" Fill="#F59E0B" />
-                                                                                    <Path Fill="#10B981" Opacity="0.9" Data="M0,26 L18,16 L46,34 L62,24 L62,48 L0,48 Z" />
-                                                                                </Canvas>
-                                                                            </Border>
-                                                                            <!--  模拟右半底栏  -->
-                                                                            <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" Padding="8,0">
-                                                                                <Border Height="3" Width="30" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="1.5" Background="#2563EB" />
-                                                                            </Border>
-                                                                        </Grid>
-                                                                    </Border>
-                                                                </Grid>
-                                                                <!--  中线光晕分割线 + Auto 小标  -->
-                                                                <Border Width="1.5" HorizontalAlignment="Center" Background="#60A5FA" Opacity="0.85" />
-                                                                <Border
-                                                                    Margin="0,5,5,0"
-                                                                    Padding="5,1.5"
-                                                                    HorizontalAlignment="Right"
-                                                                    VerticalAlignment="Top"
-                                                                    Background="#CC1E293B"
-                                                                    BorderBrush="#4060A5FA"
-                                                                    BorderThickness="1"
-                                                                    CornerRadius="4">
-                                                                    <TextBlock FontSize="8.5" FontWeight="Bold" Foreground="#93C5FD" Text="AUTO" />
-                                                                </Border>
-                                                            </Panel>
-                                                        </Border>
-
-                                                        <!--  标题说明 + 选中指示环  -->
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                                            <Border Grid.Column="0" Width="26" Height="26" VerticalAlignment="Center" Background="{DynamicResource IgIconBlueSoftBrush}" CornerRadius="7">
-                                                                <Path Width="13" Height="13" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource IgIconBlueBrush}" Stretch="Uniform" Data="M12 2a10 10 0 1 0 0 20V2Zm0 2.07A8 8 0 0 1 12 19.93V4.07Z" />
-                                                            </Border>
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                                                <TextBlock x:Name="PART_TxtModeSystemTitle" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" Text="跟随系统" />
-                                                                <TextBlock x:Name="PART_TxtModeSystemDesc" FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="随 macOS 自动切换" TextTrimming="CharacterEllipsis" />
-                                                            </StackPanel>
-                                                            <Border Classes="appearance-check-ring" Grid.Column="2" Width="18" Height="18" VerticalAlignment="Center" CornerRadius="9">
-                                                                <Path Classes="appearance-check-mark" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#FFFFFF" Stretch="Uniform" Data="M9.55 17.5a.75.75 0 0 1-.53-.22l-4.25-4.25a.75.75 0 0 1 1.06-1.06l3.72 3.72 8.22-8.22a.75.75 0 1 1 1.06 1.06l-8.75 8.75a.75.75 0 0 1-.53.22Z" />
-                                                            </Border>
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </RadioButton>
-
-                                                <!--  卡片 B：暗色模式  -->
-                                                <RadioButton
-                                                    x:Name="PART_ModeDark"
-                                                    Grid.Column="1"
-                                                    Classes="appearance-card"
-                                                    Click="AppearanceMode_Click"
-                                                    GroupName="AppearanceMode"
-                                                    Tag="Dark">
-                                                    <StackPanel Spacing="10">
-                                                        <!--  迷你暗色工作室预览图  -->
-                                                        <Border
-                                                            Height="104"
-                                                            Background="#12151B"
-                                                            BorderBrush="#2C3344"
-                                                            BorderThickness="1"
-                                                            ClipToBounds="True"
-                                                            CornerRadius="8">
-                                                            <Grid RowDefinitions="20,*,16">
-                                                                <Border Grid.Row="0" Background="#1D212B" BorderBrush="#262C3A" BorderThickness="0,0,0,1" Padding="7,0">
-                                                                    <Grid ColumnDefinitions="Auto,*">
-                                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
-                                                                            <Ellipse Width="5" Height="5" Fill="#FF5F56" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#FFBD2E" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#27C93F" />
-                                                                        </StackPanel>
-                                                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
-                                                                            <Ellipse Width="5" Height="5" Fill="#38BDF8" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#A78BFA" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#34D399" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#FBBF24" />
-                                                                        </StackPanel>
-                                                                    </Grid>
-                                                                </Border>
-                                                                <Border Grid.Row="1" Margin="10,8,10,6" Background="#19202E" BorderBrush="#2D374D" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
-                                                                    <Canvas>
-                                                                        <Ellipse Canvas.Left="88" Canvas.Top="7" Width="11" Height="11" Fill="#FBBF24" Opacity="0.9" />
-                                                                        <Path Fill="#6366F1" Opacity="0.85" Data="M0,44 L24,20 L54,34 L84,15 L125,44 L125,48 L0,48 Z" />
-                                                                        <Path Fill="#38BDF8" Opacity="0.72" Data="M0,48 L36,27 L72,40 L105,24 L125,48 Z" />
-                                                                    </Canvas>
-                                                                </Border>
-                                                                <Border Grid.Row="2" Background="#171A22" BorderBrush="#242936" BorderThickness="0,1,0,0" Padding="8,0">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                                        <Border Height="4" Width="18" CornerRadius="2" Background="#374151" />
-                                                                        <Border Height="3" Width="54" VerticalAlignment="Center" CornerRadius="1.5" Background="#60A5FA" />
-                                                                    </StackPanel>
-                                                                </Border>
-                                                            </Grid>
-                                                        </Border>
-
-                                                        <!--  标题说明 + 选中指示环  -->
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                                            <Border Grid.Column="0" Width="26" Height="26" VerticalAlignment="Center" Background="{DynamicResource IgIconPurpleSoftBrush}" CornerRadius="7">
-                                                                <Path Width="12.5" Height="12.5" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource IgIconPurpleBrush}" Stretch="Uniform" Data="{StaticResource IconWeatherMoon}" />
-                                                            </Border>
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                                                <TextBlock x:Name="PART_TxtModeDarkTitle" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" Text="暗色" />
-                                                                <TextBlock x:Name="PART_TxtModeDarkDesc" FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="深邃低光专注视界" TextTrimming="CharacterEllipsis" />
-                                                            </StackPanel>
-                                                            <Border Classes="appearance-check-ring" Grid.Column="2" Width="18" Height="18" VerticalAlignment="Center" CornerRadius="9">
-                                                                <Path Classes="appearance-check-mark" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#FFFFFF" Stretch="Uniform" Data="M9.55 17.5a.75.75 0 0 1-.53-.22l-4.25-4.25a.75.75 0 0 1 1.06-1.06l3.72 3.72 8.22-8.22a.75.75 0 1 1 1.06 1.06l-8.75 8.75a.75.75 0 0 1-.53.22Z" />
-                                                            </Border>
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </RadioButton>
-
-                                                <!--  卡片 C：亮色模式  -->
-                                                <RadioButton
-                                                    x:Name="PART_ModeLight"
-                                                    Grid.Column="2"
-                                                    Classes="appearance-card"
-                                                    Click="AppearanceMode_Click"
-                                                    GroupName="AppearanceMode"
-                                                    Tag="Light">
-                                                    <StackPanel Spacing="10">
-                                                        <!--  迷你亮色工作室预览图  -->
-                                                        <Border
-                                                            Height="104"
-                                                            Background="#EEF3F9"
-                                                            BorderBrush="#CBD5E1"
-                                                            BorderThickness="1"
-                                                            ClipToBounds="True"
-                                                            CornerRadius="8">
-                                                            <Grid RowDefinitions="20,*,16">
-                                                                <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="7,0">
-                                                                    <Grid ColumnDefinitions="Auto,*">
-                                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
-                                                                            <Ellipse Width="5" Height="5" Fill="#FF5F56" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#FFBD2E" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#27C93F" />
-                                                                        </StackPanel>
-                                                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="3.5" VerticalAlignment="Center">
-                                                                            <Ellipse Width="5" Height="5" Fill="#0284C7" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#7C3AED" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#059669" />
-                                                                            <Ellipse Width="5" Height="5" Fill="#D97706" />
-                                                                        </StackPanel>
-                                                                    </Grid>
-                                                                </Border>
-                                                                <Border Grid.Row="1" Margin="10,8,10,6" Background="#E0F2FE" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="6" ClipToBounds="True">
-                                                                    <Canvas>
-                                                                        <Ellipse Canvas.Left="88" Canvas.Top="7" Width="12" Height="12" Fill="#F59E0B" />
-                                                                        <Path Fill="#0EA5E9" Opacity="0.85" Data="M0,44 L28,22 L58,34 L90,17 L125,44 L125,48 L0,48 Z" />
-                                                                        <Path Fill="#10B981" Opacity="0.9" Data="M0,48 L40,28 L76,39 L108,26 L125,48 Z" />
-                                                                    </Canvas>
-                                                                </Border>
-                                                                <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" Padding="8,0">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-                                                                        <Border Height="4" Width="18" CornerRadius="2" Background="#CBD5E1" />
-                                                                        <Border Height="3" Width="54" VerticalAlignment="Center" CornerRadius="1.5" Background="#2563EB" />
-                                                                    </StackPanel>
-                                                                </Border>
-                                                            </Grid>
-                                                        </Border>
-
-                                                        <!--  标题说明 + 选中指示环  -->
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                                            <Border Grid.Column="0" Width="26" Height="26" VerticalAlignment="Center" Background="{DynamicResource IgIconAmberSoftBrush}" CornerRadius="7">
-                                                                <Path Width="13" Height="13" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource IgIconAmberBrush}" Stretch="Uniform" Data="{StaticResource IconWeatherSunny}" />
-                                                            </Border>
-                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                                                                <TextBlock x:Name="PART_TxtModeLightTitle" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" Text="亮色" />
-                                                                <TextBlock x:Name="PART_TxtModeLightDesc" FontSize="10.5" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="清爽明亮日间工作台" TextTrimming="CharacterEllipsis" />
-                                                            </StackPanel>
-                                                            <Border Classes="appearance-check-ring" Grid.Column="2" Width="18" Height="18" VerticalAlignment="Center" CornerRadius="9">
-                                                                <Path Classes="appearance-check-mark" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#FFFFFF" Stretch="Uniform" Data="M9.55 17.5a.75.75 0 0 1-.53-.22l-4.25-4.25a.75.75 0 0 1 1.06-1.06l3.72 3.72 8.22-8.22a.75.75 0 1 1 1.06 1.06l-8.75 8.75a.75.75 0 0 1-.53.22Z" />
-                                                            </Border>
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </RadioButton>
-
-                                            </Grid>
-
-                                            <!--  1.3 实时色彩自适应状态与图标色板预览卡  -->
-                                            <Border
-                                                Padding="14,12"
-                                                Background="{DynamicResource IgDarkBrush181A20}"
-                                                BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
-                                                BorderThickness="1"
-                                                CornerRadius="10">
-                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-                                                    <StackPanel Grid.Column="0" Spacing="3" VerticalAlignment="Center">
-                                                        <StackPanel Orientation="Horizontal" Spacing="7">
-                                                            <Path
-                                                                Width="13"
-                                                                Height="13"
-                                                                VerticalAlignment="Center"
-                                                                Data="{StaticResource IconToolColorPicker}"
-                                                                Fill="{DynamicResource IgIconCyanBrush}"
-                                                                Stretch="Uniform" />
-                                                            <TextBlock
-                                                                x:Name="PART_AppearancePaletteTitle"
-                                                                FontSize="12.5"
-                                                                FontWeight="SemiBold"
-                                                                Foreground="{DynamicResource IgDarkBrushE5E7EB}"
-                                                                Text="双主题语义图标自动适配" />
-                                                        </StackPanel>
-                                                        <TextBlock
-                                                            x:Name="PART_AppearancePaletteDesc"
-                                                            FontSize="11"
-                                                            Foreground="{DynamicResource IgDarkBrush8B92A0}"
-                                                            Text="已为当前主题自动调整工具栏、主菜单、右键菜单及工作台面板图标的色彩与对比度。"
-                                                            TextWrapping="Wrap" />
-                                                    </StackPanel>
-
-                                                    <!--  语义图标调色板实时预览组  -->
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconBlueSoftBrush}" CornerRadius="7" ToolTip.Tip="文件与基础视图">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconSave}" Fill="{DynamicResource IgIconBlueBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconCyanSoftBrush}" CornerRadius="7" ToolTip.Tip="画布与缩放导航">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconInfo}" Fill="{DynamicResource IgIconCyanBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconEmeraldSoftBrush}" CornerRadius="7" ToolTip.Tip="裁剪与画面适配">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconCrop}" Fill="{DynamicResource IgIconEmeraldBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconAmberSoftBrush}" CornerRadius="7" ToolTip.Tip="文件夹与重置操作">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconFolderOpen}" Fill="{DynamicResource IgIconAmberBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconPurpleSoftBrush}" CornerRadius="7" ToolTip.Tip="反转与窗口扩展">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconToolProjector}" Fill="{DynamicResource IgIconPurpleBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                        <Border Width="26" Height="26" Background="{DynamicResource IgIconRoseSoftBrush}" CornerRadius="7" ToolTip.Tip="删除与警戒动作">
-                                                            <Path Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource IconToolHdrToneMapper}" Fill="{DynamicResource IgIconRoseBrush}" Stretch="Uniform" />
-                                                        </Border>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
-                                        </StackPanel>
-                                    </ScrollViewer>
                                     <ScrollViewer
                                         x:Name="PART_PageTheme"
                                         HorizontalScrollBarVisibility="Disabled"
@@ -1225,94 +897,166 @@
                                                 </StackPanel>
                                             </Border>
 
-                                            <!--  1.1 当前主题槽位双栏概览卡  -->
-                                            <Border
-                                                Padding="14,12"
-                                                Background="{DynamicResource IgDarkBrush181A20}"
-                                                BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
-                                                BorderThickness="1"
-                                                CornerRadius="10">
-                                                <Grid ColumnDefinitions="*,Auto,*">
-                                                    <!--  深色模式槽  -->
-                                                    <StackPanel Grid.Column="0" Spacing="4">
-                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                            <Path
-                                                                Width="11.5"
-                                                                Height="11.5"
-                                                                VerticalAlignment="Center"
-                                                                Data="{StaticResource IconWeatherMoon}"
-                                                                Fill="{DynamicResource IgDarkBrush8B92A0}"
-                                                                Stretch="Uniform" />
+                                            <!--  1.1 主题库标题与筛选搜索栏  -->
+                                            <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+                                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                                    <StackPanel Grid.Column="0" Spacing="2">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                                             <TextBlock
-                                                                x:Name="PART_LblDarkSlotTitle"
-                                                                VerticalAlignment="Center"
-                                                                FontSize="11"
-                                                                Foreground="{DynamicResource IgDarkBrush8B92A0}" />
-                                                        </StackPanel>
-                                                        <TextBlock
-                                                            x:Name="PART_DarkSlotValue"
-                                                            FontSize="13.5"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
-                                                            TextTrimming="CharacterEllipsis" />
-                                                    </StackPanel>
-
-                                                    <Border
-                                                        Grid.Column="1"
-                                                        Width="1"
-                                                        Margin="18,2"
-                                                        Background="{DynamicResource IgDarkBrush14FFFFFF}" />
-
-                                                    <!--  浅色模式槽 (当前主生效槽位)  -->
-                                                    <StackPanel Grid.Column="2" Spacing="4">
-                                                        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                            <Path
-                                                                Width="12"
-                                                                Height="12"
-                                                                VerticalAlignment="Center"
-                                                                Data="{StaticResource IconWeatherSunny}"
-                                                                Fill="{DynamicResource IgDarkBrushFBBF24}"
-                                                                Stretch="Uniform" />
-                                                            <TextBlock
-                                                                x:Name="PART_LblLightSlotTitle"
-                                                                VerticalAlignment="Center"
-                                                                FontSize="11"
-                                                                Foreground="{DynamicResource IgDarkBrush8B92A0}" />
+                                                                x:Name="PART_LblThemePacksTitle"
+                                                                FontSize="15"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                                                                Text="主题库" />
                                                             <Border
-                                                                x:Name="PART_LightSlotActiveBadge"
-                                                                Padding="5,1"
+                                                                Padding="7,1.5"
                                                                 VerticalAlignment="Center"
-                                                                Background="{DynamicResource IgDarkBrush1C10B981}"
-                                                                BorderBrush="{DynamicResource IgDarkBrush3610B981}"
+                                                                Background="{DynamicResource IgDarkBrush143B82F6}"
+                                                                BorderBrush="{DynamicResource IgDarkBrush3A3B82F6}"
                                                                 BorderThickness="1"
-                                                                CornerRadius="4">
+                                                                CornerRadius="8">
                                                                 <TextBlock
-                                                                    x:Name="PART_TxtActiveSlot"
-                                                                    FontSize="9.5"
+                                                                    x:Name="PART_ThemePacksCount"
+                                                                    FontSize="10.5"
                                                                     FontWeight="SemiBold"
-                                                                    Foreground="{DynamicResource IgDarkBrush34D399}" />
+                                                                    Foreground="{DynamicResource IgDarkBrush60A5FA}"
+                                                                    Text="6" />
                                                             </Border>
                                                         </StackPanel>
                                                         <TextBlock
-                                                            x:Name="PART_LightSlotValue"
-                                                            FontSize="13.5"
-                                                            FontWeight="SemiBold"
-                                                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
-                                                            TextTrimming="CharacterEllipsis" />
+                                                            FontSize="11"
+                                                            Foreground="{DynamicResource IgDarkBrush8B92A0}"
+                                                            Text="选择精选主题与调色板，即刻应用到全局工作台。" />
                                                     </StackPanel>
-                                                </Grid>
-                                            </Border>
 
-                                            <!--  1.2 查看器背景色 (实时预览画布色彩 + HEX 精确控制)  -->
+                                                    <Button
+                                                        x:Name="PART_BtnGetMoreThemes"
+                                                        Classes="link overlay-micro-link"
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Click="GetMoreThemes_Click" />
+                                                </Grid>
+
+                                                <!--  筛选药丸与搜索框  -->
+                                                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto">
+                                                    <Border
+                                                        Grid.Column="0"
+                                                        Padding="3"
+                                                        Background="{DynamicResource IgDarkBrush15171C}"
+                                                        BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8">
+                                                        <StackPanel Orientation="Horizontal" Spacing="2">
+                                                            <Button x:Name="PART_ThemeFilterAll" Classes="link overlay-filter-pill active" Click="ThemeFilter_Click" Content="全部" Tag="all" />
+                                                            <Button x:Name="PART_ThemeFilterDark" Classes="link overlay-filter-pill" Click="ThemeFilter_Click" Content="暗色" Tag="dark" />
+                                                            <Button x:Name="PART_ThemeFilterLight" Classes="link overlay-filter-pill" Click="ThemeFilter_Click" Content="亮色" Tag="light" />
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <Border
+                                                        Grid.Column="2"
+                                                        Classes="overlay-input-box"
+                                                        Width="180"
+                                                        Height="28">
+                                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                                            <Path
+                                                                Grid.Column="0"
+                                                                Width="11"
+                                                                Height="11"
+                                                                Margin="8,0,4,0"
+                                                                VerticalAlignment="Center"
+                                                                Data="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"
+                                                                Fill="{DynamicResource IgDarkBrush6B7280}"
+                                                                Stretch="Uniform" />
+                                                            <TextBox
+                                                                x:Name="PART_ThemeSearchBox"
+                                                                Classes="overlay-textbox"
+                                                                Grid.Column="1"
+                                                                FontSize="11.5"
+                                                                Padding="2,0,4,0"
+                                                                PlaceholderText="搜索主题..."
+                                                                TextChanged="ThemeSearchBox_TextChanged" />
+                                                            <Button
+                                                                x:Name="PART_BtnClearThemeSearch"
+                                                                Classes="link overlay-icon-btn"
+                                                                Grid.Column="2"
+                                                                Width="18"
+                                                                Height="18"
+                                                                Margin="0,0,4,0"
+                                                                Click="ClearThemeSearch_Click"
+                                                                IsVisible="False">
+                                                                <Path
+                                                                    Width="7"
+                                                                    Height="7"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    Data="{StaticResource IconClose}"
+                                                                    Fill="{DynamicResource IgDarkBrush8E95A2}"
+                                                                    Stretch="Uniform" />
+                                                            </Button>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </Grid>
+
+                                            <!--  1.2 三列现代化主题网格 (复刻顶级 IDE 调色板工作台)  -->
+                                            <UniformGrid
+                                                x:Name="PART_ThemeCardsGrid"
+                                                Columns="3"
+                                                Cursor="Hand"
+                                                HorizontalAlignment="Stretch" />
+
+                                            <TextBlock
+                                                x:Name="PART_ThemeEmptyText"
+                                                Margin="0,16"
+                                                HorizontalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="{DynamicResource IgDarkBrush6B7280}"
+                                                Text="未找到匹配的主题"
+                                                IsVisible="False" />
+
+                                            <!--  1.3 外观模式与查看器画布色彩控制卡片  -->
                                             <Border
                                                 Padding="14,12"
                                                 Background="{DynamicResource IgDarkBrush181A20}"
                                                 BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
                                                 BorderThickness="1"
                                                 CornerRadius="10">
-                                                <StackPanel Spacing="10">
-                                                    <Grid ColumnDefinitions="*,Auto">
-                                                        <StackPanel Grid.Column="0" Spacing="1">
+                                                <StackPanel Spacing="12">
+                                                    <!--  外观模式偏好 (跟随系统 / 暗色 / 亮色)  -->
+                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                            <TextBlock
+                                                                FontSize="12.5"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{DynamicResource IgDarkBrushE5E7EB}"
+                                                                Text="应用外观偏好" />
+                                                            <TextBlock
+                                                                FontSize="11"
+                                                                Foreground="{DynamicResource IgDarkBrush7C8391}"
+                                                                Text="设置应用跟随系统深浅切换，或独立固定外观" />
+                                                        </StackPanel>
+
+                                                        <Border
+                                                            Grid.Column="1"
+                                                            Padding="3"
+                                                            Background="{DynamicResource IgDarkBrush15171C}"
+                                                            BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="8">
+                                                            <StackPanel Orientation="Horizontal" Spacing="2">
+                                                                <Button x:Name="PART_ModeSystem" Classes="link overlay-filter-pill" Click="AppearanceMode_Click" Content="跟随系统" Tag="System" />
+                                                                <Button x:Name="PART_ModeDark" Classes="link overlay-filter-pill" Click="AppearanceMode_Click" Content="暗色" Tag="Dark" />
+                                                                <Button x:Name="PART_ModeLight" Classes="link overlay-filter-pill" Click="AppearanceMode_Click" Content="亮色" Tag="Light" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <Border Height="1" IsVisible="False" Background="{DynamicResource IgDarkBrush0EFFFFFF}" />
+
+                                                    <!--  查看器画布背景色  -->
+                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="False">
+                                                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                                                             <TextBlock
                                                                 x:Name="PART_LblBgColorTitle"
                                                                 FontSize="12.5"
@@ -1332,7 +1076,7 @@
                                                             Click="ResetBgColor_Click" />
                                                     </Grid>
 
-                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" IsVisible="False">
                                                         <!--  预设色块矩阵  -->
                                                         <StackPanel
                                                             Grid.Column="0"
@@ -1430,7 +1174,29 @@
                                                 </StackPanel>
                                             </Border>
 
-                                            <!--  1.3 窗口背景材质 (Windows 11+ 专属，macOS 自动隐藏)  -->
+                                            <!--  1.4 当前深浅槽位概览 (只读状态提示)  -->
+                                            <Border
+                                                Padding="14,10"
+                                                Background="{DynamicResource IgDarkBrush181A20}"
+                                                BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
+                                                BorderThickness="1"
+                                                CornerRadius="10">
+                                                <Grid ColumnDefinitions="*,Auto,*">
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Path Width="11.5" Height="11.5" VerticalAlignment="Center" Data="{StaticResource IconWeatherMoon}" Fill="{DynamicResource IgDarkBrush8B92A0}" Stretch="Uniform" />
+                                                        <TextBlock x:Name="PART_LblDarkSlotTitle" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="暗色槽: " />
+                                                        <TextBlock x:Name="PART_DarkSlotValue" VerticalAlignment="Center" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="1" Width="1" Height="14" Margin="14,0" Background="{DynamicResource IgDarkBrush14FFFFFF}" />
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <Path Width="12" Height="12" VerticalAlignment="Center" Data="{StaticResource IconWeatherSunny}" Fill="{DynamicResource IgDarkBrushFBBF24}" Stretch="Uniform" />
+                                                        <TextBlock x:Name="PART_LblLightSlotTitle" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource IgDarkBrush8B92A0}" Text="亮色槽: " />
+                                                        <TextBlock x:Name="PART_LightSlotValue" VerticalAlignment="Center" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource IgDarkBrushF3F4F6}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!--  1.5 窗口背景材质 (Windows 11+ 专属，macOS 自动隐藏)  -->
                                             <Border
                                                 x:Name="PART_BackdropGroup"
                                                 Padding="14,11"
@@ -1463,49 +1229,8 @@
                                                     </Border>
                                                 </Grid>
                                             </Border>
-
-                                            <!--  1.4 已安装主题包列表头 + 卡片集合  -->
-                                            <Grid ColumnDefinitions="*,Auto" Margin="2,2,0,0">
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                    <TextBlock
-                                                        x:Name="PART_LblThemePacksTitle"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="12.5"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="{DynamicResource IgDarkBrushE5E7EB}" />
-                                                    <Border
-                                                        Padding="7,1.5"
-                                                        VerticalAlignment="Center"
-                                                        Background="{DynamicResource IgDarkBrush12FFFFFF}"
-                                                        CornerRadius="8">
-                                                        <TextBlock
-                                                            x:Name="PART_ThemePacksCount"
-                                                            FontSize="10.5"
-                                                            Foreground="{DynamicResource IgDarkBrush9CA3AF}" />
-                                                    </Border>
-                                                </StackPanel>
-
-                                                <Button
-                                                    x:Name="PART_BtnGetMoreThemes"
-                                                    Classes="link overlay-micro-link"
-                                                    Grid.Column="1"
-                                                    Click="GetMoreThemes_Click" />
-                                            </Grid>
-
-                                            <StackPanel
-                                                x:Name="PART_ThemeCardsList"
-                                                Spacing="8" />
-
-                                            <TextBlock
-                                                x:Name="PART_ThemeEmptyText"
-                                                Margin="0,14"
-                                                HorizontalAlignment="Center"
-                                                FontSize="12"
-                                                Foreground="{DynamicResource IgDarkBrush6B7280}"
-                                                IsVisible="False" />
                                         </StackPanel>
                                     </ScrollViewer>
-
                                     <!--  ================================================  -->
                                     <!--  PAGE 2: 关联格式 (PART_PageAssociations)          -->
                                     <!--  ================================================  -->

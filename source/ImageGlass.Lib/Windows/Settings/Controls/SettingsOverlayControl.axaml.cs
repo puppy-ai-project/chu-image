@@ -113,6 +113,9 @@ public partial class SettingsOverlayControl : UserControl
     private readonly List<ThemeCardItem> _themeCards = [];
     private int _themeListGen;
     private Bitmap? _largePreviewBmp;
+    private string _themeFilter = "all";
+    private string _themeSearchQuery = string.Empty;
+    private readonly HashSet<string> _themeResourceOverrides = [];
 
     // ---------------------------------------------------------
     // 关联格式页工作副本状态
@@ -158,6 +161,9 @@ public partial class SettingsOverlayControl : UserControl
     /// <param name="previewBgCallback">查看器画布背景色实时预览回调。</param>
     public void Open(string? section = null, Action<string?>? previewBgCallback = null)
     {
+        Core.ThemeChanged -= SettingsThemeChanged;
+        Core.ThemeChanged += SettingsThemeChanged;
+        ApplySettingsThemeResources();
         UpdateSettingsCardHeight();
         _isSaving = false;
         _previewBgCallback = previewBgCallback;
@@ -211,6 +217,7 @@ public partial class SettingsOverlayControl : UserControl
         UpdateFilterPillStyles();
         RebuildFormatsList();
         SwitchSection(_activeSection);
+        _ = ReloadThemePacksAsync();
 
         IsVisible = true;
 
@@ -265,12 +272,59 @@ public partial class SettingsOverlayControl : UserControl
 
     private void HideOverlayAndDisposePreviews()
     {
+        Core.ThemeChanged -= SettingsThemeChanged;
         PART_AboutPage.Close();
         _previewBgCallback?.Invoke(null);
         CloseLargeThemePreview();
         HideAddBar(clearText: true);
         DisposeThemeCardBitmaps();
         IsVisible = false;
+    }
+
+    private void SettingsThemeChanged(object? sender, ThemePackChangedEventArgs e)
+    {
+        ApplySettingsThemeResources();
+        if (IsVisible) RebuildThemeGridCards();
+    }
+
+    private void ApplySettingsThemeResources()
+    {
+        foreach (var key in _themeResourceOverrides) Resources.Remove(key);
+        _themeResourceOverrides.Clear();
+
+        // Keep the existing default palettes intact; named palettes derive their settings surfaces
+        // and text from the same colors as the main window.
+        if (Core.Theme.FolderName is Const.DEFAULT_THEME or Const.DEFAULT_LIGHT_THEME) return;
+
+        var bg = BHelper.ColorFromHex(Core.Theme.Colors.BgColor);
+        var surface = BHelper.ColorFromHex(Core.Theme.Colors.MenuBgColor);
+        var text = BHelper.ColorFromHex(Core.Theme.Colors.TextColor);
+        if (bg.A == 0 || surface.A == 0 || text.A == 0) return;
+        var accent = Core.AccentColor;
+
+        Color Mix(Color a, Color b, double amount) => Color.FromRgb(
+            (byte)(a.R + (b.R - a.R) * amount),
+            (byte)(a.G + (b.G - a.G) * amount),
+            (byte)(a.B + (b.B - a.B) * amount));
+
+        void SetPalette(Color color, params string[] suffixes)
+        {
+            foreach (var suffix in suffixes)
+            {
+                var colorKey = "IgDarkColor" + suffix;
+                var brushKey = "IgDarkBrush" + suffix;
+                Resources[colorKey] = color;
+                Resources[brushKey] = new SolidColorBrush(color);
+                _themeResourceOverrides.Add(colorKey);
+                _themeResourceOverrides.Add(brushKey);
+            }
+        }
+
+        SetPalette(surface, "292C33", "23252B", "2C2E34", "242730", "22252C", "20232A");
+        SetPalette(bg, "1B1D22", "191B20", "15171C", "181A20", "1D1F24");
+        SetPalette(text, "F3F4F6", "FFFFFF", "F9FAFB", "E5E7EB", "D1D5DB");
+        SetPalette(Mix(surface, text, 0.68), "9CA3AF", "8B92A0", "8E95A2", "7A8291", "747B89", "6F7685", "6F7785", "6B7280", "7C8391", "636B78", "848C9C");
+        SetPalette(accent, "60A5FA", "93C5FD", "3B82F6", "356BBF", "2B59A1", "407AD2", "3368B8");
     }
 
 
@@ -301,12 +355,11 @@ public partial class SettingsOverlayControl : UserControl
         PART_NavAssociations.Classes.Set("active", !isTheme && !isAbout);
         PART_NavAbout.Classes.Set("active", isAbout);
 
-        PART_PageTheme.IsVisible = false;
-        PART_AppearancePage.IsVisible = isTheme;
+        PART_PageTheme.IsVisible = isTheme;
         PART_PageAssociations.IsVisible = !isTheme && !isAbout;
         if (isAbout) PART_AboutPage.Open(); else PART_AboutPage.Close();
 
-        PART_ThemeHeaderActions.IsVisible = false;
+        PART_ThemeHeaderActions.IsVisible = isTheme;
         PART_AssocHeaderBadge.IsVisible = !isTheme && !isAbout;
 
         if (isAbout)
@@ -318,8 +371,9 @@ public partial class SettingsOverlayControl : UserControl
         {
             PART_SectionTitle.Text = Core.Lang[LangId.Settings_Theme];
             PART_SectionSubtitle.Text = T(
-                "选择跟随系统、暗色或亮色外观",
-                "Choose system, dark or light appearance");
+                "选择主题与调色板，即刻应用到全局工作台",
+                "Select theme and palette to apply live across the workbench");
+            _ = ReloadThemePacksAsync();
         }
         else
         {
@@ -349,9 +403,8 @@ public partial class SettingsOverlayControl : UserControl
         PART_BtnGetMoreThemes.Content = Core.Lang[LangId.Settings_Theme_GetMoreThemes];
 
         PART_ThemeLockWarningText.Text = Core.Lang[LangId.Settings_AdminLockWarning];
-        PART_LblDarkSlotTitle.Text = T("深色模式主题", $"{Core.Lang[LangId.Settings_DarkTheme]}");
-        PART_LblLightSlotTitle.Text = T("浅色模式主题", $"{Core.Lang[LangId.Settings_LightTheme]}");
-        PART_TxtActiveSlot.Text = T("当前生效", "Active");
+        PART_LblDarkSlotTitle.Text = T("暗色槽: ", "Dark slot: ");
+        PART_LblLightSlotTitle.Text = T("亮色槽: ", "Light slot: ");
 
         PART_LblBgColorTitle.Text = Core.Lang[LangId._BackgroundColor];
         PART_LblBgColorDesc.Text = T(
@@ -562,6 +615,123 @@ public partial class SettingsOverlayControl : UserControl
     }
 
 
+    private sealed record ThemeVisualData(
+        string[] Palette,
+        string BgHex,
+        string HeaderBgHex,
+        string KeywordColor,
+        string FuncColor,
+        string StringColor,
+        string CommentColor,
+        string NumberColor,
+        string TextColor);
+
+    private static ThemeVisualData GetThemePaletteData(IgTheme theme)
+    {
+        var folder = theme.FolderName;
+        if (string.Equals(folder, "Tokyo-Night", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#7AA2F7", "#BB9AF7", "#7DCFFF", "#9ECE6A", "#E0AF68", "#F7768E"],
+                BgHex: "#1A1B26",
+                HeaderBgHex: "#1F2335",
+                KeywordColor: "#BB9AF7",
+                FuncColor: "#7AA2F7",
+                StringColor: "#9ECE6A",
+                CommentColor: "#565F89",
+                NumberColor: "#FF9E64",
+                TextColor: "#C0CAF5");
+        }
+        if (string.Equals(folder, "Fox", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#F6A878", "#719CD6", "#81B29A", "#DBC074", "#C94F6D", "#9D79D6"],
+                BgHex: "#192330",
+                HeaderBgHex: "#212E3F",
+                KeywordColor: "#9D79D6",
+                FuncColor: "#719CD6",
+                StringColor: "#81B29A",
+                CommentColor: "#71839B",
+                NumberColor: "#F6A878",
+                TextColor: "#CDCECF");
+        }
+        if (string.Equals(folder, "GitHub-Dimmed", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#539BF5", "#57AB5A", "#C69026", "#E5534B", "#B083F0", "#ADBAC7"],
+                BgHex: "#22272E",
+                HeaderBgHex: "#2D333B",
+                KeywordColor: "#F47067",
+                FuncColor: "#DCBDFB",
+                StringColor: "#96D0FF",
+                CommentColor: "#768390",
+                NumberColor: "#6CB6FF",
+                TextColor: "#ADBAC7");
+        }
+        if (string.Equals(folder, "GitHub", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#0969DA", "#2DA44E", "#BF8700", "#CF222E", "#8250DF", "#24292F"],
+                BgHex: "#FFFFFF",
+                HeaderBgHex: "#F6F8FA",
+                KeywordColor: "#CF222E",
+                FuncColor: "#8250DF",
+                StringColor: "#0A3069",
+                CommentColor: "#6E7781",
+                NumberColor: "#0550AE",
+                TextColor: "#24292F");
+        }
+        if (string.Equals(folder, "Default-Dark", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(folder, "Kobe", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#3B82F6", "#38BDF8", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"],
+                BgHex: "#1D1F24",
+                HeaderBgHex: "#23252A",
+                KeywordColor: "#8B5CF6",
+                FuncColor: "#3B82F6",
+                StringColor: "#10B981",
+                CommentColor: "#6B7280",
+                NumberColor: "#F59E0B",
+                TextColor: "#E5E7EB");
+        }
+        if (string.Equals(folder, "Default-Light", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(folder, "Kobe-Light", StringComparison.OrdinalIgnoreCase))
+        {
+            return new ThemeVisualData(
+                Palette: ["#2563EB", "#0284C7", "#059669", "#D97706", "#DC2626", "#7C3AED"],
+                BgHex: "#F8FAFC",
+                HeaderBgHex: "#F1F5F9",
+                KeywordColor: "#7C3AED",
+                FuncColor: "#2563EB",
+                StringColor: "#059669",
+                CommentColor: "#64748B",
+                NumberColor: "#D97706",
+                TextColor: "#0F172A");
+        }
+
+        var isDark = theme.Settings.IsDarkMode;
+        var bg = !string.IsNullOrWhiteSpace(theme.Colors.BgColor) && theme.Colors.BgColor != "#00000000" && !theme.Colors.BgColor.StartsWith("#00")
+            ? theme.Colors.BgColor : (isDark ? "#1E2026" : "#FFFFFF");
+        var accent = !string.IsNullOrWhiteSpace(theme.Colors.AccentColor)
+            ? theme.Colors.AccentColor : (isDark ? "#60A5FA" : "#2563EB");
+        var txt = !string.IsNullOrWhiteSpace(theme.Colors.TextColor)
+            ? theme.Colors.TextColor : (isDark ? "#E5E7EB" : "#1F2937");
+
+        return new ThemeVisualData(
+            Palette: isDark
+                ? [accent, "#38BDF8", "#34D399", "#FBBF24", "#F87171", "#A78BFA"]
+                : [accent, "#0284C7", "#059669", "#D97706", "#DC2626", "#7C3AED"],
+            BgHex: bg,
+            HeaderBgHex: isDark ? "#282C35" : "#F3F4F6",
+            KeywordColor: isDark ? "#C084FC" : "#7C3AED",
+            FuncColor: accent,
+            StringColor: isDark ? "#34D399" : "#059669",
+            CommentColor: isDark ? "#6B7280" : "#9CA3AF",
+            NumberColor: isDark ? "#FBBF24" : "#D97706",
+            TextColor: txt);
+    }
+
     private async Task ReloadThemePacksAsync()
     {
         var gen = ++_themeListGen;
@@ -569,327 +739,287 @@ public partial class SettingsOverlayControl : UserControl
         if (gen != _themeListGen) return;
 
         _themes = loaded;
-        RebuildThemeCards(gen);
+        RebuildThemeGridCards();
         UpdateThemeSlotOverview();
     }
 
-
     private void DisposeThemeCardBitmaps()
     {
-        PART_ThemeCardsList.Children.Clear();
-        foreach (var c in _themeCards)
-        {
-            c.PreviewBmp?.Dispose();
-            c.PreviewBmp = null;
-        }
-        _themeCards.Clear();
+        PART_ThemeCardsGrid.Children.Clear();
     }
 
-
-    private void RebuildThemeCards(int gen)
+    private void RebuildThemeGridCards()
     {
         DisposeThemeCardBitmaps();
 
-        PART_ThemePacksCount.Text = _themes.Count.ToString();
-        PART_ThemeEmptyText.IsVisible = _themes.Count == 0;
+        var currentActive = Core.Theme.FolderName;
+        var filtered = _themes.AsEnumerable();
 
-        foreach (var theme in _themes)
+        if (_themeFilter == "dark")
         {
-            PART_ThemeCardsList.Children.Add(BuildThemeCard(theme, gen));
+            filtered = filtered.Where(t => t.Settings.IsDarkMode);
+        }
+        else if (_themeFilter == "light")
+        {
+            filtered = filtered.Where(t => !t.Settings.IsDarkMode);
         }
 
-        RefreshThemeCardSelections();
+        if (!string.IsNullOrWhiteSpace(_themeSearchQuery))
+        {
+            var q = _themeSearchQuery.Trim();
+            filtered = filtered.Where(t =>
+                (t.Info.Name != null && t.Info.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+                || t.FolderName.Contains(q, StringComparison.OrdinalIgnoreCase)
+                || (t.Info.Description != null && t.Info.Description.Contains(q, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        var list = filtered.ToList();
+        PART_ThemePacksCount.Text = list.Count.ToString();
+        PART_ThemeEmptyText.IsVisible = list.Count == 0;
+
+        foreach (var theme in list)
+        {
+            var isActive = string.Equals(theme.FolderName, currentActive, StringComparison.OrdinalIgnoreCase);
+            PART_ThemeCardsGrid.Children.Add(BuildThemeGridCard(theme, isActive));
+        }
     }
 
-
-    private Border BuildThemeCard(IgTheme theme, int gen)
+    private Border BuildThemeGridCard(IgTheme theme, bool isActive)
     {
-        // 1. 缩略预览区
-        var placeholderIcon = new PathIcon
+        var data = GetThemePaletteData(theme);
+        var isDark = theme.Settings.IsDarkMode;
+
+        // 1. Mini Window Container (IDE preview mockup)
+        var miniWindow = new Border
         {
-            Width = 22,
-            Height = 22,
-            Data = Resx.GetIcon(theme.Settings.IsDarkMode ? ResxIconId.IconWeatherMoon : ResxIconId.IconWeatherSunny),
-            Foreground = Brush.Parse("#4B5563"),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        var placeholder = new Border
-        {
-            Background = Brush.Parse("#14161B"),
-            BorderBrush = Brush.Parse("#12FFFFFF"),
+            Height = 106,
+            Margin = new Thickness(6, 6, 6, 0),
+            Background = Brush.Parse(data.BgHex),
+            BorderBrush = Brush.Parse(isDark ? "#24FFFFFF" : "#E2E8F0"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(7),
-            Child = placeholderIcon,
-        };
-
-        var img = new Image
-        {
-            Stretch = Stretch.UniformToFill,
-            IsVisible = false,
-        };
-
-        var previewHost = new Border
-        {
-            Width = CARD_PREVIEW_W,
-            Height = CARD_PREVIEW_H,
-            CornerRadius = new CornerRadius(7),
             ClipToBounds = true,
-            Cursor = new Cursor(StandardCursorType.Hand),
-            VerticalAlignment = VerticalAlignment.Center,
-            Child = new Grid { Children = { placeholder, img } },
         };
-        ToolTip.SetTip(previewHost, T("点击预览大图", "Click to enlarge preview"));
-        previewHost.Tapped += async (_, _) => await ShowLargeThemePreviewAsync(theme);
 
-        // 2. 信息区
+        // Window header bar (traffic light dots)
+        var headerBar = new Border
+        {
+            Height = 18,
+            Background = Brush.Parse(data.HeaderBgHex),
+            Padding = new Thickness(7, 0),
+        };
+        var trafficLights = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 4,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        trafficLights.Children.Add(new Border { Width = 5, Height = 5, CornerRadius = new CornerRadius(2.5), Background = Brush.Parse("#FF5F56") });
+        trafficLights.Children.Add(new Border { Width = 5, Height = 5, CornerRadius = new CornerRadius(2.5), Background = Brush.Parse("#FFBD2E") });
+        trafficLights.Children.Add(new Border { Width = 5, Height = 5, CornerRadius = new CornerRadius(2.5), Background = Brush.Parse("#27C93F") });
+
+        var modeIcon = new Avalonia.Controls.Shapes.Path
+        {
+            Width = 9.5,
+            Height = 9.5,
+            Data = Resx.GetIcon(isDark ? ResxIconId.IconWeatherMoon : ResxIconId.IconWeatherSunny),
+            Fill = Brush.Parse(isDark ? "#7A8293" : "#9CA3AF"),
+            Stretch = Stretch.Uniform,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+
+        var headerRow = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"),
+        };
+        Grid.SetColumn(trafficLights, 0);
+        Grid.SetColumn(modeIcon, 2);
+        headerRow.Children.AddRange([trafficLights, modeIcon]);
+        headerBar.Child = headerRow;
+
+        // Code body (syntax highlighted code snippet)
+        var codeBody = new StackPanel
+        {
+            Margin = new Thickness(8, 6, 8, 4),
+            Spacing = 2,
+        };
+
+        var mutedTextBrush = Brush.Parse(isDark ? "#8E99AC" : "#57606A");
+
+        // Line 1: function greet(name) {
+        var line1 = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 3 };
+        line1.Children.Add(new TextBlock { Text = "function", Foreground = Brush.Parse(data.KeywordColor), FontSize = 9, FontFamily = _codeFont });
+        line1.Children.Add(new TextBlock { Text = "greet", Foreground = Brush.Parse(data.FuncColor), FontSize = 9, FontFamily = _codeFont, FontWeight = FontWeight.SemiBold });
+        line1.Children.Add(new TextBlock { Text = "(name) {", Foreground = mutedTextBrush, FontSize = 9, FontFamily = _codeFont });
+
+        // Line 2: return "Hi, " + name;
+        var line2 = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 3, Margin = new Thickness(7, 0, 0, 0) };
+        line2.Children.Add(new TextBlock { Text = "return", Foreground = Brush.Parse(data.KeywordColor), FontSize = 9, FontFamily = _codeFont });
+        line2.Children.Add(new TextBlock { Text = "\"Hi, \"", Foreground = Brush.Parse(data.StringColor), FontSize = 9, FontFamily = _codeFont });
+        line2.Children.Add(new TextBlock { Text = "+ name;", Foreground = mutedTextBrush, FontSize = 9, FontFamily = _codeFont });
+
+        // Line 3: const theme = "Name";
+        var line3 = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 3, Margin = new Thickness(7, 0, 0, 0) };
+        line3.Children.Add(new TextBlock { Text = "const", Foreground = Brush.Parse(data.KeywordColor), FontSize = 9, FontFamily = _codeFont });
+        line3.Children.Add(new TextBlock { Text = "theme", Foreground = Brush.Parse(data.NumberColor), FontSize = 9, FontFamily = _codeFont });
+        line3.Children.Add(new TextBlock { Text = "=", Foreground = mutedTextBrush, FontSize = 9, FontFamily = _codeFont });
+        line3.Children.Add(new TextBlock { Text = $"\"{theme.Info.Name}\";", Foreground = Brush.Parse(data.StringColor), FontSize = 9, FontFamily = _codeFont });
+
+        // Line 4: }
+        var line4 = new TextBlock { Text = "}", Foreground = mutedTextBrush, FontSize = 9, FontFamily = _codeFont };
+
+        codeBody.Children.AddRange([line1, line2, line3, line4]);
+
+        // Bottom Palette Strip (6 segmented colors)
+        var paletteStrip = new Grid
+        {
+            Height = 4,
+            ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*"),
+        };
+        for (int i = 0; i < 6 && i < data.Palette.Length; i++)
+        {
+            var segment = new Border { Background = Brush.Parse(data.Palette[i]) };
+            Grid.SetColumn(segment, i);
+            paletteStrip.Children.Add(segment);
+        }
+
+        var miniWindowGrid = new Grid
+        {
+            RowDefinitions = new RowDefinitions("Auto,*,Auto"),
+        };
+        Grid.SetRow(headerBar, 0);
+        Grid.SetRow(codeBody, 1);
+        Grid.SetRow(paletteStrip, 2);
+        miniWindowGrid.Children.AddRange([headerBar, codeBody, paletteStrip]);
+        miniWindow.Child = miniWindowGrid;
+
+        // 2. Card Bottom Row (Theme Name + Active pill)
+        var bottomGrid = new Grid
+        {
+            Margin = new Thickness(8, 8, 8, 8),
+            ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+        };
+
         var displayName = string.IsNullOrWhiteSpace(theme.Info.Name) ? theme.FolderName : theme.Info.Name;
         var nameBlock = new TextBlock
         {
             Text = displayName,
-            FontSize = 13,
+            FontSize = 12.5,
             FontWeight = FontWeight.SemiBold,
-            Foreground = Brush.Parse("#F3F4F6"),
+            Foreground = BHelper.ColorFromHex(Core.Theme.Colors.TextColor).ToBrush(),
             TextTrimming = TextTrimming.CharacterEllipsis,
             VerticalAlignment = VerticalAlignment.Center,
         };
+        Grid.SetColumn(nameBlock, 0);
 
-        var modeTag = new Border
+        var activeBadge = new Border
         {
-            Padding = new Thickness(6, 1),
-            CornerRadius = new CornerRadius(4),
-            VerticalAlignment = VerticalAlignment.Center,
-            Background = Brush.Parse(theme.Settings.IsDarkMode ? "#228B5CF6" : "#22F59E0B"),
-            BorderBrush = Brush.Parse(theme.Settings.IsDarkMode ? "#408B5CF6" : "#40F59E0B"),
+            Padding = new Thickness(7, 2),
+            Background = Brush.Parse("#1F3A5F"),
+            BorderBrush = Brush.Parse("#2E5C9A"),
             BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(5),
+            VerticalAlignment = VerticalAlignment.Center,
+            IsVisible = isActive,
             Child = new TextBlock
             {
-                Text = Core.Lang[theme.Settings.IsDarkMode ? LangId.Settings_DarkTheme : LangId.Settings_LightTheme],
-                FontSize = 9.5,
+                Text = "Active",
+                FontSize = 10,
                 FontWeight = FontWeight.SemiBold,
-                Foreground = Brush.Parse(theme.Settings.IsDarkMode ? "#C4B5FD" : "#FCD34D"),
+                Foreground = Brush.Parse("#58A6FF"),
             },
         };
+        Grid.SetColumn(activeBadge, 1);
+        bottomGrid.Children.AddRange([nameBlock, activeBadge]);
 
-        var verTag = new Border
+        // 3. Card Outer Border
+        var cardGrid = new Grid
         {
-            Padding = new Thickness(6, 1),
-            CornerRadius = new CornerRadius(4),
-            VerticalAlignment = VerticalAlignment.Center,
-            Background = Brush.Parse("#14FFFFFF"),
-            Child = new TextBlock
-            {
-                Text = $"v{theme.Info.Version:0.#}",
-                FontSize = 9.5,
-                Foreground = Brush.Parse("#9CA3AF"),
-            },
+            RowDefinitions = new RowDefinitions("Auto,Auto"),
+            IsHitTestVisible = false,
         };
+        Grid.SetRow(miniWindow, 0);
+        Grid.SetRow(bottomGrid, 1);
+        cardGrid.Children.AddRange([miniWindow, bottomGrid]);
 
-        var titleRow = new StackPanel
+        var card = new Border
         {
-            Orientation = Orientation.Horizontal,
-            Spacing = 6,
-            Children = { nameBlock, modeTag, verTag },
+            Margin = new Thickness(4),
+            Child = cardGrid,
         };
-
-        var descText = new TextBlock
+        card.Classes.Add("theme-grid-card");
+        if (isActive)
         {
-            Text = theme.Info.Description,
-            FontSize = 11.5,
-            Foreground = Brush.Parse("#9CA3AF"),
-            TextTrimming = TextTrimming.CharacterEllipsis,
-            IsVisible = !string.IsNullOrWhiteSpace(theme.Info.Description),
-        };
-        if (!string.IsNullOrWhiteSpace(theme.Info.Description))
-        {
-            ToolTip.SetTip(descText, theme.Info.Description);
+            card.Classes.Add("active");
         }
 
-        var metaParts = new List<string>(2);
-        if (!string.IsNullOrWhiteSpace(theme.Info.Author)) metaParts.Add(theme.Info.Author);
-        metaParts.Add(theme.FolderName);
-        var metaText = new TextBlock
-        {
-            Text = string.Join(" · ", metaParts),
-            FontFamily = _codeFont,
-            FontSize = 10.5,
-            Foreground = Brush.Parse("#636B78"),
-            TextTrimming = TextTrimming.CharacterEllipsis,
-        };
-        ToolTip.SetTip(metaText, theme.DisplayFolderPath);
+        card.DoubleTapped += async (_, _) => await ShowLargeThemePreviewAsync(theme);
+        card.PointerPressed += async (_, _) => await SelectAndApplyThemeAsync(theme);
 
-        var infoStack = new StackPanel
-        {
-            VerticalAlignment = VerticalAlignment.Center,
-            Spacing = 3,
-            Children = { titleRow, descText, metaText },
-        };
-
-        // 3. 右侧模式选择与卸载按钮
-        var darkBtn = BuildThemeModePill(
-            Resx.GetIcon(ResxIconId.IconWeatherMoon),
-            Core.Lang[LangId.Settings_DarkTheme],
-            Core.Lang[LangId.Settings_UseThemeForDarkMode]);
-        darkBtn.IsEnabled = !_isThemeLocked;
-        darkBtn.Click += (_, _) =>
-        {
-            if (_isThemeLocked) return;
-            _darkTheme = theme.FolderName;
-            RefreshThemeCardSelections();
-            UpdateThemeSlotOverview();
-            UpdateFooterState();
-        };
-
-        var lightBtn = BuildThemeModePill(
-            Resx.GetIcon(ResxIconId.IconWeatherSunny),
-            Core.Lang[LangId.Settings_LightTheme],
-            Core.Lang[LangId.Settings_UseThemeForLightMode]);
-        lightBtn.IsEnabled = !_isThemeLocked;
-        lightBtn.Click += (_, _) =>
-        {
-            if (_isThemeLocked) return;
-            _lightTheme = theme.FolderName;
-            RefreshThemeCardSelections();
-            UpdateThemeSlotOverview();
-            UpdateFooterState();
-        };
-
-        var controlsStack = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 6,
-            VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Right,
-        };
-        controlsStack.Children.Add(darkBtn);
-        controlsStack.Children.Add(lightBtn);
-
-        if (Config.IsBuiltInThemePack(theme))
-        {
-            controlsStack.Children.Add(new Border { Width = THEME_ACTION_COL_GAP });
-        }
-        else
-        {
-            var uninstallBtn = BuildThemeUninstallButton();
-            uninstallBtn.IsEnabled = !_isThemeLocked;
-            uninstallBtn.Click += async (_, _) => await UninstallThemeAsync(theme);
-            controlsStack.Children.Add(uninstallBtn);
-        }
-
-        var rowGrid = new Grid
-        {
-            ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"),
-            ColumnSpacing = 12,
-        };
-        Grid.SetColumn(previewHost, 0);
-        Grid.SetColumn(infoStack, 1);
-        Grid.SetColumn(controlsStack, 2);
-        rowGrid.Children.AddRange([previewHost, infoStack, controlsStack]);
-
-        var card = new Border { Child = rowGrid };
-        card.Classes.Add("theme-pack-card");
-
-        var item = new ThemeCardItem(theme, darkBtn, lightBtn);
-        _themeCards.Add(item);
-
-        _ = LoadCardPreviewAsync(theme, img, placeholder, item, gen);
         return card;
     }
 
-
-    private static Button BuildThemeModePill(Geometry? iconData, string text, string tooltip)
+    private async Task SelectAndApplyThemeAsync(IgTheme theme)
     {
-        var icon = new Avalonia.Controls.Shapes.Path
+        if (_isThemeLocked) return;
+
+        if (theme.Settings.IsDarkMode)
         {
-            Width = 11.5,
-            Height = 11.5,
-            Data = iconData,
-            Stretch = Stretch.Uniform,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        var label = new TextBlock
-        {
-            Text = text,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        var content = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 5,
-            VerticalAlignment = VerticalAlignment.Center,
-            Children = { icon, label },
-        };
-
-        var btn = new Button { Content = content };
-        btn.Classes.Add("link");
-        btn.Classes.Add("theme-mode-pill");
-        ToolTip.SetTip(btn, tooltip);
-        return btn;
-    }
-
-
-    private static Button BuildThemeUninstallButton()
-    {
-        var icon = new Avalonia.Controls.Shapes.Path
-        {
-            Width = 11.5,
-            Height = 11.5,
-            Data = Geometry.Parse("M6.442 2.5a2 2 0 0 1 2-2h3.046a2 2 0 0 1 2 2v.314c0 .036-.003.07-.01.105h4.952a.5.5 0 1 1 0 1h-.764l-1.558 13.507a2.5 2.5 0 0 1-2.484 2.214H6.306a2.5 2.5 0 0 1-2.484-2.214L2.264 3.92H1.5a.5.5 0 0 1 0-1h4.953a.502.502 0 0 1-.011-.105V2.5Zm.989.419h5.068a.501.501 0 0 1-.01-.105V2.5a1 1 0 0 0-1-1H8.441a1 1 0 0 0-1 1v.314c0 .036-.004.07-.011.105Zm-4.16 1L4.815 17.31a1.5 1.5 0 0 0 1.49 1.329h7.318a1.5 1.5 0 0 0 1.49-1.329L16.66 3.92H3.27Zm5.38 3.337a.5.5 0 1 0-1 0v7.256a.5.5 0 0 0 1 0V7.256Zm3.128-.5a.5.5 0 0 1 .5.5v7.256a.5.5 0 0 1-1 0V7.256a.5.5 0 0 1 .5-.5Z"),
-            Stretch = Stretch.Uniform,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        var btn = new Button
-        {
-            Width = 28,
-            Height = 27,
-            Content = icon,
-        };
-        btn.Classes.Add("link");
-        btn.Classes.Add("format-delete-btn");
-        ToolTip.SetTip(btn, Core.Lang[LangId._Delete]);
-        return btn;
-    }
-
-
-    private void RefreshThemeCardSelections()
-    {
-        foreach (var c in _themeCards)
-        {
-            var isDarkSel = string.Equals(c.Theme.FolderName, _darkTheme, StringComparison.OrdinalIgnoreCase);
-            var isLightSel = string.Equals(c.Theme.FolderName, _lightTheme, StringComparison.OrdinalIgnoreCase);
-            c.DarkBtn.Classes.Set("selected", isDarkSel);
-            c.LightBtn.Classes.Set("selected", isLightSel);
-        }
-    }
-
-
-    private async Task LoadCardPreviewAsync(IgTheme theme, Image img, Control placeholder, ThemeCardItem item, int gen)
-    {
-        if (string.IsNullOrEmpty(theme.Settings.PreviewImage)) return;
-
-        var path = Path.Combine(theme.FolderPath, theme.Settings.PreviewImage);
-        if (!File.Exists(path)) return;
-
-        try
-        {
-            var bmp = await Task.Run(() => DecodePreview(path, PREVIEW_DECODE_WIDTH));
-            if (bmp is null) return;
-
-            if (gen != _themeListGen || !IsVisible)
+            _darkTheme = theme.FolderName;
+            Core.Config.DarkTheme = _darkTheme;
+            if (Core.Config.AppearanceMode == "Light"
+                || (Core.Config.AppearanceMode == "System" && !Core.IsSystemDarkMode))
             {
-                bmp.Dispose();
-                return;
+                _appearanceMode = "Dark";
+                Core.Config.AppearanceMode = "Dark";
             }
-
-            item.PreviewBmp = bmp;
-            img.Source = bmp;
-            img.IsVisible = true;
-            placeholder.IsVisible = false;
         }
-        catch { }
+        else
+        {
+            _lightTheme = theme.FolderName;
+            Core.Config.LightTheme = _lightTheme;
+            if (Core.Config.AppearanceMode == "Dark"
+                || (Core.Config.AppearanceMode == "System" && Core.IsSystemDarkMode))
+            {
+                _appearanceMode = "Light";
+                Core.Config.AppearanceMode = "Light";
+            }
+        }
+
+        if (Application.Current is App app)
+        {
+            await app.ApplyThemePackAsync(Core.IsSystemDarkMode);
+        }
+        await Core.Config.SaveAsync();
+
+        RebuildThemeGridCards();
+        UpdateThemeSlotOverview();
+        UpdateAppearanceMode();
+        UpdateFooterState();
     }
 
+    private void ThemeFilter_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string mode }) return;
+        _themeFilter = mode;
+        PART_ThemeFilterAll.Classes.Set("active", mode == "all");
+        PART_ThemeFilterDark.Classes.Set("active", mode == "dark");
+        PART_ThemeFilterLight.Classes.Set("active", mode == "light");
+        RebuildThemeGridCards();
+    }
+
+    private void ThemeSearchBox_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        _themeSearchQuery = PART_ThemeSearchBox.Text ?? string.Empty;
+        PART_BtnClearThemeSearch.IsVisible = _themeSearchQuery.Length > 0;
+        RebuildThemeGridCards();
+    }
+
+    private void ClearThemeSearch_Click(object? sender, RoutedEventArgs e)
+    {
+        PART_ThemeSearchBox.Text = string.Empty;
+        PART_ThemeSearchBox.Focus();
+    }
 
     private async Task ShowLargeThemePreviewAsync(IgTheme theme)
     {
@@ -1490,42 +1620,14 @@ public partial class SettingsOverlayControl : UserControl
 
     private void UpdateAppearanceMode()
     {
-        PART_ModeSystem.IsChecked = _appearanceMode == "System";
-        PART_ModeDark.IsChecked = _appearanceMode == "Dark";
-        PART_ModeLight.IsChecked = _appearanceMode == "Light";
-
-        PART_AppearanceTitle.Text = T("外观模式", "Appearance Mode");
-        PART_AppearanceDesc.Text = T(
-            "选择应用外观，跟随系统时将随 macOS 自动切换深浅主题。",
-            "Choose the app appearance. System mode follows macOS automatically.");
-
-        PART_TxtModeSystemTitle.Text = T("跟随系统", "System");
-        PART_TxtModeSystemDesc.Text = T("随 macOS 自动切换", "Match macOS");
-        PART_TxtModeDarkTitle.Text = T("暗色", "Dark");
-        PART_TxtModeDarkDesc.Text = T("深邃低光专注视界", "Low-light studio");
-        PART_TxtModeLightTitle.Text = T("亮色", "Light");
-        PART_TxtModeLightDesc.Text = T("清爽明亮日间工作台", "Crisp daylight");
-
-        PART_AppearancePaletteTitle.Text = T("双主题语义图标自动适配", "Theme-Adaptive Semantic Icons");
-        PART_AppearancePaletteDesc.Text = T(
-            "已为当前主题自动调整工具栏、主菜单、右键菜单及工作台面板图标的色彩与对比度。",
-            "Toolbar, menu, context menu, and panel icons adapt automatically to the active theme.");
-
-        // 根据当前实时生效主题刷新右上角状态徽章图标与色彩
-        var isDarkActive = Core.Theme.Settings.IsDarkMode;
-        PART_CurrentThemeStatusIcon.Data = Resx.GetIcon(isDarkActive ? ResxIconId.IconWeatherMoon : ResxIconId.IconWeatherSunny);
-        PART_CurrentThemeStatusIcon.Fill = Brush.Parse(isDarkActive ? "#A78BFA" : "#D97706");
-        PART_CurrentThemeStatusBadge.Background = Brush.Parse(isDarkActive ? "#22A78BFA" : "#1AD97706");
-
-        var activeThemeLabel = isDarkActive ? T("暗色模式", "Dark") : T("亮色模式", "Light");
-        PART_TxtCurrentThemeStatus.Text = _appearanceMode == "System"
-            ? T($"自动 · 当前 {activeThemeLabel}", $"Auto · {activeThemeLabel}")
-            : T($"当前：{activeThemeLabel}", $"Active: {activeThemeLabel}");
+        PART_ModeSystem.Classes.Set("active", _appearanceMode == "System");
+        PART_ModeDark.Classes.Set("active", _appearanceMode == "Dark");
+        PART_ModeLight.Classes.Set("active", _appearanceMode == "Light");
     }
 
     private async void AppearanceMode_Click(object? sender, RoutedEventArgs e)
     {
-        if (sender is RadioButton { Tag: string mode })
+        if (sender is Button { Tag: string mode })
         {
             await ApplyAppearanceModeAsync(mode);
         }
@@ -1541,6 +1643,7 @@ public partial class SettingsOverlayControl : UserControl
             Core.Config.AppearanceMode = mode;
             if (Application.Current is App app) await app.ApplyThemePackAsync(Core.IsSystemDarkMode);
             UpdateAppearanceMode();
+            RebuildThemeGridCards();
             RebuildFormatsList();
             _initialAppearanceMode = mode;
             UpdateFooterState();

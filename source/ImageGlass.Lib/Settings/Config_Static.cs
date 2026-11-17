@@ -917,7 +917,10 @@ public partial class Config
         }
 
         return found.Values
-            .OrderBy(t => t.Info.Name, StringComparer.CurrentCultureIgnoreCase)
+            .OrderBy(t => t.FolderName.Equals(Const.DEFAULT_THEME, StringComparison.OrdinalIgnoreCase) ? 0
+                       : t.FolderName.Equals(Const.DEFAULT_LIGHT_THEME, StringComparison.OrdinalIgnoreCase) ? 1
+                       : 2)
+            .ThenBy(t => t.Info.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
 
@@ -1115,6 +1118,16 @@ public partial class Config
     private static async Task<IgTheme> FindAndLoadThemePackAsync(string themeFolderName,
         bool useFallBackTheme, bool throwIfThemeInvalid)
     {
+        // 兼容旧主题名别名
+        if (string.Equals(themeFolderName, "Kobe", StringComparison.OrdinalIgnoreCase))
+        {
+            themeFolderName = Const.DEFAULT_THEME;
+        }
+        else if (string.Equals(themeFolderName, "Kobe-Light", StringComparison.OrdinalIgnoreCase))
+        {
+            themeFolderName = Const.DEFAULT_LIGHT_THEME;
+        }
+
         // 1. look for theme pack in the Config dir
         var themeConfigPath = BHelper.ConfigDir(Dir.Themes, themeFolderName);
         var th = await new IgTheme().LoadAsync(themeConfigPath);

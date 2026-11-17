@@ -804,7 +804,12 @@ public partial class Config : PhReactive
     /// </summary>
     public string DarkTheme
     {
-        get => Get(ConfigId.DarkTheme, Const.DEFAULT_THEME);
+        get
+        {
+            var v = Get(ConfigId.DarkTheme, Const.DEFAULT_THEME);
+            if (string.Equals(v, "Kobe", StringComparison.OrdinalIgnoreCase)) return Const.DEFAULT_THEME;
+            return v;
+        }
         set => Set(ConfigId.DarkTheme, value);
     }
 
@@ -813,7 +818,12 @@ public partial class Config : PhReactive
     /// </summary>
     public string LightTheme
     {
-        get => Get(ConfigId.LightTheme, Const.DEFAULT_LIGHT_THEME);
+        get
+        {
+            var v = Get(ConfigId.LightTheme, Const.DEFAULT_LIGHT_THEME);
+            if (string.Equals(v, "Kobe-Light", StringComparison.OrdinalIgnoreCase)) return Const.DEFAULT_LIGHT_THEME;
+            return v;
+        }
         set => Set(ConfigId.LightTheme, value);
     }
 

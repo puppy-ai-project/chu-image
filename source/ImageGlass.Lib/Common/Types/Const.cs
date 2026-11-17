@@ -70,12 +70,12 @@ public static class Const
     /// <summary>
     /// The default theme pack (dark mode).
     /// </summary>
-    public const string DEFAULT_THEME = "Kobe";
+    public const string DEFAULT_THEME = "Default-Dark";
 
     /// <summary>
     /// The default theme pack for light mode.
     /// </summary>
-    public const string DEFAULT_LIGHT_THEME = "Kobe-Light";
+    public const string DEFAULT_LIGHT_THEME = "Default-Light";
 
     /// <summary>
     /// Gets built-in image formats

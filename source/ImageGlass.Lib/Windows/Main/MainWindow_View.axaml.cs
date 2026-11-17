@@ -548,6 +548,14 @@ public partial class MainWindowView : PhControl
     protected override void OnIgThemeChanged(ThemePackChangedEventArgs e)
     {
         base.OnIgThemeChanged(e);
+        var barColor = BHelper.ColorFromHex(Core.Theme.Colors.ToolbarBgColor);
+        var isDefault = Core.Theme.FolderName is Const.DEFAULT_THEME or Const.DEFAULT_LIGHT_THEME || barColor.A == 0;
+        var topBrush = isDefault ? Resources["WindowBarGradient"] as Avalonia.Media.IBrush
+            : new Avalonia.Media.SolidColorBrush(barColor);
+        var bottomBrush = isDefault ? Resources["WindowBottomBarGradient"] as Avalonia.Media.IBrush : topBrush;
+        PART_CustomTitleBarBorder.Background = topBrush;
+        PART_ViewerSurface.Background = topBrush;
+        PART_BottomBar.Background = bottomBrush;
         UpdateViewerCustomBackground();
     }
 

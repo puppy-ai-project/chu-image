@@ -1,18 +1,18 @@
-{
+ {
   "_Metadata": {
     "Description": "ImageGlass theme configuration file",
     "Version": 10
   },
   "Info": {
-    "Name": "Kobe Light",
+    "Name": "默认-暗色",
     "Author": "puppy",
     "Email": "",
     "Website": "https://image.withqq.com",
-    "Description": "Kobe theme for ImageGlass 10",
+    "Description": "ChuImage 默认暗色主题",
     "Version": 10
   },
   "Settings": {
-    "IsDarkMode": false,
+    "IsDarkMode": true,
     "IsShowTitlebarLogo": true,
     "NavButtonLeft": "ViewPreviousImage.svg",
     "NavButtonRight": "ViewNextImage.svg",
@@ -20,12 +20,12 @@
     "AppLogo": "logo.svg"
   },
   "Colors": {
-    "BgColor": "#fffa",
-    "TextColor": "#000",
+    "BgColor": "#1D1F24",
+    "TextColor": "#E5E7EB",
 
-    "ToolbarBgColor": "#fff0",
-    "GalleryBgColor": "#fff0",
-    "MenuBgColor": "#F5F6F7"
+    "ToolbarBgColor": "#0023252A",
+    "GalleryBgColor": "#001D1F24",
+    "MenuBgColor": "#23252A"
   },
   "ToolbarIcons": {
     "ActualSize": "ActualSize.svg",
@@ -64,6 +64,6 @@
     "Play": "Play.svg",
     "Pause": "Pause.svg",
     "Export": "Export.svg",
-	  "Exit": "Exit.svg"
+    "Exit": "Exit.svg"
   }
 }

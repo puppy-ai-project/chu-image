@@ -1,0 +1,69 @@
+{
+  "_Metadata": {
+    "Description": "ImageGlass theme configuration file",
+    "Version": 10
+  },
+  "Info": {
+    "Name": "GitHub",
+    "Author": "puppy",
+    "Email": "",
+    "Website": "https://image.withqq.com",
+    "Description": "GitHub 经典亮色主题，Primer 清爽白底与标志性蓝调",
+    "Version": 10
+  },
+  "Settings": {
+    "IsDarkMode": false,
+    "IsShowTitlebarLogo": true,
+    "NavButtonLeft": "ViewPreviousImage.svg",
+    "NavButtonRight": "ViewNextImage.svg",
+    "PreviewImage": "preview.webp",
+    "AppLogo": "logo.svg"
+  },
+  "Colors": {
+    "BgColor": "#FFFFFF",
+    "TextColor": "#1F2328",
+    "ToolbarBgColor": "#F6F8FA",
+    "GalleryBgColor": "#F6F8FA",
+    "MenuBgColor": "#FFFFFF",
+    "AccentColor": "#0969DA"
+  },
+  "ToolbarIcons": {
+    "ActualSize": "ActualSize.svg",
+    "AutoZoom": "AutoZoom.svg",
+    "Checkerboard": "Checkerboard.svg",
+    "ColorPicker": "ColorPicker.svg",
+    "Crop": "Crop.svg",
+    "Delete": "Delete.svg",
+    "Edit": "Edit.svg",
+    "FlipHorz": "FlipHorz.svg",
+    "FlipVert": "FlipVert.svg",
+    "FullScreen": "FullScreen.svg",
+    "GoToImage": "GoToImage.svg",
+    "LockZoom": "LockZoom.svg",
+    "MainMenu": "MainMenu.svg",
+    "OpenFile": "OpenFile.svg",
+    "Print": "Print.svg",
+    "Refresh": "Refresh.svg",
+    "Reset": "Reset.svg",
+    "RotateLeft": "RotateLeft.svg",
+    "RotateRight": "RotateRight.svg",
+    "Save": "Save.svg",
+    "ScaleToFill": "ScaleToFill.svg",
+    "ScaleToFit": "ScaleToFit.svg",
+    "ScaleToHeight": "ScaleToHeight.svg",
+    "ScaleToWidth": "ScaleToWidth.svg",
+    "Slideshow": "Slideshow.svg",
+    "Gallery": "Gallery.svg",
+    "ViewFirstImage": "ViewFirstImage.svg",
+    "ViewLastImage": "ViewLastImage.svg",
+    "ViewNextImage": "ViewNextImage.svg",
+    "ViewPreviousImage": "ViewPreviousImage.svg",
+    "WindowFit": "WindowFit.svg",
+    "ZoomIn": "ZoomIn.svg",
+    "ZoomOut": "ZoomOut.svg",
+    "Play": "Play.svg",
+    "Pause": "Pause.svg",
+    "Export": "Export.svg",
+    "Exit": "Exit.svg"
+  }
+}

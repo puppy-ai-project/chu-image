@@ -450,7 +450,7 @@
                 x:Name="PART_ViewerWrapper"
                 Grid.Row="1"
                 RowDefinitions="*, Auto">
-                <Border Background="{StaticResource WindowBarGradient}">
+                <Border x:Name="PART_ViewerSurface" Background="{StaticResource WindowBarGradient}">
                     <Border x:Name="PART_ViewerBgLayer" Background="Transparent">
                         <viewer:ViewerControl
                         x:Name="PART_Viewer"
@@ -591,7 +591,7 @@
         </Grid>
 
         <!--  Bottom Bar: 左图像规格摘要 + 右精巧缩放组 (32px 高精密质感底栏)  -->
-        <Border Grid.Row="2" Background="{StaticResource WindowBottomBarGradient}"
+        <Border x:Name="PART_BottomBar" Grid.Row="2" Background="{StaticResource WindowBottomBarGradient}"
                 BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
                 BorderThickness="0,1,0,0"
                 Height="32"
