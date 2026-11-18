@@ -1,0 +1,78 @@
+name: Publish ChuImage release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mac_arm64_url:
+        description: HTTPS URL of the Apple Silicon ZIP
+        required: true
+        type: string
+      mac_arm64_sha256:
+        description: SHA-256 of the Apple Silicon ZIP
+        required: true
+        type: string
+      mac_x64_url:
+        description: HTTPS URL of the Intel ZIP
+        required: true
+        type: string
+      mac_x64_sha256:
+        description: SHA-256 of the Intel ZIP
+        required: true
+        type: string
+      win_url:
+        description: HTTPS URL of the optional Windows MSI
+        required: false
+        type: string
+      win_sha256:
+        description: SHA-256 of the optional Windows MSI
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify tag and download release assets
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          ARM_URL: ${{ inputs.mac_arm64_url }}
+          ARM_SHA: ${{ inputs.mac_arm64_sha256 }}
+          X64_URL: ${{ inputs.mac_x64_url }}
+          X64_SHA: ${{ inputs.mac_x64_sha256 }}
+          WIN_URL: ${{ inputs.win_url }}
+          WIN_SHA: ${{ inputs.win_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$REF_TYPE" = tag || { echo 'Run this workflow on a release tag.' >&2; exit 1; }
+          version=$(sed -n 's:.*<IgVersion>\([^<]*\)</IgVersion>.*:\1:p' source/Directory.Build.props | head -n 1)
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid project version.' >&2; exit 1; }
+          [[ "$REF_NAME" == "v$version" ]] || { echo 'Tag and source version differ.' >&2; exit 1; }
+          mkdir -p release-assets
+          download() {
+            local url="$1" sha="$2" name="$3"
+            [[ "$url" == "https://download.withqq.com/public-download/chu-image/$name" ]] || { echo "Unexpected URL for $name" >&2; exit 1; }
+            [[ "$sha" =~ ^[[:xdigit:]]{64}$ ]] || { echo "Invalid SHA-256 for $name" >&2; exit 1; }
+            curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --retry 3 --output "release-assets/$name" "$url"
+            printf '%s  %s\n' "$sha" "release-assets/$name" | sha256sum --check --status || { echo "Checksum mismatch for $name" >&2; exit 1; }
+            test -s "release-assets/$name"
+          }
+          download "$ARM_URL" "$ARM_SHA" "ChuImage-$version-mac-arm64.zip"
+          download "$X64_URL" "$X64_SHA" "ChuImage-$version-mac-x64.zip"
+          if [[ -n "$WIN_URL" || -n "$WIN_SHA" ]]; then
+            [[ -n "$WIN_URL" && -n "$WIN_SHA" ]] || { echo 'Windows URL and checksum must both be supplied.' >&2; exit 1; }
+            download "$WIN_URL" "$WIN_SHA" "ChuImage_${version}_win-x64.msi"
+          fi
+      - name: Create and publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$REF_NAME" release-assets/* --verify-tag --title "ChuImage $REF_NAME" --generate-notes
