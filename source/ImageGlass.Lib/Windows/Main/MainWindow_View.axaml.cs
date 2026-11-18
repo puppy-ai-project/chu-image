@@ -210,6 +210,20 @@ public partial class MainWindowView : PhControl
                     break;
                 }
             }
+
+            // Windows 保留设备名及无扩展名时尾部点号校验
+            if (errorMsg is null && OperatingSystem.IsWindows())
+            {
+                var hasExt = PART_RenameExtBadge.IsVisible && !string.IsNullOrEmpty(PART_RenameExtText.Text);
+                if (!hasExt && text.EndsWith('.'))
+                {
+                    errorMsg = Core.Lang[LangId._Validation_FileNameValueOnly];
+                }
+                else if (IsWindowsReservedDeviceName(text))
+                {
+                    errorMsg = Core.Lang[LangId._Validation_FileNameValueOnly];
+                }
+            }
         }
 
         var isValid = errorMsg is null;
@@ -218,6 +232,19 @@ public partial class MainWindowView : PhControl
         PART_RenameInputBox.Classes.Set("invalid", !isValid);
         PART_RenameConfirm.IsEnabled = isValid;
         return isValid;
+    }
+
+    private static bool IsWindowsReservedDeviceName(string stem)
+    {
+        var baseName = stem.Split('.')[0].TrimEnd();
+        return baseName.Equals("CON", StringComparison.OrdinalIgnoreCase)
+            || baseName.Equals("PRN", StringComparison.OrdinalIgnoreCase)
+            || baseName.Equals("AUX", StringComparison.OrdinalIgnoreCase)
+            || baseName.Equals("NUL", StringComparison.OrdinalIgnoreCase)
+            || (baseName.Length == 4
+                && (baseName.StartsWith("COM", StringComparison.OrdinalIgnoreCase)
+                    || baseName.StartsWith("LPT", StringComparison.OrdinalIgnoreCase))
+                && baseName[3] is >= '1' and <= '9');
     }
 
     public void CloseRenameModal(string? result = null)
@@ -1066,6 +1093,8 @@ public partial class MainWindowView : PhControl
         for (var i = 0; i < e.FilePaths.Count; i++)
         {
             var filePath = e.FilePaths[i];
+            if (!File.Exists(filePath)) continue;
+
             var photoIndex = Photos.IndexOf(filePath);
             var photo = Photos.Get(photoIndex);
             if (photo is null) continue;
@@ -2070,7 +2099,14 @@ public partial class MainWindowView : PhControl
     }
 
     private void GalleryItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        => UpdateGalleryOverlayWidth();
+    {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(UpdateGalleryOverlayWidth);
+            return;
+        }
+        UpdateGalleryOverlayWidth();
+    }
 
     private void ViewerWrapper_SizeChanged(object? sender, SizeChangedEventArgs e)
         => UpdateGalleryOverlayWidth();

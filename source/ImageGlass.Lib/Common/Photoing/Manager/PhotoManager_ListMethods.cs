@@ -68,22 +68,32 @@ public partial class PhotoManager
             {
                 addedIndex = (int)Count;
 
-                Items.AddRange(newItems);
-
-                // only index the newly appended items
-                for (int i = addedIndex; i < Count; i++)
+                // 先在 try/finally 中更新 _dict，确保即使外部 CollectionChanged 订阅者抛异常，
+                // 索引字典也始终与 Items 保持严格一致
+                try
                 {
-                    _dict[Items[i].FilePath] = i;
+                    Items.AddRange(newItems);
+                }
+                finally
+                {
+                    for (int i = addedIndex; i < Count; i++)
+                    {
+                        _dict[Items[i].FilePath] = i;
+                    }
                 }
             }
             else
             {
-                Items.InsertRange(index, newItems);
-
-                // re-index from insertion point (existing items shifted)
-                for (int i = addedIndex; i < Count; i++)
+                try
                 {
-                    _dict[Items[i].FilePath] = i;
+                    Items.InsertRange(index, newItems);
+                }
+                finally
+                {
+                    for (int i = addedIndex; i < Count; i++)
+                    {
+                        _dict[Items[i].FilePath] = i;
+                    }
                 }
             }
         }
@@ -206,8 +216,8 @@ public partial class PhotoManager
             var oldFilePath = photo.FilePath;
             photo.FilePath = filePath;
 
-            // remove the old path entry, then add the new one
-            if (!string.Equals(oldFilePath, filePath, StringComparison.OrdinalIgnoreCase))
+            // 先移除旧键再写入新键（含仅大小写变更场景），保证字典与真实路径一致
+            if (!string.Equals(oldFilePath, filePath, StringComparison.Ordinal))
             {
                 _dict.TryRemove(oldFilePath, out _);
             }

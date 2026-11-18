@@ -743,8 +743,10 @@ public partial class AppAPIProvider
     /// </summary>
     public static async Task IG_RenameAsync()
     {
-        var photo = Core.Photos.Current;
-        var oldFilePath = Core.Photos.CurrentFilePath;
+        var window = App.MainWindow;
+        var photos = Core.Photos;
+        var photo = photos.Current;
+        var oldFilePath = photos.CurrentFilePath;
         if (!File.Exists(oldFilePath)) return;
 
         var currentFolder = Path.GetDirectoryName(oldFilePath) ?? string.Empty;
@@ -752,7 +754,7 @@ public partial class AppAPIProvider
         var title = Core.Lang[LangId.Menu_MnuRename];
 
         // 2. show in-window rename overlay modal
-        var newStemName = await App.MainWindow.PromptRenameAsync(
+        var newStemName = await window.PromptRenameAsync(
             title,
             Core.Lang[LangId.Menu_MnuRename_Description],
             oldFilePath,
@@ -765,39 +767,128 @@ public partial class AppAPIProvider
         var newFilePath = Path.Combine(currentFolder, newName);
         if (string.Equals(oldFilePath, newFilePath, StringComparison.Ordinal)) return;
 
+        using var windowScope = App.UseWindow(window);
 
         // 4. perform renaming
+        var unloadedForMove = false;
         try
         {
-            // Issue 73: Windows ignores case-only changes
-            if (string.Equals(oldFilePath, newFilePath, StringComparison.OrdinalIgnoreCase))
+            var isCaseOnlyChange = string.Equals(oldFilePath, newFilePath, StringComparison.OrdinalIgnoreCase);
+
+            // 非仅大小写变更时，防止目标已存在同名文件
+            if (!isCaseOnlyChange && File.Exists(newFilePath))
             {
-                // user changing only the case of the filename. Need to perform a trick.
-                File.Move(oldFilePath, oldFilePath + "_temp");
-                File.Move(oldFilePath + "_temp", newFilePath);
-            }
-            else
-            {
-                File.Move(oldFilePath, newFilePath);
+                throw new IOException($"目标文件已存在：{newName}");
             }
 
-            // the watcher reports the rename ~50 ms later, and the next frame decodes by path
+            // Windows 下 SkiaAnimator（GIF/动态 WebP 等）会长期持有磁盘文件句柄，
+            // 直接 File.Move 会触发文件占用异常，需先释放当前图片句柄，改名后再无闪烁重载
+            if (OperatingSystem.IsWindows() && photo?.Bitmap is SkiaAnimator)
+            {
+                await IG_UnloadAsync();
+                unloadedForMove = true;
+            }
+
+            try
+            {
+                await PerformRenameMoveAsync(oldFilePath, newFilePath, currentFolder, isCaseOnlyChange);
+            }
+            catch (IOException) when (OperatingSystem.IsWindows() && !unloadedForMove)
+            {
+                // Windows 上若当前正在解码/持有文件句柄导致 Sharing Violation，卸载后再重试一次
+                await IG_UnloadAsync();
+                unloadedForMove = true;
+                await PerformRenameMoveAsync(oldFilePath, newFilePath, currentFolder, isCaseOnlyChange);
+            }
+
+            // 立即同步更新内存路径与索引（不等待可能延迟或被拆分为 Delete+Create 的 FileWatcher 事件），
+            // 避免连续重命名或快速切图时读取到已不存在的旧路径
             (photo?.Bitmap as AnimatorImpl)?.UpdateFilePath(newFilePath);
 
-
-            // manually update the change if FileWatcher is not enabled
-            if (!Core.Config.EnableFileWatcher)
+            var photoIndex = photos.IndexOf(oldFilePath);
+            if (photoIndex >= 0)
             {
-                Core.Photos.SetFilePath(Core.Photos.CurrentIndex, newFilePath);
+                photos.SetFilePath(photoIndex, newFilePath);
+            }
+            else if (photo is not null)
+            {
+                photo.FilePath = newFilePath;
+            }
+
+            if (photos.InitPhoto is not null
+                && string.Equals(photos.InitPhoto.FilePath, oldFilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                photos.InitPhoto = new Photo(newFilePath);
+            }
+
+            if (unloadedForMove)
+            {
+                IG_Reload(resetZoom: false);
             }
         }
         catch (Exception ex)
         {
-            _ = await ModalWindow.ShowErrorAsync(App.MainWindow, new ModalWindowOptions
+            if (unloadedForMove)
+            {
+                IG_Reload(resetZoom: false);
+            }
+
+            _ = await ModalWindow.ShowErrorAsync(window, new ModalWindowOptions
             {
                 Title = title,
                 Description = ex.Message,
             });
+        }
+    }
+
+
+    private static async Task PerformRenameMoveAsync(
+        string oldFilePath,
+        string newFilePath,
+        string currentFolder,
+        bool isCaseOnlyChange)
+    {
+        // Issue 73: Windows / macOS APFS 大小写不敏感文件系统忽略仅大小写变化
+        if (isCaseOnlyChange)
+        {
+            var tempPath = Path.Combine(currentFolder, $".{Path.GetFileName(oldFilePath)}.{Guid.NewGuid():N}.tmp");
+            await MoveFileWithRetryAsync(oldFilePath, tempPath);
+            try
+            {
+                await MoveFileWithRetryAsync(tempPath, newFilePath);
+            }
+            catch
+            {
+                // 第二步失败时尽量恢复原文件
+                if (File.Exists(tempPath) && !File.Exists(oldFilePath))
+                {
+                    try { File.Move(tempPath, oldFilePath); } catch { }
+                }
+                throw;
+            }
+        }
+        else
+        {
+            await MoveFileWithRetryAsync(oldFilePath, newFilePath);
+        }
+    }
+
+
+    private static async Task MoveFileWithRetryAsync(string srcPath, string destPath)
+    {
+        // Windows 上后台缩略图读取、预加载或杀毒软件可能短暂占用文件，遇到 IOException 时短退避重试
+        const int maxAttempts = 5;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                File.Move(srcPath, destPath);
+                return;
+            }
+            catch (IOException) when (OperatingSystem.IsWindows() && attempt < maxAttempts)
+            {
+                await Task.Delay(attempt * 40);
+            }
         }
     }
 

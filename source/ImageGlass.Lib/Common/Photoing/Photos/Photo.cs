@@ -213,6 +213,13 @@ public partial class Photo : PhDisposable
                 Metadata.FilePath = value;
                 (Bitmap as AnimatorImpl)?.UpdateFilePath(value);
 
+                // 路径更新后清除旧路径留下的瞬时加载错误（如 FileNotFoundException），允许下次按新路径正常加载
+                if (Error is not null)
+                {
+                    Error = null;
+                    State = PhotoState.None;
+                }
+
                 OnPropertyChanged(nameof(FilePath));
                 OnPropertyChanged(nameof(DirPath));
                 OnPropertyChanged(nameof(Metadata));
@@ -907,8 +914,8 @@ public partial class Photo : PhDisposable
         Func<PhotoLoadingEventArgs, Task>? handleProgressFn = null,
         bool skipLoadingEvent = false)
     {
-        // use cached data
-        if (useCache && State != PhotoState.None)
+        // use cached data (never serve a stale error as a cache hit)
+        if (useCache && State != PhotoState.None && Error is null)
         {
             PhotoTrace.Mark("load:cache-hit", FilePath, $"state={State}");
             await DispatchLoadedAsync(handleProgressFn);
@@ -928,7 +935,7 @@ public partial class Photo : PhDisposable
             }
 
             // the load we queued behind may have decoded the photo already
-            if (useCache && State != PhotoState.None)
+            if (useCache && State != PhotoState.None && Error is null)
             {
                 PhotoTrace.Mark("load:cache-hit", FilePath, $"state={State}, afterGate=True");
                 await DispatchLoadedAsync(handleProgressFn);
