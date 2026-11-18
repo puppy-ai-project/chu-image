@@ -1157,6 +1157,49 @@ public partial class MainWindowView : PhControl
         // 1. handle loading error first
         if (e.Photo.Error is not null)
         {
+            var path = e.Photo.FilePath;
+            if (OwnerWindow.Session.ClipboardImage is null && !string.IsNullOrWhiteSpace(path))
+            {
+                try
+                {
+                    // File.Exists also returns false for access errors; only suppress the error when
+                    // the filesystem explicitly reports a missing file or directory.
+                    _ = File.GetAttributes(path);
+                }
+                catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+                {
+                    var photo = e.Photo;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        if (!IsLoaded || !ReferenceEquals(PART_Viewer.Photo, photo)
+                            || !string.Equals(photo.FilePath, path, StringComparison.Ordinal)) return;
+
+                        _ = PART_Message.ShowAsync(null);
+                        if (File.Exists(path))
+                        {
+                            _ = ViewPhotoAsync(photo, useCache: false);
+                            return;
+                        }
+                        if (ReferenceEquals(Photos.Current, photo))
+                        {
+                            Photos.RemoveMissingFileOnUI(path);
+                        }
+                        else if (ReferenceEquals(Photos.InitPhoto, photo) && Photos.IndexOf(path) < 0)
+                        {
+                            // The first image can fail before directory enumeration selects it.
+                            // Let the search select its first result, or show one already found.
+                            Photos.InitPhoto = Photos.Select(0);
+                            _ = ViewPhotoAsync(Photos.InitPhoto);
+                        }
+                    });
+                    return;
+                }
+                catch (Exception)
+                {
+                    // Keep the original loading error for inaccessible files and other failures.
+                }
+            }
+
             var heading = $"{Core.Lang[LangId._PicMain_ErrorText]} 😶";
             var err = BHelper.GetInAppError(e.Photo.Error);
 

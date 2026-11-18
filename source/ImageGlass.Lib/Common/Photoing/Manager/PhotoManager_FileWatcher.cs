@@ -654,6 +654,9 @@ public partial class PhotoManager
     }
 
 
+    internal void RemoveMissingFileOnUI(string filePath)
+        => ApplyPendingDeletesOnUI([filePath]);
+
     private void ApplyPendingDeletesOnUI(List<string> candidateDeleted)
     {
         if (IsDisposed) return;
