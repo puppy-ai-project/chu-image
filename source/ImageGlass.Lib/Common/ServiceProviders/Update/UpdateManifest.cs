@@ -27,8 +27,21 @@ namespace ImageGlass.Common.ServiceProviders.Update;
 /// </summary>
 [JsonSerializable(typeof(UpdateManifest))]
 [JsonSerializable(typeof(UpdateReleaseInfo))]
+[JsonSerializable(typeof(ChuImageVersionManifest))]
 [JsonSerializable(typeof(PlatformUpdateManifest))]
 public partial class UpdateManifestJsonContext : JsonSerializerContext;
+
+/// <summary>
+/// Shared ChuImage release manifest used by the website and desktop updater.
+/// </summary>
+public sealed class ChuImageVersionManifest
+{
+    [JsonPropertyName("version")] public string Version { get; set; } = string.Empty;
+    [JsonPropertyName("dateTime")] public string DateTime { get; set; } = string.Empty;
+    [JsonPropertyName("appleUrl")] public string AppleUrl { get; set; } = string.Empty;
+    [JsonPropertyName("intelUrl")] public string IntelUrl { get; set; } = string.Empty;
+    [JsonPropertyName("win")] public string WinUrl { get; set; } = string.Empty;
+}
 
 public sealed class PlatformUpdateManifest
 {

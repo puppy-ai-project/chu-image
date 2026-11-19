@@ -118,15 +118,17 @@ public partial class UpdateProvider : IUpdateProvider
 
         // parse manifest
         var ctx = new UpdateManifestJsonContext();
-        var manifest = JsonSerializer.Deserialize(json, ctx.PlatformUpdateManifest);
+        var manifest = JsonSerializer.Deserialize(json, ctx.ChuImageVersionManifest);
         if (manifest is null || !Version.TryParse(manifest.Version, out _))
         {
             return UpdateCheckResult.Failed("Invalid update manifest format.");
         }
 
         // select channel
-        var url = OperatingSystem.IsMacOS() && System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.X64
-            ? manifest.X64Url : manifest.Url;
+        var url = OperatingSystem.IsMacOS()
+            ? System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.X64
+                ? manifest.IntelUrl : manifest.AppleUrl
+            : OperatingSystem.IsWindows() ? manifest.WinUrl : string.Empty;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var packageUri) || packageUri.Scheme != Uri.UriSchemeHttps)
             return UpdateCheckResult.Failed("Invalid update download URL.");
         var release = new UpdateReleaseInfo { Version = manifest.Version, PublishedDate = manifest.DateTime, UpdateUrl = url };
@@ -154,8 +156,7 @@ public partial class UpdateProvider : IUpdateProvider
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeoutCts.CancelAfter(UpdateConstants.MetadataTimeout);
 
-        var platform = OperatingSystem.IsMacOS() ? "mac" : OperatingSystem.IsWindows() ? "win" : "linux";
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"{UpdateConstants.MetadataUrl}/{platform}-version.json?check={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{UpdateConstants.MetadataUrl}/version.json?check={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
 
         // set per request: the value varies per check, so it cannot live on the shared client
         request.Headers.UserAgent.ParseAdd("ChuImage/1.0");

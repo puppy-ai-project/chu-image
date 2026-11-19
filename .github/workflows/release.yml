@@ -56,7 +56,7 @@ jobs:
           mkdir -p release-assets
           download() {
             local url="$1" sha="$2" name="$3"
-            [[ "$url" == "https://download.withqq.com/public-download/chu-image/$name" ]] || { echo "Unexpected URL for $name" >&2; exit 1; }
+            [[ "$url" == "https://download.withqq.com/chu-image/$name" ]] || { echo "Unexpected URL for $name" >&2; exit 1; }
             [[ "$sha" =~ ^[[:xdigit:]]{64}$ ]] || { echo "Invalid SHA-256 for $name" >&2; exit 1; }
             curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --retry 3 --output "release-assets/$name" "$url"
             printf '%s  %s\n' "$sha" "release-assets/$name" | sha256sum --check --status || { echo "Checksum mismatch for $name" >&2; exit 1; }
