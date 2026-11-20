@@ -1061,13 +1061,9 @@ public partial class ViewerControl
         // Preserve the cursor anchor even while the image fits inside the viewport.
         if (point.HasValue) _mousePanPositionEnabled = true;
 
-        // Use the provided point, or fall back to the last tracked cursor position.
-        // If neither is valid, use the center of the drawing area.
-        var location = point ?? _zooming.ZoomedPoint;
-        if (location == default || !Bounds.Contains(location))
-        {
-            location = DrawingArea.Center;
-        }
+        // Keep the cursor anchor only when it is over the image. In the empty area,
+        // zoom around the image itself so the image does not jump toward the cursor.
+        var location = GetZoomAnchor(point);
 
         _zooming.OldFactor = _zooming.Factor;
         _zooming.Factor = Math.Min(MaxZoom, Math.Max(newZoomFactor, MinZoom));
@@ -1161,13 +1157,7 @@ public partial class ViewerControl
 
         if (newZoomFactor == _zooming.Factor) return false;
 
-        var location = point ?? new Point(-1, -1);
-
-        // use the center point if the point is outside
-        if (!Bounds.Contains(location))
-        {
-            location = DrawingArea.Center;
-        }
+        var location = GetZoomAnchor(point);
 
 
         _zooming.OldFactor = _zooming.Factor;
@@ -1194,6 +1184,23 @@ public partial class ViewerControl
         });
 
         return true;
+    }
+
+
+    /// <summary>
+    /// Returns the cursor position when it is over the rendered image; otherwise,
+    /// returns the center of the currently rendered image.
+    /// </summary>
+    private Point GetZoomAnchor(Point? point)
+    {
+        if (point is { } cursor
+            && DrawingArea.Contains(cursor)
+            && DestRect.Contains(cursor))
+        {
+            return cursor;
+        }
+
+        return DestRect.IsEmpty ? DrawingArea.Center : DestRect.Center;
     }
 
 
