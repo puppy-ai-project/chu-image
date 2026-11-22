@@ -475,7 +475,7 @@ public partial class ToolbarControl : PhControl
             vm.SourceIndex = srcIndex;
 
             // Keep these tools hidden even when they are present in a saved layout.
-            if (vm.Id is "Btn_Crop" or "Btn_Slideshow" or "Btn_ColorPicker"
+            if (vm.Id is "Btn_Crop" or "Btn_Slideshow"
                 or "Btn_ZoomIn" or "Btn_ZoomOut" or "Btn_ActualSize") continue;
 
 

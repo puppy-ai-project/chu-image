@@ -435,11 +435,6 @@ public partial class ViewerControl
             _selection.IsHovered = isSelectionHovered;
             _selection.HoveredResizer = hoveredResizer;
         }
-        // restore default cursor
-        else
-        {
-            ClearValue(CursorProperty);
-        }
 
 
         return requestRerender;

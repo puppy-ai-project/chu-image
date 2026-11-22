@@ -8,204 +8,604 @@
     xmlns:tp="using:ImageGlass.Common.Types"
     xmlns:ui="using:ImageGlass.UI"
     mc:Ignorable="d"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="210"
+    d:DesignWidth="1050"
     x:Name="Root"
-    Padding="6,12">
+    HorizontalAlignment="Stretch"
+    Padding="14,10,40,10">
 
     <ui:PhControl.Resources>
         <cv:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+
+        <!--  精致微网格棋盘底纹（透明通道感知）  -->
+        <VisualBrush
+            x:Key="CheckerboardBrush"
+            DestinationRect="0,0,10,10"
+            SourceRect="0,0,10,10"
+            TileMode="Tile">
+            <VisualBrush.Visual>
+                <Grid
+                    Width="10"
+                    Height="10"
+                    ColumnDefinitions="5,5"
+                    RowDefinitions="5,5">
+                    <Rectangle
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Fill="#000000"
+                        Opacity="0.07" />
+                    <Rectangle
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Fill="#FFFFFF"
+                        Opacity="0.07" />
+                    <Rectangle
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Fill="#FFFFFF"
+                        Opacity="0.07" />
+                    <Rectangle
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Fill="#000000"
+                        Opacity="0.07" />
+                </Grid>
+            </VisualBrush.Visual>
+        </VisualBrush>
+
+        <!--  卡片面板顶高光微立体边框  -->
+        <LinearGradientBrush x:Key="CardBorderGradient" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0.0" Color="{DynamicResource IgDarkColor28FFFFFF}" />
+            <GradientStop Offset="1.0" Color="{DynamicResource IgDarkColor12FFFFFF}" />
+        </LinearGradientBrush>
     </ui:PhControl.Resources>
 
+    <ui:PhControl.Styles>
+        <!--  实时色彩格式卡片按钮  -->
+        <Style Selector="ToggleButton.color-code-btn">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="7,6" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush0AFFFFFF}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush14FFFFFF}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.color-code-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush16FFFFFF}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush2EFFFFFF}" />
+        </Style>
+        <Style Selector="ToggleButton.color-code-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush22FFFFFF}" />
+        </Style>
 
-    <WrapPanel
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        ItemSpacing="24"
-        ItemsAlignment="Center"
-        LineSpacing="6"
-        Orientation="Horizontal">
+        <Style Selector="ToggleButton.color-code-btn Path.copy-icon">
+            <Setter Property="Opacity" Value="0.30" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ToggleButton.color-code-btn:pointerover Path.copy-icon">
+            <Setter Property="Opacity" Value="0.95" />
+        </Style>
 
-        <!--  Color Preview  -->
+        <!--  色彩格式胶囊徽章  -->
+        <Style Selector="Border.fmt-badge">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Padding" Value="3,2" />
+            <Setter Property="CornerRadius" Value="4.5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.fmt-label">
+            <Setter Property="FontSize" Value="9.5" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.fmt-value">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="{CompiledBinding #Root.CodeFontFamily}" />
+            <Setter Property="Foreground" Value="{DynamicResource IgDarkBrushF3F4F6}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <!--  记录项内的微型色值标签芯片（点击直接复制该项）  -->
+        <Style Selector="ToggleButton.record-chip-btn">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="5,2" />
+            <Setter Property="CornerRadius" Value="4.5" />
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush0AFFFFFF}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush10FFFFFF}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="ToggleButton.record-chip-btn:pointerover">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush18FFFFFF}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource IgDarkBrush2EFFFFFF}" />
+        </Style>
+        <Style Selector="ToggleButton.record-chip-btn:pressed">
+            <Setter Property="Background" Value="{DynamicResource IgDarkBrush24FFFFFF}" />
+        </Style>
+    </ui:PhControl.Styles>
+
+
+    <Grid
+        HorizontalAlignment="Stretch"
+        ColumnDefinitions="48*,12,52*"
+        MaxWidth="1360">
+
+        <!--  ======================================================================  -->
+        <!--  1. 左侧：实时动态取色器容器（精细色板卡片 + 6 项色彩实时动态网格）      -->
+        <!--  ======================================================================  -->
         <Border
-            BorderBrush="{DynamicResource IG_BorderControlBrush}"
+            Grid.Column="0"
+            Padding="12,10"
+            Background="{DynamicResource IgDarkBrush191B20}"
+            BorderBrush="{StaticResource CardBorderGradient}"
             BorderThickness="1"
-            ClipToBounds="True"
-            CornerRadius="1">
-            <StackPanel Orientation="Horizontal">
-                <!--  Checkerboard background brush  -->
-                <StackPanel.Background>
-                    <VisualBrush
-                        DestinationRect="0,0,20,20"
-                        SourceRect="0,0,20,20"
-                        TileMode="Tile">
-                        <VisualBrush.Visual>
-                            <Grid
-                                RowDefinitions="10,10"
-                                ColumnDefinitions="10,10"
-                                Width="20"
-                                Height="20">
-                                <Rectangle
-                                    Grid.Row="0"
-                                    Grid.Column="0"
-                                    Fill="Black"
-                                    Opacity="0.1" />
-                                <Rectangle
-                                    Grid.Row="0"
-                                    Grid.Column="1"
-                                    Fill="White"
-                                    Opacity="0.1" />
-                                <Rectangle
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    Fill="White"
-                                    Opacity="0.1" />
-                                <Rectangle
-                                    Grid.Row="1"
-                                    Grid.Column="1"
-                                    Fill="Black"
-                                    Opacity="0.1" />
+            CornerRadius="11">
+            <Grid RowDefinitions="Auto,8,*" RowSpacing="0">
+
+                <!--  顶部栏：标题 + 实时跟随胶囊状态 + 实时坐标徽章  -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                    <StackPanel
+                        Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="7"
+                        VerticalAlignment="Center">
+                        <Border
+                            Width="20"
+                            Height="20"
+                            Background="{DynamicResource IgIconCyanSoftBrush}"
+                            CornerRadius="5"
+                            VerticalAlignment="Center">
+                            <Path
+                                Width="11.5"
+                                Height="11.5"
+                                Data="{StaticResource IconToolColorPicker}"
+                                Fill="{DynamicResource IgIconCyanBrush}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Stretch="Uniform" />
+                        </Border>
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                            Text="{CompiledBinding #Root.LivePanelTitle}"
+                            VerticalAlignment="Center" />
+
+                        <!--  实时跟随状态胶囊  -->
+                        <Border
+                            Padding="6,1.5"
+                            Background="{DynamicResource IgIconEmeraldSoftBrush}"
+                            CornerRadius="9"
+                            VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <Ellipse
+                                    Width="5.5"
+                                    Height="5.5"
+                                    VerticalAlignment="Center"
+                                    Fill="{DynamicResource IgIconEmeraldBrush}" />
+                                <TextBlock
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource IgIconEmeraldBrush}"
+                                    Text="{CompiledBinding #Root.LiveFollowHintText}"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!--  右侧：实时坐标与 Alpha 徽章  -->
+                    <StackPanel
+                        Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        VerticalAlignment="Center">
+                        <Border
+                            Padding="7,2"
+                            Background="{DynamicResource IgDarkBrush0DFFFFFF}"
+                            BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <TextBlock
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource IgIconCyanBrush}"
+                                    Text="XY"
+                                    VerticalAlignment="Center" />
+                                <TextBlock
+                                    x:Name="PART_LivePointText"
+                                    FontSize="11"
+                                    Foreground="{DynamicResource IgDarkBrushD1D5DB}"
+                                    Text="{CompiledBinding #Root.CurrentPointText}"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Border
+                            Padding="6,2"
+                            Background="{DynamicResource IgDarkBrush0DFFFFFF}"
+                            BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                            BorderThickness="1"
+                            CornerRadius="5">
+                            <TextBlock
+                                x:Name="PART_LiveAlphaText"
+                                FontSize="10.5"
+                                Foreground="{DynamicResource IgDarkBrush9CA3AF}"
+                                Text="{CompiledBinding #Root.LiveAlphaPercentText}"
+                                VerticalAlignment="Center" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!--  主体区：左侧紧凑色块对比预览卡 + 右侧 6 项色彩实时动态网格  -->
+                <Grid Grid.Row="2" ColumnDefinitions="76,10,*" VerticalAlignment="Center">
+
+                    <!--  精美色样卡片（上层纯正色样 + 对比选中小角标，下层磨砂信息底栏）  -->
+                    <Border
+                        Grid.Column="0"
+                        BorderBrush="{DynamicResource IgDarkBrush24FFFFFF}"
+                        BorderThickness="1"
+                        ClipToBounds="True"
+                        CornerRadius="8">
+                        <Grid RowDefinitions="*,Auto">
+                            <!--  色样区  -->
+                            <Panel Grid.Row="0" MinHeight="48">
+                                <Border Background="{StaticResource CheckerboardBrush}" />
+
+                                <!--  未进入图片区域时的柔和空态  -->
+                                <Border
+                                    Background="{DynamicResource IgDarkBrush0DFFFFFF}"
+                                    IsVisible="{CompiledBinding !#Root.HasActiveColor}">
+                                    <Path
+                                        Width="15"
+                                        Height="15"
+                                        Data="{StaticResource IconToolColorPicker}"
+                                        Fill="{DynamicResource IgDarkBrush8E95A2}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.45"
+                                        Stretch="Uniform" />
+                                </Border>
+
+                                <!--  实时颜色填充层  -->
+                                <Border
+                                    Background="{CompiledBinding #Root.ActiveColor, Converter={StaticResource ColorToBrushConverter}}"
+                                    IsVisible="{CompiledBinding #Root.HasActiveColor}" />
+
+                                <!--  右上角：上次点击记录色对比小圆环（方便与当前实时色直观对比）  -->
+                                <Border
+                                    Width="15"
+                                    Height="15"
+                                    Margin="4"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    BorderBrush="White"
+                                    BorderThickness="1.2"
+                                    ClipToBounds="True"
+                                    CornerRadius="7.5"
+                                    IsVisible="{CompiledBinding #Root.HasRecordedItems}"
+                                    ToolTip.Tip="{CompiledBinding #Root.LastSelectedColorTooltip}">
+                                    <Panel>
+                                        <Border Background="{StaticResource CheckerboardBrush}" />
+                                        <Border Background="{CompiledBinding #Root.SelectedColor, Converter={StaticResource ColorToBrushConverter}}" />
+                                    </Panel>
+                                </Border>
+                            </Panel>
+
+                            <!--  色样底部独立信息底栏  -->
+                            <Border
+                                Grid.Row="1"
+                                Padding="4,3.5"
+                                Background="{DynamicResource IgDarkBrush23252B}"
+                                BorderBrush="{DynamicResource IgDarkBrush14FFFFFF}"
+                                BorderThickness="0,1,0,0">
+                                <TextBlock
+                                    x:Name="PART_LiveHexText"
+                                    FontSize="10"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                                    HorizontalAlignment="Center"
+                                    Text="{CompiledBinding #Root.LiveColorHEX}"
+                                    TextTrimming="CharacterEllipsis"
+                                    VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!--  右侧：6 种色彩空间实时动态网格（2 列 × 3 行，每行 2 项完整展示）  -->
+                    <Grid
+                        Grid.Column="2"
+                        ColumnDefinitions="*,6,*"
+                        RowDefinitions="Auto,Auto,Auto"
+                        RowSpacing="6"
+                        VerticalAlignment="Center">
+
+                        <!--  HEX  -->
+                        <ui:PhToolButton
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorHEX}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconCyanSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconCyanBrush}" Text="HEX" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorHEX}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
                             </Grid>
-                        </VisualBrush.Visual>
-                    </VisualBrush>
-                </StackPanel.Background>
+                        </ui:PhToolButton>
 
+                        <!--  RGBA  -->
+                        <ui:PhToolButton
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorRGB}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconBlueSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconBlueBrush}" Text="RGBA" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorRGB}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </ui:PhToolButton>
 
-                <!--  Current color  -->
-                <Border
-                    MinWidth="100"
-                    Padding="4"
-                    Background="{CompiledBinding #Root.CurrentColor, Converter={StaticResource ColorToBrushConverter}}">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="{x:Static, tp:Const.FONT_SIZE_SMALL}"
-                        Foreground="{CompiledBinding #Root.CurrentTextColor, Converter={StaticResource ColorToBrushConverter}}"
-                        Text="{CompiledBinding #Root.CurrentPoint}"
-                        TextAlignment="Center" />
-                </Border>
-                <Border Width="1" Background="{DynamicResource IG_BorderControlBrush}" />
+                        <!--  HSL  -->
+                        <ui:PhToolButton
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorHSL}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconPurpleSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconPurpleBrush}" Text="HSL" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorHSL}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </ui:PhToolButton>
 
-                <!--  Selected color  -->
-                <Border
-                    MinWidth="100"
-                    Padding="4"
-                    Background="{CompiledBinding #Root.SelectedColor, Converter={StaticResource ColorToBrushConverter}}">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="{x:Static, tp:Const.FONT_SIZE_SMALL}"
-                        Foreground="{CompiledBinding #Root.SelectedTextColor, Converter={StaticResource ColorToBrushConverter}}"
-                        Text="{CompiledBinding #Root.SelectedPoint}"
-                        TextAlignment="Center" />
-                </Border>
-            </StackPanel>
+                        <!--  HSV  -->
+                        <ui:PhToolButton
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorHSV}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconAmberSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconAmberBrush}" Text="HSV" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorHSV}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </ui:PhToolButton>
+
+                        <!--  CMYK  -->
+                        <ui:PhToolButton
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorCMYK}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconEmeraldSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconEmeraldBrush}" Text="CMYK" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorCMYK}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </ui:PhToolButton>
+
+                        <!--  CIELAB  -->
+                        <ui:PhToolButton
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Classes="color-code-btn"
+                            Click="ButtonCopy_Click"
+                            Tag="{CompiledBinding #Root.ColorCIELAB}"
+                            ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}">
+                            <Grid ColumnDefinitions="Auto,5,*,3,Auto" VerticalAlignment="Center">
+                                <Border Grid.Column="0" Background="{DynamicResource IgIconRoseSoftBrush}" Classes="fmt-badge">
+                                    <TextBlock Classes="fmt-label" Foreground="{DynamicResource IgIconRoseBrush}" Text="LAB" />
+                                </Border>
+                                <TextBlock Grid.Column="2" Classes="fmt-value" Text="{CompiledBinding #Root.ColorCIELAB}" />
+                                <Path
+                                    Grid.Column="4"
+                                    Width="10"
+                                    Height="10"
+                                    Classes="copy-icon"
+                                    Data="{StaticResource IconCopy}"
+                                    Fill="{DynamicResource IgDarkBrush9CA3AF}"
+                                    Stretch="Uniform" />
+                            </Grid>
+                        </ui:PhToolButton>
+
+                    </Grid>
+                </Grid>
+
+            </Grid>
         </Border>
 
 
-        <!--  Color Codes  -->
-        <WrapPanel
-            ItemSpacing="24"
-            LineSpacing="6"
-            Orientation="Horizontal">
+        <!--  ======================================================================  -->
+        <!--  2. 右侧：点击采样记录面板（宽敞展陈每条记录的全部 6 项色彩与坐标）        -->
+        <!--  ======================================================================  -->
+        <Border
+            Grid.Column="2"
+            Padding="12,10"
+            Background="{DynamicResource IgDarkBrush191B20}"
+            BorderBrush="{StaticResource CardBorderGradient}"
+            BorderThickness="1"
+            CornerRadius="11">
+            <Grid RowDefinitions="Auto,8,*">
 
-            <StackPanel Spacing="6">
-                <!--  RGBA  -->
-                <StackPanel
-                    MinWidth="150"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="RGBA" />
+                <!--  面板标题栏 + 快捷色卡带 + 清空按钮  -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                    <StackPanel
+                        Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="7"
+                        VerticalAlignment="Center">
+                        <Border
+                            Width="20"
+                            Height="20"
+                            Background="{DynamicResource IgIconBlueSoftBrush}"
+                            CornerRadius="5"
+                            VerticalAlignment="Center">
+                            <Border
+                                Width="10"
+                                Height="10"
+                                CornerRadius="5"
+                                Background="{DynamicResource IgIconBlueBrush}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource IgDarkBrushF3F4F6}"
+                            Text="{CompiledBinding #Root.RecordedPanelTitle}"
+                            VerticalAlignment="Center" />
+                        <Border
+                            Padding="6,1"
+                            Background="{DynamicResource IgIconBlueSoftBrush}"
+                            CornerRadius="8"
+                            IsVisible="{CompiledBinding #Root.HasRecordedItems}"
+                            VerticalAlignment="Center">
+                            <TextBlock
+                                FontSize="10.5"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource IgIconBlueBrush}"
+                                Text="{CompiledBinding #Root.RecordedCountText}" />
+                        </Border>
+                    </StackPanel>
+
+                    <!--  中部：最近采样色块快捷色卡带（一目了然对比所有已采样颜色）  -->
+                    <StackPanel
+                        x:Name="PART_QuickSwatches"
+                        Grid.Column="1"
+                        Margin="10,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="4" />
+
                     <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorRGB}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
+                        x:Name="PART_BtnClearRecords"
+                        Grid.Column="2"
+                        Padding="8,2.5"
+                        CornerRadius="5"
+                        Background="{DynamicResource IgIconRoseSoftBrush}"
+                        Click="ButtonClearRecords_Click"
+                        IsVisible="{CompiledBinding #Root.HasRecordedItems}"
+                        ToolTip.Tip="{CompiledBinding #Root.ClearRecordsTooltipText}">
+                        <TextBlock
+                            FontSize="10.5"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource IgIconRoseBrush}"
+                            Text="{CompiledBinding #Root.ClearRecordsTooltipText}" />
+                    </ui:PhToolButton>
+                </Grid>
 
-                <!--  HEX  -->
-                <StackPanel
-                    MinWidth="150"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="HEX" />
-                    <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorHEX}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
-            </StackPanel>
+                <!--  空状态提示（尚未在图片上点击取色时显示）  -->
+                <Border
+                    Grid.Row="2"
+                    MinHeight="106"
+                    Background="{DynamicResource IgDarkBrush0AFFFFFF}"
+                    BorderBrush="{DynamicResource IgDarkBrush12FFFFFF}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    IsVisible="{CompiledBinding !#Root.HasRecordedItems}">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="4">
+                        <TextBlock
+                            FontSize="12"
+                            FontWeight="Medium"
+                            Foreground="{DynamicResource IgDarkBrushD1D5DB}"
+                            HorizontalAlignment="Center"
+                            Text="{CompiledBinding #Root.EmptyRecordHintText}" />
+                        <TextBlock
+                            FontSize="11"
+                            Foreground="{DynamicResource IgDarkBrush8E95A2}"
+                            HorizontalAlignment="Center"
+                            Text="{CompiledBinding #Root.EmptyRecordSubHintText}" />
+                    </StackPanel>
+                </Border>
 
+                <!--  点击记录列表（每条记录直接展示色块、序号、坐标以及 2 列 × 3 行全部 6 项色值，点击任意项直接复制）  -->
+                <ScrollViewer
+                    Grid.Row="2"
+                    MaxHeight="106"
+                    VerticalAlignment="Top"
+                    HorizontalScrollBarVisibility="Disabled"
+                    IsVisible="{CompiledBinding #Root.HasRecordedItems}"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel
+                        x:Name="PART_RecordedList"
+                        Margin="0,0,4,0"
+                        Spacing="6" />
+                </ScrollViewer>
 
-            <StackPanel Spacing="6">
-                <!--  HSL  -->
-                <StackPanel
-                    MinWidth="150"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="HSL" />
-                    <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorHSL}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
+            </Grid>
+        </Border>
 
-                <!--  HSV  -->
-                <StackPanel
-                    MinWidth="150"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="HSV" />
-                    <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorHSV}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
-            </StackPanel>
-
-
-            <StackPanel Spacing="6">
-                <!--  CMYK  -->
-                <StackPanel
-                    MinWidth="200"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="CMYK" />
-                    <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorCMYK}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
-
-                <!--  CIELAB  -->
-                <StackPanel
-                    MinWidth="200"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal"
-                    Spacing="2">
-                    <TextBlock Opacity="0.6" Text="CIELAB" />
-                    <ui:PhToolButton
-                        Padding="4,0"
-                        VerticalContentAlignment="Center"
-                        Click="ButtonCopy_Click"
-                        Content="{CompiledBinding #Root.ColorCIELAB}"
-                        ToolTip.Tip="{CompiledBinding #Root.CopyButtonTooltipText}" />
-                </StackPanel>
-            </StackPanel>
-
-        </WrapPanel>
-
-    </WrapPanel>
+    </Grid>
 </ui:PhControl>

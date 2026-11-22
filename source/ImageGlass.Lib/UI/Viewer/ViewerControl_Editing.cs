@@ -91,6 +91,68 @@ public partial class ViewerControl
 
 
     /// <summary>
+    /// Reads an <paramref name="n"/>×<paramref name="n"/> grid of colors centered at
+    /// (<paramref name="centerX"/>, <paramref name="centerY"/>) into <paramref name="buffer"/>.
+    /// Out-of-bounds pixels are filled with <see cref="Const.COLOR_EMPTY"/>.
+    /// </summary>
+    public bool GetColorGridAt(int centerX, int centerY, int n, Span<Color> buffer)
+    {
+        if (n <= 0 || buffer.Length < n * n) return false;
+        buffer[..(n * n)].Fill(Const.COLOR_EMPTY);
+
+        SKImageRef.ImageLease? imgLease = null;
+        try
+        {
+            lock (_lock)
+            {
+                var imageRef = _imgRender ?? _imgSource;
+                if (imageRef is null) return false;
+
+                imgLease = imageRef.Acquire();
+            }
+
+            var img = imgLease?.Image;
+            if (img.IsDisposed()) return false;
+
+            var radius = n / 2;
+            var startX = centerX - radius;
+            var startY = centerY - radius;
+
+            var clampLeft = Math.Max(0, startX);
+            var clampTop = Math.Max(0, startY);
+            var clampRight = Math.Min(img.Width, startX + n);
+            var clampBottom = Math.Min(img.Height, startY + n);
+
+            var readW = clampRight - clampLeft;
+            var readH = clampBottom - clampTop;
+            if (readW <= 0 || readH <= 0) return false;
+
+            var info = new SKImageInfo(readW, readH, SKColorType.Bgra8888, SKAlphaType.Unpremul);
+            using var bmp = new SKBitmap(info);
+            if (!img.ReadPixels(info, bmp.GetPixels(), info.RowBytes, clampLeft, clampTop))
+                return false;
+
+            for (var ry = 0; ry < readH; ry++)
+            {
+                var gridY = (clampTop + ry) - startY;
+                for (var rx = 0; rx < readW; rx++)
+                {
+                    var gridX = (clampLeft + rx) - startX;
+                    var skc = bmp.GetPixel(rx, ry);
+                    buffer[gridY * n + gridX] = new Color(skc.Alpha, skc.Red, skc.Green, skc.Blue);
+                }
+            }
+
+            return true;
+        }
+        finally
+        {
+            imgLease?.Dispose();
+        }
+    }
+
+
+    /// <summary>
     /// On the UI thread, takes the frame a cache pass color-managed, else color-manages <paramref name="srcImage"/> off it; <c>null</c> if unchanged.
     /// </summary>
     private async Task<SKImage?> ApplySkiaColorSpaceAsync(SKImage? srcImage, Photo photo)

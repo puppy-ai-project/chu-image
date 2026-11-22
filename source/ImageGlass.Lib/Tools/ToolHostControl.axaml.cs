@@ -152,9 +152,10 @@ public partial class ToolHostControl : PhControl
     {
         if (Tool is not Layoutable toolEl) return;
 
-        // tools center their content, so each side keeps half of the width the tool leaves unused
-        var sideRoom = (PART_ToolSlot.Bounds.Width - toolEl.DesiredSize.Width) / 2;
-        var isCrowded = sideRoom < PART_Watermark.DesiredSize.Width;
+        // tools center or stretch their content, so each side keeps half of the width the tool leaves unused
+        var toolWidth = Math.Max(toolEl.Bounds.Width, toolEl.DesiredSize.Width);
+        var sideRoom = (PART_ToolSlot.Bounds.Width - toolWidth) / 2;
+        var isCrowded = sideRoom < PART_Watermark.DesiredSize.Width + 16;
 
         PART_Watermark.Classes.Set("crowded", isCrowded);
     }
